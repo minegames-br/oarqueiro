@@ -8,22 +8,24 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.inventory.ItemStack;
 
 import br.com.minegames.arqueiro.Game;
+import br.com.minegames.logging.Logger;
 
 public class BowShootListener implements Listener {
 
-	private Game game;	
-	
+	private Game game;
+
 	public BowShootListener(Game plugin) {
 		super();
 		this.game = plugin;
 	}
-	
+
 	@EventHandler
 	public void onBowShoot(EntityShootBowEvent e) {
-		ItemStack arrow = new ItemStack(Material.ARROW, 1);
-		if(e.getEntity() instanceof Player) {
+		//ItemStack arrow = new ItemStack(Material.ARROW);
+		if (e.getEntity() instanceof Player) {
 			Player player = (Player) e.getEntity();
-			player.getInventory().addItem(arrow);
+			Logger.log("BowShoot tem arrow: " + player.getInventory().contains(Material.ARROW));
+			//player.getInventory().addItem(arrow);
 		}
-	 }
+	}
 }

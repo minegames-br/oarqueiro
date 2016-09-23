@@ -12,6 +12,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.BlockIterator;
 
@@ -44,6 +46,9 @@ public class TargetHitEvent implements Listener {
 		    Arrow arrow = (Arrow)event.getEntity();
 		    
 		    Player shooter = (Player) arrow.getShooter();
+		    Logger.log("TargetHit tem arrow: " + shooter.getInventory().contains(Material.ARROW));
+		    PlayerInventory inventory = shooter.getInventory();
+		    inventory.addItem(new ItemStack(Material.ARROW, 1));
 		    World world = arrow.getWorld();
 		    BlockIterator bi = new BlockIterator(world, arrow.getLocation().toVector(), arrow.getVelocity().normalize(), 0, 4);
 		    Block hit = null;
