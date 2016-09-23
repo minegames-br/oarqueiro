@@ -21,6 +21,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 import br.com.minegames.arqueiro.command.JoinGameCommand;
 import br.com.minegames.arqueiro.command.LeaveGameCommand;
+import br.com.minegames.arqueiro.command.StartGameCommand;
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.Area2D;
 import br.com.minegames.arqueiro.domain.Area3D;
@@ -63,10 +64,10 @@ public class Game extends JavaPlugin {
 	private Vector<Location> arenaSpawnPoints = new Vector<Location>();
 	
 	private Location lobbyLocation;
-	private int maxplayers = 2;
+	private int maxplayers = 4;
 	private int minplayers = 1;
 	private int maxZombieSpawned = 4;
-	private int countDown = 10;
+	private int countDown = 20;
 	private Runnable startCountDownTask;
 	private Runnable startGameTask;
 	private int startCountDownThreadID;
@@ -97,6 +98,7 @@ public class Game extends JavaPlugin {
         world.setGameRuleValue("doDaylightCycle", "false");
 
         getCommand("jogar").setExecutor(new JoinGameCommand(this));
+        getCommand("iniciar").setExecutor(new StartGameCommand(this));
         getCommand("sair").setExecutor(new LeaveGameCommand(this));
         
         init();

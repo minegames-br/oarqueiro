@@ -5,4 +5,4 @@ main: br.com.minegames.arqueiro.Game
 commands:
   jogar:
   sair:
-  ztele:
+  iniciar:
