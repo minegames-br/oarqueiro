@@ -73,6 +73,7 @@ public class Game extends JavaPlugin {
 	private Area2D spawnArea;
 	private Area2D blackWall;
 	private Area3D arena;
+	private Area3D floatingArena;
 	
 	@Override
     public void onEnable() {
@@ -130,6 +131,10 @@ public class Game extends JavaPlugin {
 		Location a1 = new Location(this.getWorld(), 457, 4, 1165);
 		Location a2 = new Location(this.getWorld(), 493, 18, 1200);
 		this.arena = new Area3D(a1, a2);
+		
+		Location f1 = new Location(this.getWorld(), 459, 10, 1170);
+		Location f2 = new Location(this.getWorld(), 491, 14, 1197);
+		this.floatingArena = new Area3D(f1, f2);
 		
 		Location b1 = new Location(this.getWorld(), 457, 6, 1200);
 		Location b2 = new Location(this.getWorld(), 493, 18, 1200);
@@ -429,6 +434,10 @@ public class Game extends JavaPlugin {
 
 	public Location getRandomSpawnLocationForWallTarget() {
 		return LocationUtil.getRandomLocationXY(world, this.blackWall);
+	}
+
+	public Location getRandomSpawnLocationForFloatingTarget() {
+		return LocationUtil.getRandomLocationXYZ(world, this.floatingArena);
 	}
 
 	public void hitZombie(Zombie entity, Player player) {

@@ -11,6 +11,7 @@ public class GroundBlockTarget extends BlockTarget {
 	
 	public GroundBlockTarget(Game game, Block block) {
 		super(game, block);
+		this.hitPoints = 25;
 	}
 	
 
