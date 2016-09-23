@@ -33,6 +33,7 @@ import br.com.minegames.arqueiro.listener.PlayerJoin;
 import br.com.minegames.arqueiro.listener.PlayerQuit;
 import br.com.minegames.arqueiro.listener.ServerListener;
 import br.com.minegames.arqueiro.listener.TargetHitEvent;
+import br.com.minegames.arqueiro.task.DestroyTargetTask;
 import br.com.minegames.arqueiro.task.EndGameTask;
 import br.com.minegames.arqueiro.task.PlaceTargetTask;
 import br.com.minegames.arqueiro.task.SpawnZombieTask;
@@ -50,6 +51,8 @@ public class Game extends JavaPlugin {
 	private GameState state = GameState.WAITING;
 	private Runnable placeTargetTask;
 	private int placeTargetThreadID;
+	private Runnable destroyTargetTask;
+	private int destroyTargetThreadID;
 	private Runnable spawnZombieTask;
 	private int spawnZombieThreadID;
 	private Runnable endGameTask;
@@ -122,6 +125,7 @@ public class Game extends JavaPlugin {
         //inicializar variaveis de instancia
     	this.maxZombieSpawned = 4;
 		this.placeTargetTask = new PlaceTargetTask(this);
+		this.destroyTargetTask = new DestroyTargetTask(this);
 		this.endGameTask = new EndGameTask(this);
 		this.spawnZombieTask = new SpawnZombieTask(this);
 		this.startCountDownTask = new StartCoundDownTask(this);
@@ -194,6 +198,7 @@ public class Game extends JavaPlugin {
         //Iniciar threads do jogo
         BukkitScheduler scheduler = getServer().getScheduler();
         this.placeTargetThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.placeTargetTask, 0L, 100L);
+        this.destroyTargetThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 100L);
         this.endGameThreadID      = scheduler.scheduleSyncRepeatingTask(this, this.endGameTask, 0L, 50L);
         this.spawnZombieThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 150L);
         
@@ -239,6 +244,7 @@ public class Game extends JavaPlugin {
 
         //Terminar threads do jogo
 		Bukkit.getScheduler().cancelTask(this.placeTargetThreadID);
+		Bukkit.getScheduler().cancelTask(this.destroyTargetThreadID);
 		Bukkit.getScheduler().cancelTask(this.endGameThreadID);
 		Bukkit.getScheduler().cancelTask(this.spawnZombieThreadID);
 		
@@ -386,13 +392,13 @@ public class Game extends JavaPlugin {
 		archer.addPoints(hitPoints);
 	}
 
-	public List<Target> getTargets() {
+	public Vector<Target> getTargets() {
 		synchronized (targets) {
 			return this.targets;
 		}
 	}
 	
-	public List<EntityTarget> getLivingTargets() {
+	public Vector<EntityTarget> getLivingTargets() {
 		synchronized (livingTargets) {
 			return this.livingTargets;
 		}
