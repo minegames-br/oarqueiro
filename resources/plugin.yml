@@ -1,0 +1,8 @@
+name: Arqueiro
+author: joaoemilio
+version: 1.0.0
+main: br.com.minegames.arqueiro.Game
+commands:
+  jogar:
+  sair:
+  ztele:
