@@ -1,19 +1,19 @@
-package br.com.minegames.arqueiro.domain;
+package br.com.minegames.arqueiro.domain.target;
 
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.util.BlockManipulationUtil;
 
-public class GroundBlockTarget extends BlockTarget {
+public class WallBlockTarget extends BlockTarget {
 	
-	public GroundBlockTarget(Game game, Block block) {
+	public WallBlockTarget(GameController game, Block block) {
 		super(game, block);
-		this.hitPoints = 25;
+		this.hitPoints = 75;
 	}
-	
 
 	@Override
 	public void hitTarget2(Player player) {
@@ -28,10 +28,13 @@ public class GroundBlockTarget extends BlockTarget {
 	
 	@Override
 	public void destroy() {
-	    //restaurar o local do target 
-	    Location l1 = new Location(game.getWorld(), block.getX()-1, block.getY()-2, block.getZ());
+	    //restaurar a parte preta
+	    Location l1 = new Location(game.getWorld(), block.getX()-1, block.getY()-1, block.getZ());
 	    Location l2 = new Location(game.getWorld(), block.getX()+1, block.getY()+1, block.getZ());
-	    BlockManipulationUtil.clearBlocks(l1, l2);
+	    BlockManipulationUtil.createWoolBlocks(l1, l2, DyeColor.BLACK);
 	}
 
+	
+	
+	
 }

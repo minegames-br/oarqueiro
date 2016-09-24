@@ -7,14 +7,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.inventory.ItemStack;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.logging.Logger;
 
 public class BowShootListener implements Listener {
 
-	private Game game;
+	private GameController game;
 
-	public BowShootListener(Game plugin) {
+	public BowShootListener(GameController plugin) {
 		super();
 		this.game = plugin;
 	}

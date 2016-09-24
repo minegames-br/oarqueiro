@@ -1,16 +1,16 @@
-package br.com.minegames.arqueiro.domain;
+package br.com.minegames.arqueiro.domain.target;
 
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 
 public class BlockTarget extends Target {
 	
 	protected Block block;
 	private Long creationTime;
 	
-	public BlockTarget(Game game, Block block) {
+	public BlockTarget(GameController game, Block block) {
 		super(game);
 		this.block = block;
 		this.hitPoints = 50;

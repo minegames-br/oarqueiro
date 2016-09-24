@@ -8,13 +8,13 @@ import org.bukkit.entity.Skeleton;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 
 public class SpawnBatTask extends BukkitRunnable {
 	
-	private Game game;
+	private GameController game;
 	
-	public SpawnBatTask(Game game) {
+	public SpawnBatTask(GameController game) {
 		this.game = game;
 	}
 	

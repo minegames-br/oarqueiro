@@ -1,8 +1,8 @@
-package br.com.minegames.arqueiro.domain;
+package br.com.minegames.arqueiro.domain.target;
 
 import org.bukkit.entity.Zombie;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 
 public class ZombieTarget extends EntityTarget {
 	
@@ -16,7 +16,7 @@ public class ZombieTarget extends EntityTarget {
 		this.zombie = zombie;
 	}
 
-	public ZombieTarget(Game game, Zombie zombie) {
+	public ZombieTarget(GameController game, Zombie zombie) {
 		super(game, zombie);
 		this.zombie = zombie;
 		this.hitPoints = 50;

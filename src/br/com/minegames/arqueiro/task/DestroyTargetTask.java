@@ -4,15 +4,15 @@ import java.util.Vector;
 
 import org.bukkit.scheduler.BukkitRunnable;
 
-import br.com.minegames.arqueiro.Game;
-import br.com.minegames.arqueiro.domain.BlockTarget;
-import br.com.minegames.arqueiro.domain.Target;
+import br.com.minegames.arqueiro.GameController;
+import br.com.minegames.arqueiro.domain.target.BlockTarget;
+import br.com.minegames.arqueiro.domain.target.Target;
 
 public class DestroyTargetTask extends BukkitRunnable {
 	
-	private Game game;
+	private GameController game;
 	
-	public DestroyTargetTask(Game game) {
+	public DestroyTargetTask(GameController game) {
 		this.game = game;
 	}
 	

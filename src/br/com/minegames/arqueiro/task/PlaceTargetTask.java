@@ -1,8 +1,5 @@
 package br.com.minegames.arqueiro.task;
 
-import java.util.Random;
-
-import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -10,97 +7,84 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import br.com.minegames.arqueiro.Game;
-import br.com.minegames.arqueiro.domain.FloatingBlockTarget;
-import br.com.minegames.arqueiro.domain.GroundBlockTarget;
-import br.com.minegames.arqueiro.domain.Target;
-import br.com.minegames.arqueiro.domain.WallBlockTarget;
+import br.com.minegames.arqueiro.GameController;
+import br.com.minegames.arqueiro.domain.target.FloatingBlockTarget;
+import br.com.minegames.arqueiro.domain.target.GroundBlockTarget;
+import br.com.minegames.arqueiro.domain.target.Target;
+import br.com.minegames.arqueiro.domain.target.WallBlockTarget;
 import br.com.minegames.util.BlockManipulationUtil;
-import br.com.minegames.util.Utils;
 
 public class PlaceTargetTask extends BukkitRunnable {
 	
-	private Game game;
+	private GameController game;
 	
-	public PlaceTargetTask(Game game) {
+	public PlaceTargetTask(GameController game) {
 		this.game = game;
 	}
 	
     @Override
     public void run() {
 
-    	int index = new Random().nextInt(3);
+    	if(game.getTargets().size() >= game.getMaxTarget() ) {
+    		return;
+    	}
     	
-    	if(game.getTargets().size() == 0 ) {
-    		Bukkit.getConsoleSender().sendMessage(Utils.color("&6Creating Target"));
-    		createGroundTarget();
-    	} else if(game.getTargets().size() == 1) {
-    		Target target = game.getTargets().get(0);
-    		if(target instanceof WallBlockTarget) {
-    			createGroundTarget();
-    		} else if (target instanceof GroundBlockTarget ){
-    			createFloatingTarget();
-    		} else {
-    			createWallTarget();
+    	int index = 6;
+    	
+    	for(Target target: game.getTargets()) {
+    		if(target instanceof GroundBlockTarget) {
+    			index --;
+    		} else if(target instanceof FloatingBlockTarget) {
+    			index -= 2;
+    		} else if(target instanceof WallBlockTarget) {
+    			index -= 4;
     		}
     	}
-        
+
+    	if( index == 0 || index == 2 || index == 6) {
+			createGroundTarget();
+    	} else if( index == 1 ) {
+			createFloatingTarget();
+    	} else if( index == 3 ) {
+			createWallTarget();
+    	} else if( index == 5 || index == 4 ) {
+			createFloatingTarget();
+    	}
+    	
     }
     
+    /**
+     * Criar um alvo que fica no chão
+     * @return
+     */
     private void createGroundTarget() {
-    	
     	Location l = game.getRandomSpawnLocationForGroundTarget();
-    	
-		int x = l.getBlockX();
-		int y = l.getBlockY();
-		int z = l.getBlockZ();
-		
-    	Block block = createNewBlock(game.getWorld(), x, y, z, Material.RED_SANDSTONE);
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x, y+1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x+1, y+1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x-1, y+1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x+1, y, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x-1, y, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x, y-1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x+1, y-1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x-1, y-1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x, y-2, z, DyeColor.WHITE );
-    	
+    	Block block = createTarget(l);
+    	BlockManipulationUtil.createNewWool(game.getWorld(), l.getBlockX(), l.getBlockY()-2, l.getBlockZ(), DyeColor.WHITE );
     	game.addTarget(new GroundBlockTarget(this.game, block));
     }
-    
+
+    /**
+     * Criar um alvo que fica na parede
+     * @return
+     */
     private void createWallTarget() {
     	Location l = game.getRandomSpawnLocationForWallTarget();
-    	
-		int x = l.getBlockX();
-		int y = l.getBlockY();
-		int z = l.getBlockZ();
-		
-    	Block block = createNewBlock(game.getWorld(), x, y, z, Material.RED_SANDSTONE);
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x, y+1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x+1, y+1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x-1, y+1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x+1, y, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x-1, y, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x, y-1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x+1, y-1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(game.getWorld(), x-1, y-1, z, DyeColor.WHITE );
-    	
+    	Block block = createTarget(l);
     	game.addTarget(new WallBlockTarget(this.game, block));
     }
 
     /**
      * Criar um alvo que fica fora da parede e longe do chão
-     * @param world
-     * @param x
-     * @param y
-     * @param z
-     * @param type
      * @return
      */
     private void createFloatingTarget() {
     	Location l = game.getRandomSpawnLocationForFloatingTarget();
-    	
+    	Block block = createTarget(l);
+    	game.addTarget(new FloatingBlockTarget(this.game, block));
+    }
+    
+    private Block createTarget(Location l) {
 		int x = l.getBlockX();
 		int y = l.getBlockY();
 		int z = l.getBlockZ();
@@ -114,8 +98,7 @@ public class PlaceTargetTask extends BukkitRunnable {
     	BlockManipulationUtil.createNewWool(game.getWorld(), x, y-1, z, DyeColor.WHITE );
     	BlockManipulationUtil.createNewWool(game.getWorld(), x+1, y-1, z, DyeColor.WHITE );
     	BlockManipulationUtil.createNewWool(game.getWorld(), x-1, y-1, z, DyeColor.WHITE );
-    	
-    	game.addTarget(new FloatingBlockTarget(this.game, block));
+    	return block;
     }
     
     private Block createNewBlock(World world, double x, double y, double z, Material type) {

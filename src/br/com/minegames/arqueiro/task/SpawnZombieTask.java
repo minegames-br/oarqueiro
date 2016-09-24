@@ -8,16 +8,16 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Zombie;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
-import br.com.minegames.arqueiro.domain.EntityTarget;
+import br.com.minegames.arqueiro.domain.target.EntityTarget;
 import br.com.minegames.util.Utils;
 
 public class SpawnZombieTask extends BukkitRunnable {
 	
-	private Game game;
+	private GameController game;
 	
-	public SpawnZombieTask(Game game) {
+	public SpawnZombieTask(GameController game) {
 		this.game = game;
 	}
 	

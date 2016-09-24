@@ -5,14 +5,14 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.logging.Logger;
 
 public class LeaveGameCommand implements CommandExecutor {
 
-	private Game game;
+	private GameController game;
 
-    public LeaveGameCommand(Game plugin) {
+    public LeaveGameCommand(GameController plugin) {
 		super();
 		this.game = plugin;
 	}

@@ -6,18 +6,18 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.GameState;
 import br.com.minegames.util.Utils;
 
 public class PlayerQuit implements Listener {
 
-    public PlayerQuit(Game game) {
+    public PlayerQuit(GameController game) {
 		super();
 		this.game = game;
 	}
 
-	private Game game;
+	private GameController game;
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
@@ -25,7 +25,7 @@ public class PlayerQuit implements Listener {
         Bukkit.getConsoleSender().sendMessage(Utils.color("&6PlayerQuit.onQuit"));
         Player player = event.getPlayer();
         
-        if(! (game.getGameState().equals(GameState.GAMEOVER) ) ) {
+        if( !game.getGame().isOver() ) {
         	game.removePlayer(player);
         }
         

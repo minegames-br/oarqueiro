@@ -1,14 +1,14 @@
-package br.com.minegames.arqueiro.domain;
+package br.com.minegames.arqueiro.domain.target;
 
 import org.bukkit.entity.Skeleton;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 
 public class SkeletonTarget extends EntityTarget {
 	
 	protected Skeleton skeleton;
 	
-	public SkeletonTarget(Game game, Skeleton skeleton) {
+	public SkeletonTarget(GameController game, Skeleton skeleton) {
 		super(game, skeleton);
 		this.skeleton = skeleton;
 	}

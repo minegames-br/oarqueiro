@@ -6,13 +6,13 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 
 public class ServerListener implements Listener {
 
-	private Game game;
+	private GameController game;
 
-    public ServerListener(Game plugin) {
+    public ServerListener(GameController plugin) {
 		super();
 		this.game = plugin;
 	}

@@ -11,14 +11,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.logging.Logger;
 
 public class PlayerDeath implements Listener {
 
-    private Game game;
+    private GameController game;
 
-    public PlayerDeath(Game plugin) {
+    public PlayerDeath(GameController plugin) {
         this.game = plugin;
     }
 

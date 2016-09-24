@@ -17,16 +17,16 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.BlockIterator;
 
-import br.com.minegames.arqueiro.Game;
-import br.com.minegames.arqueiro.domain.BlockTarget;
-import br.com.minegames.arqueiro.domain.Target;
+import br.com.minegames.arqueiro.GameController;
+import br.com.minegames.arqueiro.domain.target.BlockTarget;
+import br.com.minegames.arqueiro.domain.target.Target;
 import br.com.minegames.logging.Logger;
 
 public class TargetHitEvent implements Listener {
 
-	private Game game;	
+	private GameController game;	
 	
-	public TargetHitEvent(Game plugin) {
+	public TargetHitEvent(GameController plugin) {
 		super();
 		this.game = plugin;
 	}

@@ -10,14 +10,14 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.logging.Logger;
 
 public class EntityHitEvent implements Listener {
 
-	private Game game;	
+	private GameController game;	
 	
-	public EntityHitEvent(Game plugin) {
+	public EntityHitEvent(GameController plugin) {
 		super();
 		this.game = plugin;
 	}

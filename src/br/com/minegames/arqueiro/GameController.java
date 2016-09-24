@@ -25,8 +25,9 @@ import br.com.minegames.arqueiro.command.StartGameCommand;
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.Area2D;
 import br.com.minegames.arqueiro.domain.Area3D;
-import br.com.minegames.arqueiro.domain.EntityTarget;
-import br.com.minegames.arqueiro.domain.Target;
+import br.com.minegames.arqueiro.domain.Game;
+import br.com.minegames.arqueiro.domain.target.EntityTarget;
+import br.com.minegames.arqueiro.domain.target.Target;
 import br.com.minegames.arqueiro.listener.BowShootListener;
 import br.com.minegames.arqueiro.listener.EntityHitEvent;
 import br.com.minegames.arqueiro.listener.PlayerDeath;
@@ -36,6 +37,7 @@ import br.com.minegames.arqueiro.listener.ServerListener;
 import br.com.minegames.arqueiro.listener.TargetHitEvent;
 import br.com.minegames.arqueiro.task.DestroyTargetTask;
 import br.com.minegames.arqueiro.task.EndGameTask;
+import br.com.minegames.arqueiro.task.LevelUpTask;
 import br.com.minegames.arqueiro.task.PlaceTargetTask;
 import br.com.minegames.arqueiro.task.SpawnZombieTask;
 import br.com.minegames.arqueiro.task.StartCoundDownTask;
@@ -44,12 +46,14 @@ import br.com.minegames.logging.Logger;
 import br.com.minegames.util.BlockManipulationUtil;
 import br.com.minegames.util.LocationUtil;
 import br.com.minegames.util.Utils;
+import br.com.minegames.util.title.TitleUtil;
 
-public class Game extends JavaPlugin {
+public class GameController extends JavaPlugin {
 
+	private Game game;
+	
 	private World world;
 	private Vector<Archer> players = new Vector<Archer>();
-	private GameState state = GameState.WAITING;
 	private Runnable placeTargetTask;
 	private int placeTargetThreadID;
 	private Runnable destroyTargetTask;
@@ -58,6 +62,8 @@ public class Game extends JavaPlugin {
 	private int spawnZombieThreadID;
 	private Runnable endGameTask;
 	private int endGameThreadID;
+	private Runnable levelUpTask;
+	private int levelUpThreadID;
 	private Vector<Target> targets = new Vector<Target>();
 	private Vector<EntityTarget> livingTargets = new Vector<EntityTarget>();
 	
@@ -66,8 +72,10 @@ public class Game extends JavaPlugin {
 	private Location lobbyLocation;
 	private int maxplayers = 4;
 	private int minplayers = 1;
-	private int maxZombieSpawned = 4;
+	private int maxZombieSpawned = 5;
+	private int maxTarget = 3;
 	private int countDown = 20;
+	private long gameStartTime;
 	private Runnable startCountDownTask;
 	private Runnable startGameTask;
 	private int startCountDownThreadID;
@@ -106,8 +114,8 @@ public class Game extends JavaPlugin {
 	}
 	
 	private void init() {
-		//mudar o state do jogo para esperar jogadores entrarem
-		this.state = GameState.WAITING;
+		
+		this.game = new Game();
 		
 		//zerar lista de players
 		this.players.clear();
@@ -129,6 +137,7 @@ public class Game extends JavaPlugin {
 		this.placeTargetTask = new PlaceTargetTask(this);
 		this.destroyTargetTask = new DestroyTargetTask(this);
 		this.endGameTask = new EndGameTask(this);
+		this.levelUpTask = new LevelUpTask(this);
 		this.spawnZombieTask = new SpawnZombieTask(this);
 		this.startCountDownTask = new StartCoundDownTask(this);
 		this.startGameTask = new StartGameTask(this);
@@ -156,7 +165,7 @@ public class Game extends JavaPlugin {
 		this.arenaSpawnPoints.add(new Location(this.getWorld(), 480, a1.getY(), a1.getZ() ) );
 		this.arenaSpawnPoints.add(new Location(this.getWorld(), 490, a1.getY(), a1.getZ() ) );
 		
-		this.lobbyLocation = new Location(this.getWorld(), 500, 4, 1165);
+		this.lobbyLocation = new Location(this.getWorld(), 530, 4, 1210);
 		this.countDown = 10;
 		this.winner = null;
 
@@ -171,8 +180,8 @@ public class Game extends JavaPlugin {
 
     @Override
     public void onDisable() {
-    	if(this.isStarted()) {
-    		this.state = GameState.SHUTDOWN;
+    	if(this.game.isStarted()) {
+    		this.game.shutDown();
     		this.endGame();
     	}
     }
@@ -193,16 +202,17 @@ public class Game extends JavaPlugin {
      * ou então a quantidade mínima e o tempo de espera terminou.
      */
     public void startGameEngine() {
-        this.state = GameState.RUNNING;
-
+        this.game.start(); 
+        
         Bukkit.getConsoleSender().sendMessage(Utils.color("&6Game.startGameEngine"));
         
         //Iniciar threads do jogo
         BukkitScheduler scheduler = getServer().getScheduler();
-        this.placeTargetThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.placeTargetTask, 0L, 100L);
+        this.placeTargetThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.placeTargetTask, 0L, 50L);
         this.destroyTargetThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 100L);
         this.endGameThreadID      = scheduler.scheduleSyncRepeatingTask(this, this.endGameTask, 0L, 50L);
-        this.spawnZombieThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 150L);
+        this.spawnZombieThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 50L);
+        this.levelUpThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.levelUpTask, 0L, 100L);
         
         //Terminar threads de preparacao do jogo
         scheduler.cancelTask(startCountDownThreadID);
@@ -241,7 +251,9 @@ public class Game extends JavaPlugin {
      * e/ou o tempo terá acabado.  
      */
 	public void endGame() {
-		
+		if(this.game.isStarted()) {
+			this.game.endGame();
+		}
         Bukkit.getConsoleSender().sendMessage(Utils.color("&6Game.endGame"));
 
         //Terminar threads do jogo
@@ -249,6 +261,7 @@ public class Game extends JavaPlugin {
 		Bukkit.getScheduler().cancelTask(this.destroyTargetThreadID);
 		Bukkit.getScheduler().cancelTask(this.endGameThreadID);
 		Bukkit.getScheduler().cancelTask(this.spawnZombieThreadID);
+		Bukkit.getScheduler().cancelTask(this.levelUpThreadID);
 		
 		//TODO o que vai acontecer com os jogadores quando acabar o jogo?
 		//por enquanto vou tirá-los da arena e zerar os inventarios e recriar a parede preta
@@ -267,11 +280,38 @@ public class Game extends JavaPlugin {
 		//mandar os jogadores de volta para o lobby
 		teleportPlayersBackToLobby();
 
-		if(!this.state.equals(GameState.SHUTDOWN)) {
+		//limpar inventario do jogador
+		clearPlayersInventory();
+		
+		if(!this.game.isShuttingDown()) {
 			//limpar a arena e reiniciar o plugin
 			init();
 		}
 		
+	}
+	
+    private void clearPlayersInventory() {
+        for(Archer archer: players) {
+        	Player player = archer.getPlayer();
+        	this.clearPlayerInventory(player);
+        }
+	}
+        
+    private void clearPlayerInventory(Player player) {
+    	PlayerInventory inventory = player.getInventory();
+        
+    	inventory.clear();
+    	inventory.setArmorContents(null);
+    }
+
+	/**
+	 * Iniciar novo Nível / Round / Level
+	 */
+	public void levelUp() {
+		this.game.levelUp();
+		for(Archer archer: this.players) {
+			TitleUtil.sendTitle(archer.getPlayer(), 1, 20, 10, "Nível " + this.game.getLevel().getLevel(), "");
+		}
 	}
 
 	private void destroyTargets() {
@@ -292,11 +332,7 @@ public class Game extends JavaPlugin {
 	private void createBlackWall() {
 		BlockManipulationUtil.createWoolBlocks(this.blackWall.getPointA(), this.blackWall.getPointB(), DyeColor.BLACK);
 	}
-	
-    public GameState getGameState() {
-    	return this.state;
-    }
-    
+
     public void addPlayer(Player player) {
     	Archer archer = null;
     	if(findArcherByPlayer(player) == null) {
@@ -313,7 +349,7 @@ public class Game extends JavaPlugin {
     	Archer archer = findArcherByPlayer(player);
     	players.remove(archer);
     	if(players.size() == 0) {
-    		this.setGameState(GameState.GAMEOVER);
+    		this.game.endGame();
     		this.endGame();
     	}
     }
@@ -365,19 +401,7 @@ public class Game extends JavaPlugin {
 	}
 
 	public void startCoundDown() {
-		this.state = GameState.STARTING;
-	}
-
-	public boolean isStarting() {
-		return this.state.equals(GameState.STARTING);
-	}
-
-	public boolean isStarted() {
-		return this.state.equals(GameState.RUNNING);
-	}
-
-	public boolean isWaitingPlayers() {
-		return this.state.equals(GameState.WAITING) || this.state.equals(GameState.STARTING);	
+		this.game.startCountDown();
 	}
 
 	public void proceedCountdown() {
@@ -472,7 +496,7 @@ public class Game extends JavaPlugin {
 
 		dead.setHealth(20); // Do not show the respawn screen
         dead.getInventory().clear();
-        if( this.isStarted() ) {
+        if( this.game.isStarted() ) {
         	this.removePlayer(dead);
         }
         
@@ -504,8 +528,15 @@ public class Game extends JavaPlugin {
 		}
 	}
 
-	public void setGameState(GameState state) {
-		this.state = state;
+	public Game getGame() {
+		return this.game;
 	}
 
+	public boolean isLastLevel() {
+		return this.game.getLevel().getLevel() == 10;
+	}
+
+	public int getMaxTarget() {
+		return this.maxTarget;
+	}
 }

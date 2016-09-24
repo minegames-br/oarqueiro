@@ -1,18 +1,19 @@
-package br.com.minegames.arqueiro.domain;
+package br.com.minegames.arqueiro.domain.target;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.util.BlockManipulationUtil;
 
-public class FloatingBlockTarget extends BlockTarget {
+public class GroundBlockTarget extends BlockTarget {
 	
-	public FloatingBlockTarget(Game game, Block block) {
+	public GroundBlockTarget(GameController game, Block block) {
 		super(game, block);
-		this.hitPoints = 50;
+		this.hitPoints = 25;
 	}
+	
 
 	@Override
 	public void hitTarget2(Player player) {
@@ -28,7 +29,7 @@ public class FloatingBlockTarget extends BlockTarget {
 	@Override
 	public void destroy() {
 	    //restaurar o local do target 
-	    Location l1 = new Location(game.getWorld(), block.getX()-1, block.getY()-1, block.getZ());
+	    Location l1 = new Location(game.getWorld(), block.getX()-1, block.getY()-2, block.getZ());
 	    Location l2 = new Location(game.getWorld(), block.getX()+1, block.getY()+1, block.getZ());
 	    BlockManipulationUtil.clearBlocks(l1, l2);
 	}

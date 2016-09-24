@@ -5,14 +5,14 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.logging.Logger;
 
 public class JoinGameCommand implements CommandExecutor {
 
-	private Game game;
+	private GameController game;
 
-    public JoinGameCommand(Game plugin) {
+    public JoinGameCommand(GameController plugin) {
 		super();
 		this.game = plugin;
 	}

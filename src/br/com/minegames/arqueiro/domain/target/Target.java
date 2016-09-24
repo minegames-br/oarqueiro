@@ -1,17 +1,17 @@
-package br.com.minegames.arqueiro.domain;
+package br.com.minegames.arqueiro.domain.target;
 
 import org.bukkit.entity.Player;
 
-import br.com.minegames.arqueiro.Game;
+import br.com.minegames.arqueiro.GameController;
 
 public class Target {
 
 	protected boolean hit;
 	protected Player shooter;
-	protected Game game;
+	protected GameController game;
 	protected int hitPoints = 10;
 	
-	public Target(Game game) {
+	public Target(GameController game) {
 		this.game = game;
 	}
 	
