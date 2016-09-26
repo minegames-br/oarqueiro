@@ -100,6 +100,8 @@ public class GameController extends JavaPlugin {
 	private Area2D blackWall;
 	private Area3D arena;
 	private Area3D floatingArena;
+
+	private Scoreboard scoreboard;
 	
 	@Override
     public void onEnable() {
@@ -184,7 +186,7 @@ public class GameController extends JavaPlugin {
         }
 
         //inicializar variaveis de instancia
-    	this.maxZombieSpawned = 4;
+    	this.maxZombieSpawned = 5;
 		this.placeTargetTask = new PlaceTargetTask(this);
 		this.destroyTargetTask = new DestroyTargetTask(this);
 		this.endGameTask = new EndGameTask(this);
@@ -213,6 +215,11 @@ public class GameController extends JavaPlugin {
         BukkitScheduler scheduler = getServer().getScheduler();
         this.startGameThreadID    = scheduler.scheduleSyncRepeatingTask(this, this.startGameTask, 0L, 20L);
         this.startCountDownThreadID    = scheduler.scheduleSyncRepeatingTask(this, this.startCountDownTask, 0L, 25L);
+
+        this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+        Objective objective = this.scoreboard.registerNewObjective(Utils.color("&6Placar"), "placar");
+        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+
 	}
 
     @Override
@@ -279,9 +286,8 @@ public class GameController extends JavaPlugin {
     	int index = 0;
         for(Archer archer: this.livePlayers) {
         	Player player = archer.getPlayer();
-        	Scoreboard sb = player.getScoreboard();
         	String name = (String)playerNames.toArray()[index];
-        	sb.getObjective(DisplaySlot.SIDEBAR).getScore(name).setScore( archer.getPoint() );
+        	this.scoreboard.getObjective(DisplaySlot.SIDEBAR).getScore(name).setScore( archer.getPoint() );
         	index ++;
         }
     	
@@ -302,10 +308,7 @@ public class GameController extends JavaPlugin {
         inventory.addItem(bow);
         inventory.addItem(arrow);
         
-        Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective objective = sb.registerNewObjective(Utils.color("&6Placar"), "placar");
-        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-        player.setScoreboard(sb);
+        player.setScoreboard(this.scoreboard);
         
 	}
 
@@ -406,7 +409,7 @@ public class GameController extends JavaPlugin {
 	    	playerList.add(archer);
 	    	livePlayers.add(archer);
 	        player.sendMessage(Utils.color("&aBem vindo, Arqueiro!"));
-	        playerNames.add(player.getDisplayName());
+	        playerNames.add(player.getName());
     	} else {
     		Logger.log("Jogador já está na lista");
     	}

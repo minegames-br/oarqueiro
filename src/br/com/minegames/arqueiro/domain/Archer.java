@@ -13,7 +13,7 @@ public class Archer {
 
 	private Player player;
 	private int point;
-	private int baseHealth = 5;
+	private int baseHealth = 10;
 	private Area2D spawnPoint;
 	
 	public Player getPlayer() {
@@ -46,6 +46,10 @@ public class Archer {
 	
 	public void damageBase() {
 		this.baseHealth = this.baseHealth - 1;
+	}
+	
+	public void setBaseHealth(int value) {
+		this.baseHealth = value;
 	}
 	
 	public int getBaseHealth() {
