@@ -1,6 +1,6 @@
 package br.com.minegames.arqueiro.task;
 
-import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -18,7 +18,7 @@ public class DestroyTargetTask extends BukkitRunnable {
 	
     @Override
     public void run() {
-    	Vector <Target> targets = game.getTargets();
+    	CopyOnWriteArraySet <Target> targets = game.getTargets();
     	
     	for (Target target : targets) {
     		if (target instanceof BlockTarget) {

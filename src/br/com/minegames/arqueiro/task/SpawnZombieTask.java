@@ -10,7 +10,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
-import br.com.minegames.arqueiro.domain.target.EntityTarget;
+import br.com.minegames.arqueiro.domain.target.ZombieTarget;
 import br.com.minegames.util.Utils;
 
 public class SpawnZombieTask extends BukkitRunnable {
@@ -35,10 +35,10 @@ public class SpawnZombieTask extends BukkitRunnable {
     	Location l = game.getRandomSpawnLocationForGroundEnemy();
     	Zombie entity = (Zombie)game.getWorld().spawnEntity( l , EntityType.ZOMBIE);
     	
-    	int index = new Random().nextInt(game.getPlayers().size());
-    	Archer archer = game.getPlayers().get(index);
+    	int index = new Random().nextInt(game.getLivePlayers().size());
+    	Archer archer = (Archer)game.getLivePlayers().toArray()[index];
     	entity.setTarget(archer.getPlayer());
-    	game.addEntityTarget(new EntityTarget(game, entity));
+    	game.addEntityTarget(new ZombieTarget(game, entity));
     }
     
     public static void main(String args[]) {

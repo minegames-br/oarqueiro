@@ -24,7 +24,7 @@ public class EndGameTask extends BukkitRunnable {
     	}
     	
     	//Terminar o jogo caso não tenha mais jogadores
-    	if( controller.getPlayers().size() == 0  && controller.getGame().isStarted()) {
+    	if( controller.getLivePlayers().size() == 0  && controller.getGame().isStarted()) {
             Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - No more players"));
             controller.endGame();
     	}

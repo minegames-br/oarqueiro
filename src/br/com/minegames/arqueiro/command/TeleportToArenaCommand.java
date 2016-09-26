@@ -8,24 +8,27 @@ import org.bukkit.entity.Player;
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.logging.Logger;
 
-public class LeaveGameCommand implements CommandExecutor {
+public class TeleportToArenaCommand implements CommandExecutor {
 
 	private GameController game;
 
-    public LeaveGameCommand(GameController plugin) {
+    public TeleportToArenaCommand(GameController plugin) {
 		super();
 		this.game = plugin;
 	}
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String label, String[] args) {
+    	
+    	Logger.log(commandSender.getName() + " " + command.getName() + " " + label + " " + args);
+    	
         if (!(commandSender instanceof Player)) {
         	Logger.log(commandSender + " - commando somente para players");
             return false;
         }
 
         Player player = (Player) commandSender;
-        game.removeLivePlayer(player);
+        player.teleport(game.getSpawnArea().getPointA());
         
         return true;
     }

@@ -31,6 +31,7 @@ public class PlayerDeath implements Listener {
 		if (event instanceof PlayerDeathEvent) {
 			PlayerDeathEvent playerDeathEvent = (PlayerDeathEvent)event;
 			Player dead = (Player)playerDeathEvent.getEntity();
+			Logger.log("player: " + dead.getName() + " died.");
 			game.killPlayer(dead);
 		} else {
 			Entity entity = event.getEntity();

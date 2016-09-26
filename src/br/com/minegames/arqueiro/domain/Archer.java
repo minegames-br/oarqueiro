@@ -1,5 +1,6 @@
 package br.com.minegames.arqueiro.domain;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class Archer {
@@ -12,6 +13,8 @@ public class Archer {
 
 	private Player player;
 	private int point;
+	private int baseHealth = 5;
+	private Area2D spawnPoint;
 	
 	public Player getPlayer() {
 		return player;
@@ -39,6 +42,34 @@ public class Archer {
 	
 	public int getCurrentArrowDamage() {
 		return 30;
+	}
+	
+	public void damageBase() {
+		this.baseHealth = this.baseHealth - 1;
+	}
+	
+	public int getBaseHealth() {
+		return this.baseHealth;
+	}
+	
+	public void setSpawnPoint(Area2D l) {
+		this.spawnPoint = l;
+	}
+	
+	public Area2D getSpawnPoint() {
+		return this.spawnPoint;
+	}
+	public boolean isNear(Location l) {
+		int x = l.getBlockX();
+		int minX = spawnPoint.getPointA().getBlockX();
+		int maxX = spawnPoint.getPointA().getBlockX();
+		int maxZ = spawnPoint.getPointB().getBlockZ();
+		if( x >= minX || x <= maxX) {
+			if(l.getBlockZ() == maxZ+1) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }

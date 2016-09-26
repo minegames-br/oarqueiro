@@ -18,10 +18,10 @@ public class StartGameTask extends BukkitRunnable {
     public void run() {
 
         //Bukkit.getConsoleSender().sendMessage(Utils.color("&6StartGameTask - Verifying if the game can start"));
-    	if( game.getPlayers().size() == game.getMaxPlayers() && game.getGame().isWaitingPlayers()) {
+    	if( game.getLivePlayers().size() == game.getMaxPlayers() && game.getGame().isWaitingPlayers()) {
             Bukkit.getConsoleSender().sendMessage(Utils.color("&6StartGameTask - Max number of players achieved. Starting game."));
     		game.startGameEngine();
-    	} else if ( (game.getPlayers().size() >= game.getMinPlayers())
+    	} else if ( (game.getLivePlayers().size() >= game.getMinPlayers())
     			&& game.getCoundDown() == 0 && game.getGame().isWaitingPlayers() ) {
             Bukkit.getConsoleSender().sendMessage(Utils.color("&6StartGameTask - Min number of players achieved. Countdown 0. Starting game."));
     		game.startGameEngine();

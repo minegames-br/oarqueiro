@@ -26,7 +26,7 @@ public class PlayerQuit implements Listener {
         Player player = event.getPlayer();
         
         if( !game.getGame().isOver() ) {
-        	game.removePlayer(player);
+        	game.removeLivePlayer(player);
         }
         
         //limpar o inventário do jogador
