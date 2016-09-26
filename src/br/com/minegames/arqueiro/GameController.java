@@ -27,6 +27,7 @@ import br.com.minegames.arqueiro.command.JoinGameCommand;
 import br.com.minegames.arqueiro.command.LeaveGameCommand;
 import br.com.minegames.arqueiro.command.StartGameCommand;
 import br.com.minegames.arqueiro.command.TeleportToArenaCommand;
+import br.com.minegames.arqueiro.command.TriggerFireworkCommand;
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.Area2D;
 import br.com.minegames.arqueiro.domain.Area3D;
@@ -125,6 +126,7 @@ public class GameController extends JavaPlugin {
         getCommand("iniciar").setExecutor(new StartGameCommand(this));
         getCommand("sair").setExecutor(new LeaveGameCommand(this));
         getCommand("tparena").setExecutor(new TeleportToArenaCommand(this));
+        getCommand("fwk").setExecutor(new TriggerFireworkCommand(this));
         
 		Location a1 = new Location(this.getWorld(), 457, 4, 1165);
 		Location a2 = new Location(this.getWorld(), 493, 18, 1200);
