@@ -8,10 +8,10 @@ import br.com.minegames.arqueiro.GameController;
 public class BlockTarget extends Target {
 	
 	protected Block block;
-	private Long creationTime;
+	protected Long creationTime;
 	
-	public BlockTarget(GameController game, Block block) {
-		super(game);
+	public BlockTarget(Block block) {
+		super();
 		this.block = block;
 		this.hitPoints = 50;
 		this.creationTime = System.currentTimeMillis();

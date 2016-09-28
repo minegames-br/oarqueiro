@@ -17,9 +17,13 @@ public class Utils {
         return ChatColor.translateAlternateColorCodes('&', msg);
     }
     
-    public static Firework shootFirework(Player player) {
-        Location loc = player.getLocation();
-        Firework firework = player.getWorld().spawn(loc, Firework.class);
+    public static void shootFirework(Player player) {
+        Location location = player.getLocation();
+    	shootFirework(location);
+    }
+
+    public static Firework shootFirework(Location location) {
+        Firework firework = location.getWorld().spawn(location, Firework.class);
         FireworkMeta data = (FireworkMeta) firework.getFireworkMeta();
         
         data.addEffects(FireworkEffect.builder().withColor(Color.GREEN).with( FireworkEffect.Type.BALL_LARGE).build());
