@@ -9,8 +9,8 @@ import br.com.minegames.util.BlockManipulationUtil;
 
 public class FloatingBlockTarget extends BlockTarget {
 	
-	public FloatingBlockTarget(GameController game, Block block) {
-		super(game, block);
+	public FloatingBlockTarget(Block block) {
+		super(block);
 		this.hitPoints = 50;
 	}
 
@@ -20,17 +20,6 @@ public class FloatingBlockTarget extends BlockTarget {
 		super.hitTarget2(player);
 		
 		Location loc = block.getLocation();
-	    game.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ()-1, 2.0F, false, false);
-
-	    this.destroy();
-	}
-	
-	@Override
-	public void destroy() {
-	    //restaurar o local do target 
-	    Location l1 = new Location(game.getWorld(), block.getX()-1, block.getY()-1, block.getZ());
-	    Location l2 = new Location(game.getWorld(), block.getX()+1, block.getY()+1, block.getZ());
-	    BlockManipulationUtil.clearBlocks(l1, l2);
 	}
 
 }

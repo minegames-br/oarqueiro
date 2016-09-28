@@ -19,6 +19,7 @@ import org.bukkit.util.BlockIterator;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.target.BlockTarget;
+import br.com.minegames.arqueiro.domain.target.MovingTarget;
 import br.com.minegames.arqueiro.domain.target.Target;
 import br.com.minegames.logging.Logger;
 
@@ -46,7 +47,6 @@ public class TargetHitEvent implements Listener {
 		    Arrow arrow = (Arrow)event.getEntity();
 		    
 		    Player shooter = (Player) arrow.getShooter();
-		    Logger.log("TargetHit tem arrow: " + shooter.getInventory().contains(Material.ARROW));
 		    PlayerInventory inventory = shooter.getInventory();
 		    inventory.addItem(new ItemStack(Material.ARROW, 1));
 		    World world = arrow.getWorld();
@@ -79,6 +79,23 @@ public class TargetHitEvent implements Listener {
 	            	}
 	            }
 		    }
+	    	
+		    
+	    	Iterator<MovingTarget> it2 = game.getMovingTargets().iterator();
+
+	    	while(it2.hasNext()) {
+	    		MovingTarget target = it2.next();
+
+            	Location l1 = hit.getLocation();
+            	Location l2 = target.getBlock().getLocation();
+            	
+        	    Logger.log("hit: " + l1.getBlockX() + "," + l1.getBlockY() + "," + l1.getBlockZ() + " target: " + l2.getBlockX() + "," + l2.getBlockY() + "," + l2.getBlockZ() );
+            	
+            	if( l1.getBlockX() == l2.getBlockX() && l1.getBlockY() == l2.getBlockY() && l1.getBlockZ() == l2.getBlockZ() ) {
+	                game.hitMovingTarget(target, shooter);
+            	}
+            }
+	    		    	
 	    }
 
 	    //Retirar a flecha da arena, mas só após alguns milisegundos depois que ela parar

@@ -83,5 +83,5 @@ public class LocationUtil {
 		Location spawnLocation = new Location(_world, x, y, z);
 		return spawnLocation;
 	}
-	
+
 }
