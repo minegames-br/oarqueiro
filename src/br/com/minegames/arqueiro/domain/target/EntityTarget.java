@@ -12,8 +12,8 @@ public class EntityTarget extends Target {
 	protected LivingEntity entity;
 	protected Player killer;
 
-	public EntityTarget(GameController game, LivingEntity entity) {
-		super(game);
+	public EntityTarget(LivingEntity entity) {
+		super();
 		this.entity = entity;
 	}
 	
@@ -23,8 +23,6 @@ public class EntityTarget extends Target {
 
 	public void kill(Player player) {
 		Location loc = entity.getLocation();
-	    game.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ()-1, 1.0F, false, false);
-	    game.givePoints(player, this.getKillPoints());
 	}
 	
 	public LivingEntity getLivingEntity() {

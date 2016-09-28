@@ -61,7 +61,7 @@ public class PlaceTargetTask extends BukkitRunnable {
     	Location l = game.getRandomSpawnLocationForGroundTarget();
     	Block block = createTarget(l);
     	BlockManipulationUtil.createNewWool(game.getWorld(), l.getBlockX(), l.getBlockY()-2, l.getBlockZ(), DyeColor.WHITE );
-    	game.addTarget(new GroundBlockTarget(this.game, block));
+    	game.addTarget(new GroundBlockTarget(block));
     }
 
     /**
@@ -71,7 +71,7 @@ public class PlaceTargetTask extends BukkitRunnable {
     private void createWallTarget() {
     	Location l = game.getRandomSpawnLocationForWallTarget();
     	Block block = createTarget(l);
-    	game.addTarget(new WallBlockTarget(this.game, block));
+    	game.addTarget(new WallBlockTarget(block));
     }
 
     /**
@@ -81,7 +81,7 @@ public class PlaceTargetTask extends BukkitRunnable {
     private void createFloatingTarget() {
     	Location l = game.getRandomSpawnLocationForFloatingTarget();
     	Block block = createTarget(l);
-    	game.addTarget(new FloatingBlockTarget(this.game, block));
+    	game.addTarget(new FloatingBlockTarget(block));
     }
     
     private Block createTarget(Location l) {

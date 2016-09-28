@@ -10,6 +10,7 @@ import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -32,8 +33,13 @@ import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.Area2D;
 import br.com.minegames.arqueiro.domain.Area3D;
 import br.com.minegames.arqueiro.domain.Game;
+import br.com.minegames.arqueiro.domain.target.BlockTarget;
 import br.com.minegames.arqueiro.domain.target.EntityTarget;
+import br.com.minegames.arqueiro.domain.target.FloatingBlockTarget;
+import br.com.minegames.arqueiro.domain.target.GroundBlockTarget;
+import br.com.minegames.arqueiro.domain.target.MovingTarget;
 import br.com.minegames.arqueiro.domain.target.Target;
+import br.com.minegames.arqueiro.domain.target.WallBlockTarget;
 import br.com.minegames.arqueiro.domain.target.ZombieTarget;
 import br.com.minegames.arqueiro.listener.BowShootListener;
 import br.com.minegames.arqueiro.listener.EntityHitEvent;
@@ -46,6 +52,7 @@ import br.com.minegames.arqueiro.task.DestroyTargetTask;
 import br.com.minegames.arqueiro.task.EndGameTask;
 import br.com.minegames.arqueiro.task.ExplodeZombieTask;
 import br.com.minegames.arqueiro.task.LevelUpTask;
+import br.com.minegames.arqueiro.task.PlaceMovingTargetTask;
 import br.com.minegames.arqueiro.task.PlaceTargetTask;
 import br.com.minegames.arqueiro.task.SpawnZombieTask;
 import br.com.minegames.arqueiro.task.StartCoundDownTask;
@@ -66,6 +73,8 @@ public class GameController extends JavaPlugin {
 	private CopyOnWriteArraySet<Archer> livePlayers = new CopyOnWriteArraySet<Archer>();
 	private Runnable placeTargetTask;
 	private int placeTargetThreadID;
+	private Runnable placeMovingTargetTask;
+	private int placeMovingTargetThreadID;
 	private Runnable destroyTargetTask;
 	private int destroyTargetThreadID;
 	private Runnable spawnZombieTask;
@@ -77,6 +86,7 @@ public class GameController extends JavaPlugin {
 	private int levelUpThreadID;
 	private CopyOnWriteArraySet<Target> targets = new CopyOnWriteArraySet<Target>();
 	private CopyOnWriteArraySet<EntityTarget> livingTargets = new CopyOnWriteArraySet<EntityTarget>();
+	private CopyOnWriteArraySet<MovingTarget> movingTargets = new CopyOnWriteArraySet<MovingTarget>();
 	
 	private CopyOnWriteArraySet<Area2D> arenaSpawnPoints = new CopyOnWriteArraySet<Area2D>();
 	
@@ -85,6 +95,7 @@ public class GameController extends JavaPlugin {
 	private int minplayers = 1;
 	private int maxZombieSpawned = 5;
 	private int maxTarget = 3;
+	private int maxMovingTarget = 1;
 	private int countDown = 20;
 	private long gameStartTime;
 	private Runnable startCountDownTask;
@@ -179,6 +190,7 @@ public class GameController extends JavaPlugin {
 		//quando for acertado vai desaparecer e outro será criado e associado
 		this.targets.clear();
 		this.livingTargets.clear();
+		this.movingTargets.clear();
 
         //Remover qualquer entidade que tenha ficado no mapa
         for (Entity entity : world.getEntities()) {
@@ -190,6 +202,7 @@ public class GameController extends JavaPlugin {
         //inicializar variaveis de instancia
     	this.maxZombieSpawned = 5;
 		this.placeTargetTask = new PlaceTargetTask(this);
+		this.placeMovingTargetTask = new PlaceMovingTargetTask(this);
 		this.destroyTargetTask = new DestroyTargetTask(this);
 		this.endGameTask = new EndGameTask(this);
 		this.levelUpTask = new LevelUpTask(this);
@@ -275,9 +288,10 @@ public class GameController extends JavaPlugin {
         
         //Iniciar threads do jogo
         this.placeTargetThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.placeTargetTask, 0L, 50L);
+        this.placeMovingTargetThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.placeMovingTargetTask, 300L, 20L);
         this.destroyTargetThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 100L);
         this.endGameThreadID      = scheduler.scheduleSyncRepeatingTask(this, this.endGameTask, 0L, 50L);
-        this.spawnZombieThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 50L);
+        this.spawnZombieThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 100L, 50L);
         this.levelUpThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.levelUpTask, 0L, 100L);
         this.explodeZombieThreadID  = scheduler.scheduleSyncRepeatingTask(this, this.explodeZombieTask, 0L, 20L);
         
@@ -326,6 +340,7 @@ public class GameController extends JavaPlugin {
 
         //Terminar threads do jogo
 		Bukkit.getScheduler().cancelTask(this.placeTargetThreadID);
+		Bukkit.getScheduler().cancelTask(this.placeMovingTargetThreadID);
 		Bukkit.getScheduler().cancelTask(this.destroyTargetThreadID);
 		Bukkit.getScheduler().cancelTask(this.endGameThreadID);
 		Bukkit.getScheduler().cancelTask(this.spawnZombieThreadID);
@@ -386,7 +401,10 @@ public class GameController extends JavaPlugin {
 
 	private void destroyTargets() {
 		for(Target target: targets) {
-			target.destroy();
+			if(target instanceof BlockTarget) {
+				BlockTarget bTarget = (BlockTarget)target;
+				this.destroyBlockTarget(bTarget);
+			}
 		}
 	}
 
@@ -441,6 +459,10 @@ public class GameController extends JavaPlugin {
 	
 	public void addTarget(Target target) {
 		targets.add(target);
+	}
+
+	public void addMovingTarget(MovingTarget mTarget) {
+		movingTargets.add(mTarget);
 	}
 
 	public void addEntityTarget(EntityTarget target) {
@@ -500,6 +522,10 @@ public class GameController extends JavaPlugin {
 		return this.targets;
 	}
 	
+	public CopyOnWriteArraySet<MovingTarget> getMovingTargets() {
+		return this.movingTargets;
+	}
+	
 	public CopyOnWriteArraySet<EntityTarget> getLivingTargets() {
 		return this.livingTargets;
 	}
@@ -512,18 +538,40 @@ public class GameController extends JavaPlugin {
 		this.spawnArea = spawnArea;
 	}
 
-	public void hitTarget(Target target, Player shooter) {
+	public void hitTarget(BlockTarget target, Player shooter) {
 		targets.remove(target);
 		target.hitTarget2(shooter);
+		Location loc = target.getBlock().getLocation();
+	    this.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ()-1, 1.0F, false, false);
+	    destroyBlockTarget(target);
 	}
 
 	public void hitEntityTarget(Target target, Player shooter) {
 		target.hitTarget2(shooter);
 	}
 
+	public void hitMovingTarget(MovingTarget mTarget, Player shooter) {
+		mTarget.hitTarget2(shooter);
+		Utils.shootFirework(shooter.getLocation());
+		destroyMovingTarget(mTarget);
+	}
+	
+	public void destroyMovingTarget(MovingTarget mTarget) {
+		Location loc = mTarget.getBlock().getLocation();
+		Logger.log("destroyMovingTarget: " + loc);
+		movingTargets.remove(mTarget);
+		mTarget.getBlock().setType(Material.AIR);
+		if(!mTarget.isHit()) {
+			this.world.createExplosion(loc.getX(), loc.getY(), loc.getZ()-1, 1.0F, false, false);
+		}
+	}
+
 	public void kill2EntityTarget(EntityTarget target, Player shooter) {
 		livingTargets.remove(target);
 		this.givePoints(shooter, target.getKillPoints());
+		Location loc = target.getLivingEntity().getLocation();
+	    this.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ()-1, 1.0F, false, false);
+	    this.givePoints(shooter, target.getKillPoints());
 	}
 
 	public void sendToLobby(Player player) {
@@ -532,6 +580,10 @@ public class GameController extends JavaPlugin {
 	
 	public Location getRandomSpawnLocationForGroundEnemy() {
 		return LocationUtil.getRandomLocationXZ(world, this.spawnArea);
+	}
+
+	public Location getRandomSpawnLocationForVerticalMovingTarget() {
+		return LocationUtil.getRandomLocationXYZ(world, this.floatingArena);
 	}
 
 	public Location getRandomSpawnLocationForGroundTarget() {
@@ -550,7 +602,9 @@ public class GameController extends JavaPlugin {
        	Archer archer = this.findArcherByPlayer(player);
        	int damage = archer.getCurrentArrowDamage();
         EntityTarget targetZombie = findEntityTargetByZombie(entity);
-        targetZombie.setKiller(player);
+        if(player != null) {
+        	targetZombie.setKiller(player);
+        }
         entity.damage(damage);
 	}
 
@@ -602,7 +656,7 @@ public class GameController extends JavaPlugin {
 			} else {
 				if(damageArcherArea(zombie)) {
 					zombie.damage(zombie.getMaxHealth());
-				    this.world.createExplosion(loc.getX(), loc.getY(), loc.getZ()-1, 2.0F, false, false);
+				    this.world.createExplosion(loc.getX(), loc.getY(), loc.getZ()-1, 1.0F, false, false);
 					this.livingTargets.remove(et);
 				} else {
 					destroyBase(loc.getBlockX());
@@ -653,7 +707,7 @@ public class GameController extends JavaPlugin {
 		Region r = new Region("spawnLocation", new Location(this.world, 457, 3, 1170), new Location(this.world, 493, 3, 1171));
 
 		boolean result = false;
-		Logger.log(location + " " + location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ() );
+
 		if(location.getBlockX() >= 457 && location.getBlockX() <= 493) {
 			if(location.getBlockZ() >= 1170 && location.getBlockZ() <= 1171) {
 				result = true;
@@ -663,6 +717,44 @@ public class GameController extends JavaPlugin {
 		
 		
 		return result;
+	}
+
+	public int getMaxMovingTarget() {
+		return this.maxMovingTarget;
+	}
+
+	public void destroyBlockTarget(BlockTarget bTarget) {
+		if(bTarget instanceof GroundBlockTarget) {
+			destroyGroundBlockTarget(bTarget);
+		} else if( bTarget instanceof WallBlockTarget) {
+			destroyWallBlockTarget(bTarget);
+		} else if( bTarget instanceof FloatingBlockTarget) {
+			destrobyFloatingBlockTarget(bTarget);
+		}
+	}
+
+	private void destrobyFloatingBlockTarget(BlockTarget bTarget) {
+		//restaurar o local do target 
+		Block block = bTarget.getBlock();
+		Location l1 = new Location(this.getWorld(), block.getX()-1, block.getY()-1, block.getZ());
+		Location l2 = new Location(this.getWorld(), block.getX()+1, block.getY()+1, block.getZ());
+		BlockManipulationUtil.clearBlocks(l1, l2);
+	}
+
+	private void destroyWallBlockTarget(BlockTarget bTarget) {
+	    //restaurar a parte preta
+		Block block = bTarget.getBlock();
+
+	    Location l1 = new Location(this.getWorld(), block.getX()-1, block.getY()-1, block.getZ());
+	    Location l2 = new Location(this.getWorld(), block.getX()+1, block.getY()+1, block.getZ());
+	    BlockManipulationUtil.createWoolBlocks(l1, l2, DyeColor.BLACK);
+	}
+
+	private void destroyGroundBlockTarget(BlockTarget bTarget) {
+		Block block = bTarget.getBlock();
+	    Location l1 = new Location(this.getWorld(), block.getX()-1, block.getY()-2, block.getZ());
+	    Location l2 = new Location(this.getWorld(), block.getX()+1, block.getY()+1, block.getZ());
+	    BlockManipulationUtil.clearBlocks(l1, l2);
 	}
 
 }

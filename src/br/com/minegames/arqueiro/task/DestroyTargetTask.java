@@ -24,7 +24,7 @@ public class DestroyTargetTask extends BukkitRunnable {
     		if (target instanceof BlockTarget) {
     			BlockTarget btarget = (BlockTarget) target;
     			if (btarget.lifeTime() > 10000) {
-    				target.destroy();
+    				game.destroyBlockTarget(btarget);
     				targets.remove(target);
     			}
     		}
