@@ -45,5 +45,20 @@ public class Area2D {
 	public int getZSize() {
 		return this.pointB.getBlockZ()-this.pointA.getBlockZ();
 	}
+	
+	/*public Location getMiddle(Location pointA, Location pointB) {
+		int middleX = (this.pointA.getBlockX() + this.pointB.getBlockX()) / 2;
+		int middleZ = (this.pointA.getBlockZ() + this.pointB.getBlockZ()) / 2;
+		Location l = new Location(pointA.getWorld(), middleX, pointA.getBlockY(), middleZ);
+		return l;
+	}*/
+	
+	public Location getMiddle2() {
+		int middleX = (this.pointA.getBlockX() + this.pointB.getBlockX()) / 2;
+		int middleZ = (this.pointA.getBlockZ() + this.pointB.getBlockZ()) / 2;
+		Location l = new Location(pointA.getWorld(), middleX, pointA.getBlockY(), middleZ);
+		return l;
+	}
+
 
 }

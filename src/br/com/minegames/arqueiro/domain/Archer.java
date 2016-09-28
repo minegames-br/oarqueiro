@@ -3,7 +3,7 @@ package br.com.minegames.arqueiro.domain;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-public class Archer {
+public class Archer implements Comparable{
 
 	public static int HIT_TARGET = 50;
 	public static int KILL_SEKELETON = 200;
@@ -12,7 +12,7 @@ public class Archer {
 	public static int HIT_FAST_MOVING_TARGET = 200;
 
 	private Player player;
-	private int point;
+	private Integer point = 0;
 	private int baseHealth = 10;
 	private Area2D spawnPoint;
 	
@@ -22,10 +22,10 @@ public class Archer {
 	public void setPlayer(Player player) {
 		this.player = player;
 	}
-	public int getPoint() {
+	public Integer getPoint() {
 		return point;
 	}
-	public void setPoint(int point) {
+	public void setPoint(Integer point) {
 		this.point = point;
 	}
 	
@@ -74,6 +74,12 @@ public class Archer {
 			}
 		}
 		return false;
+	}
+	
+	@Override
+	public int compareTo(Object o) {
+		Archer archer = (Archer) o;
+		return this.getPoint().compareTo(archer.getPoint());
 	}
 	
 }

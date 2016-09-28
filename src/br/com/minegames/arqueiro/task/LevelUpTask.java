@@ -17,7 +17,7 @@ public class LevelUpTask extends BukkitRunnable {
     	
     	//Aumentar de nível depois de 15 segundos
     	//Caso seja o último nível, terminar o jogo
-    	if(controller.getGame().getLevel().lifeTime() >= 15000) {
+    	if(controller.getGame().getLevel().lifeTime() >= 1000) {
     		if(controller.isLastLevel()) {
     			controller.endGame();
     		} else {
