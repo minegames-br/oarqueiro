@@ -15,6 +15,7 @@ public class Archer implements Comparable{
 	private Integer point = 0;
 	private int baseHealth = 10;
 	private Area2D spawnPoint;
+	private ArcherBow bow;
 	
 	public Player getPlayer() {
 		return player;
@@ -80,6 +81,12 @@ public class Archer implements Comparable{
 	public int compareTo(Object o) {
 		Archer archer = (Archer) o;
 		return this.getPoint().compareTo(archer.getPoint());
+	}
+	public void setBow(ArcherBow d) {
+		this.bow = d;
+	}
+	public Object getBow() {
+		return this.bow;
 	}
 	
 }
