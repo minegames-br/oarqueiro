@@ -14,6 +14,7 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -26,6 +27,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.util.Vector;
 
 import br.com.minegames.arqueiro.command.JoinGameCommand;
 import br.com.minegames.arqueiro.command.LeaveGameCommand;
@@ -33,6 +35,7 @@ import br.com.minegames.arqueiro.command.StartGameCommand;
 import br.com.minegames.arqueiro.command.TeleportToArenaCommand;
 import br.com.minegames.arqueiro.command.TriggerFireworkCommand;
 import br.com.minegames.arqueiro.domain.Archer;
+import br.com.minegames.arqueiro.domain.ArcherBow;
 import br.com.minegames.arqueiro.domain.Area2D;
 import br.com.minegames.arqueiro.domain.Area3D;
 import br.com.minegames.arqueiro.domain.Game;
@@ -98,7 +101,7 @@ public class GameController extends JavaPlugin {
 	private int minplayers = 1;
 	private int maxZombieSpawned = 5;
 	private int maxTarget = 3;
-	private int maxMovingTarget = 1;
+	private int maxMovingTarget = 3;
 	private int countDown = 20;
 	private long gameStartTime;
 	private Runnable startCountDownTask;
@@ -315,6 +318,7 @@ public class GameController extends JavaPlugin {
 
 		// Iniciar threads do jogo
 		this.placeTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeTargetTask, 0L, 50L);
+		this.placeMovingTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeMovingTargetTask, 200L, 30L);
 		this.destroyTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 100L);
 		this.endGameThreadID = scheduler.scheduleSyncRepeatingTask(this, this.endGameTask, 0L, 50L);
 		this.spawnZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 50L);
@@ -620,6 +624,14 @@ public class GameController extends JavaPlugin {
 		mTarget.hitTarget2(shooter);
 		Utils.shootFirework(shooter.getLocation());
 		destroyMovingTarget(mTarget);
+		if(shooter != null) {
+			this.giveBonus(shooter);
+		}
+	}
+	
+	public void giveBonus(Player shooter) {
+		Archer archer = findArcherByPlayer(shooter);
+		archer.setBow(ArcherBow.DOUBLE);
 	}
 	
 	public void destroyMovingTarget(MovingTarget mTarget) {
@@ -820,4 +832,41 @@ public class GameController extends JavaPlugin {
 	    BlockManipulationUtil.clearBlocks(l1, l2);
 	}
 
+	public void shootArrows(Player player) {
+		int iArrows = 1;
+		Archer archer = findArcherByPlayer(player);
+		if( archer.getBow().equals(ArcherBow.DEFAULT) ) {
+			return;
+		} else if( archer.getBow().equals(ArcherBow.DOUBLE)) {
+			iArrows = 1;
+		} else if( archer.getBow().equals(ArcherBow.TRIPPLE)) {
+			iArrows = 2;
+		}
+		
+		Location player_location = player.getLocation();
+		for(int i = 0 ; i < iArrows ; i++) {
+			 
+		    int spread = 0;
+		 
+		    if(i == 0)      spread = -3;
+		    else if (i == 2) spread = 3;
+		 
+		    double pitch = ((player_location.getPitch() + 90) * Math.PI) / 180;
+		    double yaw  = ((player_location.getYaw() + 90 + spread) * Math.PI) / 180;
+		 
+		    double z_axis = Math.sin(pitch);
+		 
+		    double x = z_axis * Math.cos(yaw);
+		    double y = z_axis * Math.sin(yaw);
+		    double z = Math.cos(pitch);
+		 
+		    Vector vector = new Vector(x, z, y);
+		    vector.multiply(2);
+
+		    Arrow a = player.getWorld().spawn(player_location, Arrow.class);
+		    //a.setVelocity(vector);
+		    
+		    player.launchProjectile(Arrow.class,vector);
+		}	
+	}
 }

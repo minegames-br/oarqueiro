@@ -5,18 +5,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.inventory.ItemStack;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.logging.Logger;
 
 public class BowShootListener implements Listener {
 
-	private GameController game;
+	private GameController controller;
 
-	public BowShootListener(GameController plugin) {
+	public BowShootListener(GameController controller) {
 		super();
-		this.game = plugin;
+		this.controller = controller;
 	}
 
 	@EventHandler
@@ -25,7 +24,9 @@ public class BowShootListener implements Listener {
 		if (e.getEntity() instanceof Player) {
 			Player player = (Player) e.getEntity();
 			Logger.log("BowShoot tem arrow: " + player.getInventory().contains(Material.ARROW));
-			//player.getInventory().addItem(arrow);
+			//e.setCancelled(true);
+			controller.shootArrows(player);
 		}
 	}
+	
 }
