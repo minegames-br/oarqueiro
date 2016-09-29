@@ -1,6 +1,5 @@
 package br.com.minegames.arqueiro;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,9 +10,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -33,6 +32,7 @@ import br.com.minegames.arqueiro.command.StartGameCommand;
 import br.com.minegames.arqueiro.command.TeleportToArenaCommand;
 import br.com.minegames.arqueiro.command.TriggerFireworkCommand;
 import br.com.minegames.arqueiro.domain.Archer;
+import br.com.minegames.arqueiro.domain.ArcherChest;
 import br.com.minegames.arqueiro.domain.Area2D;
 import br.com.minegames.arqueiro.domain.Area3D;
 import br.com.minegames.arqueiro.domain.Game;
@@ -118,13 +118,16 @@ public class GameController extends JavaPlugin {
 
 	private Area2D spawnArea;
 	private Area2D player1Arena;
+	private Area2D player2Arena;
+	private Area2D player3Arena;
+	private Area2D player4Arena;
 	private Area2D blackWall;
 	private Area3D arena;
 	private Area3D floatingArena;
 
 	private Scoreboard scoreboard;
 
-	// private Archer a;
+	//private ArcherChest[] playerChest;
 
 	@Override
 	public void onEnable() {
@@ -166,20 +169,20 @@ public class GameController extends JavaPlugin {
 		Location s2 = new Location(this.getWorld(), 490, 6, 1200);
 		this.spawnArea = new Area2D(s1, s2);
 
-		Location p1a = new Location(this.getWorld(), 457, a1.getY(), 1164);
-		Location p1b = new Location(this.getWorld(), 466, a1.getY(), 1169);
-
-
+		this.player1Arena = new Area2D(new Location(this.getWorld(), 457, a1.getY(), a1.getZ()), 
+				new Location(this.getWorld(), 466, a1.getY(), 1169));
+		this.player2Arena = new Area2D(new Location(this.getWorld(), 468, a1.getY(), a1.getZ()), 
+				new Location(this.getWorld(), 475, a1.getY(), 1169));
+		this.player3Arena = new Area2D(new Location(this.getWorld(), 477, a1.getY(), a1.getZ()), 
+				new Location(this.getWorld(), 484, a1.getY(), 1169));
+		this.player4Arena = new Area2D(new Location(this.getWorld(), 486, a1.getY(), 1164), 
+				new Location(this.getWorld(), 493, a1.getY(), 1169));
+		
 		this.arenaSpawnPoints.clear();
-
-		this.arenaSpawnPoints.add(new Area2D(new Location(this.getWorld(), p1a.getX(), p1a.getY(), p1a.getZ()),
-				new Location(this.getWorld(), p1b.getX(), p1b.getY(), p1b.getZ())));	
-		this.arenaSpawnPoints.add(new Area2D(new Location(this.getWorld(), 467, a1.getY(), a1.getZ()),
-				new Location(this.getWorld(), 473, a1.getY(), a1.getZ())));
-		this.arenaSpawnPoints.add(new Area2D(new Location(this.getWorld(), 477, a1.getY(), a1.getZ()),
-				new Location(this.getWorld(), 483, a1.getY(), a1.getZ())));
-		this.arenaSpawnPoints.add(new Area2D(new Location(this.getWorld(), 487, a1.getY(), a1.getZ()),
-				new Location(this.getWorld(), 493, a1.getY(), a1.getZ())));
+		this.arenaSpawnPoints.add(this.player1Arena);	
+		this.arenaSpawnPoints.add(this.player2Arena);
+		this.arenaSpawnPoints.add(this.player3Arena);
+		this.arenaSpawnPoints.add(this.player4Arena);
 
 		this.lobbyLocation = new Location(this.getWorld(), 530, 4, 1210);
 
@@ -199,7 +202,6 @@ public class GameController extends JavaPlugin {
 		}
 
 		init();
-
 	}
 
 	private void init() {
@@ -297,8 +299,8 @@ public class GameController extends JavaPlugin {
 			Player player = archer.getPlayer();
 			Area2D spawnPoint = ((Area2D) this.arenaSpawnPoints.toArray()[loc]);
 			archer.setSpawnPoint(spawnPoint);
-			player.teleport(spawnPoint.getMiddle2());
-			Logger.log("" + spawnPoint.getMiddle2());
+			player.teleport(spawnPoint.getMiddle());
+			addChests(archer);
 
 			// Preparar o jogador para a rodada. Dar armaduras, armas, etc...
 			setupPlayerToStartGame(player);
@@ -386,6 +388,9 @@ public class GameController extends JavaPlugin {
 		// destroyTargets()
 		destroyTargets();
 
+		// destroyChests();
+		destroyChests();
+		
 		// restaurar parede preta
 		createBlackWall();
 
@@ -426,6 +431,7 @@ public class GameController extends JavaPlugin {
 		this.game.levelUp();
 		for (Archer archer : this.livePlayers) {
 			TitleUtil.sendTitle(archer.getPlayer(), 1, 20, 10, "Nível " + this.game.getLevel().getLevel(), "");
+			archer.getArcherChest().refillChest();
 		}
 	}
 
@@ -498,6 +504,25 @@ public class GameController extends JavaPlugin {
 			playerNames.add(player.getName());
 		} else {
 			Logger.log("Jogador já está na lista");
+		}
+	}
+	
+	public void addChests(Archer archer) {
+		Player player = archer.getPlayer();
+		Location chestLocation = new Location(this.getWorld(), 
+				player.getLocation().getX(), 4, player.getLocation().getZ()-3);
+		chestLocation.getBlock().setType(Material.CHEST);
+		ArcherChest chest = new ArcherChest((Chest)chestLocation.getBlock().getState());
+		archer.setArcherChest(chest);
+	} 
+	
+	public void destroyChests() {
+		Object[] aList = playerList.toArray();
+		for (int i = 0; i < aList.length; i++) {
+			Archer archer = (Archer) aList[i];
+			ArcherChest a = archer.getArcherChest();
+			a.clearChest();
+			a.getChest().getBlock().setType(Material.AIR);
 		}
 	}
 

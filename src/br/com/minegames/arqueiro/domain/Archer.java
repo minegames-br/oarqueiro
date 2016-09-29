@@ -1,9 +1,10 @@
 package br.com.minegames.arqueiro.domain;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
-public class Archer implements Comparable{
+public class Archer implements Comparable {
 
 	public static int HIT_TARGET = 50;
 	public static int KILL_SEKELETON = 200;
@@ -15,71 +16,88 @@ public class Archer implements Comparable{
 	private Integer point = 0;
 	private int baseHealth = 10;
 	private Area2D spawnPoint;
-	
+	private ArcherChest chest;
+
 	public Player getPlayer() {
 		return player;
 	}
+
 	public void setPlayer(Player player) {
 		this.player = player;
 	}
+
 	public Integer getPoint() {
 		return point;
 	}
+
 	public void setPoint(Integer point) {
 		this.point = point;
 	}
-	
-	public void addPoints( int value ) {
+
+	public void addPoints(int value) {
 		this.point = this.point + value;
 	}
-	
-	public void removePoints( int value ) {
+
+	public void removePoints(int value) {
 		this.point = this.point - value;
-		if( this.point < 0) {
+		if (this.point < 0) {
 			this.point = 0;
 		}
 	}
-	
+
 	public int getCurrentArrowDamage() {
 		return 30;
 	}
-	
+
 	public void damageBase() {
 		this.baseHealth = this.baseHealth - 1;
 	}
-	
+
 	public void setBaseHealth(int value) {
 		this.baseHealth = value;
 	}
-	
+
 	public int getBaseHealth() {
 		return this.baseHealth;
 	}
-	
+
 	public void setSpawnPoint(Area2D l) {
 		this.spawnPoint = l;
 	}
-	
+
 	public Area2D getSpawnPoint() {
 		return this.spawnPoint;
 	}
+
 	public boolean isNear(Location l) {
 		int x = l.getBlockX();
 		int minX = spawnPoint.getPointA().getBlockX();
 		int maxX = spawnPoint.getPointA().getBlockX();
 		int maxZ = spawnPoint.getPointB().getBlockZ();
-		if( x >= minX || x <= maxX) {
-			if(l.getBlockZ() == maxZ+1) {
+		if (x >= minX || x <= maxX) {
+			if (l.getBlockZ() == maxZ + 1) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
 	@Override
 	public int compareTo(Object o) {
 		Archer archer = (Archer) o;
 		return this.getPoint().compareTo(archer.getPoint());
 	}
+
+	public void setArcherChest(ArcherChest chest) {
+		this.chest = chest;
+	}
 	
+	public ArcherChest getArcherChest() {
+		return this.chest;
+	}
+
+	/*public void refillChest(Chest chest) {
+		this.chest.getInventory().addItem(Material.IRON_AXE);
+	}*/
+
 }
