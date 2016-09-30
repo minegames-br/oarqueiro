@@ -587,14 +587,15 @@ public class GameController extends JavaPlugin {
 	public void removeLivePlayer(Player player) {
 		Archer archer = findArcherByPlayer(player);
 
-		player.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
-		player.getInventory().clear();
-		player.teleport(lobbyLocation);
+		if(archer != null) {
+			if(player != null) {
+				player.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+				player.getInventory().clear();
+				player.teleport(lobbyLocation);
+			}
+			livePlayers.remove(archer);
+		}
 		
-		archer.getBaseBar().removeAll();
-		
-		livePlayers.remove(archer);
-
 		if (livePlayers.size() == 0) {
 			this.game.endGame();
 			this.endGame();
@@ -692,6 +693,9 @@ public class GameController extends JavaPlugin {
 
 	public void hitTarget(BlockTarget target, Player shooter) {
 		targets.remove(target);
+		if(shooter!= null){
+			givePoints(shooter, target.getHitPoints());
+		}
 		target.hitTarget2(shooter);
 		Location loc = target.getBlock().getLocation();
 		this.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 1.0F, false, false);
@@ -774,15 +778,12 @@ public class GameController extends JavaPlugin {
 		String deadname = dead.getDisplayName();
 		Bukkit.broadcastMessage(ChatColor.GOLD + " " + deadname + "" + ChatColor.GREEN + " died.");
 
-		dead.setHealth(100); // Do not show the respawn screen
+		dead.setHealth(20); // Do not show the respawn screen
 		dead.getInventory().clear();
+		
 		if (this.game.isStarted()) {
 			this.removeLivePlayer(dead);
 		}
-
-		removeBossBar(dead);
-		
-		this.sendToLobby(dead);
 	}
 
 	public EntityTarget findEntityTargetByZombie(Zombie zombie) {
@@ -847,8 +848,8 @@ public class GameController extends JavaPlugin {
 				archer.getBaseBar().setProgress(0);
 				return false;
 			} else {
+				archer.damageBase();
 				if(archer.getBaseHealth() > 0) {
-					archer.damageBase();
 					archer.getBaseBar().setProgress( new Double(archer.getBaseHealth() ) );
 				}
 			}
