@@ -12,14 +12,11 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-<<<<<<< HEAD
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Arrow;
-=======
 import org.bukkit.block.Chest;
->>>>>>> refs/remotes/origin/MLA-9
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -40,11 +37,8 @@ import br.com.minegames.arqueiro.command.StartGameCommand;
 import br.com.minegames.arqueiro.command.TeleportToArenaCommand;
 import br.com.minegames.arqueiro.command.TriggerFireworkCommand;
 import br.com.minegames.arqueiro.domain.Archer;
-<<<<<<< HEAD
 import br.com.minegames.arqueiro.domain.ArcherBow;
-=======
 import br.com.minegames.arqueiro.domain.ArcherChest;
->>>>>>> refs/remotes/origin/MLA-9
 import br.com.minegames.arqueiro.domain.Area2D;
 import br.com.minegames.arqueiro.domain.Area3D;
 import br.com.minegames.arqueiro.domain.Game;
@@ -777,12 +771,9 @@ public class GameController extends JavaPlugin {
 		if (this.game.isStarted()) {
 			this.removeLivePlayer(dead);
 		}
-<<<<<<< HEAD
 
 		removeBossBar(dead);
 		
-=======
->>>>>>> refs/remotes/origin/MLA-9
 		this.sendToLobby(dead);
 	}
 
