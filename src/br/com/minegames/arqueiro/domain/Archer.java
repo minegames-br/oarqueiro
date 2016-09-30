@@ -4,6 +4,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
+import br.com.minegames.logging.Logger;
+
 public class Archer implements Comparable {
 
 	public static int HIT_TARGET = 50;
@@ -43,7 +45,7 @@ public class Archer implements Comparable {
 		if (this.point < 0) {
 			this.point = 0;
 		}
-	}
+	}	
 
 	public int getCurrentArrowDamage() {
 		return 30;
@@ -59,6 +61,11 @@ public class Archer implements Comparable {
 
 	public int getBaseHealth() {
 		return this.baseHealth;
+	}
+	
+	public void regainHealthToPlayer(Archer archer) {
+		Player player = archer.getPlayer();
+		player.setHealth(player.getMaxHealth());
 	}
 
 	public void setSpawnPoint(Area2D l) {
@@ -91,13 +98,9 @@ public class Archer implements Comparable {
 	public void setArcherChest(ArcherChest chest) {
 		this.chest = chest;
 	}
-	
+
 	public ArcherChest getArcherChest() {
 		return this.chest;
 	}
-
-	/*public void refillChest(Chest chest) {
-		this.chest.getInventory().addItem(Material.IRON_AXE);
-	}*/
 
 }
