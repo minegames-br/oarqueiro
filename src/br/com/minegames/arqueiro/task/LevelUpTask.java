@@ -1,11 +1,10 @@
 package br.com.minegames.arqueiro.task;
 
-import org.bukkit.Material;
-import org.bukkit.block.Chest;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import br.com.minegames.arqueiro.GameController;
-import br.com.minegames.arqueiro.domain.ArcherChest;
+import br.com.minegames.arqueiro.GameState;
+import br.com.minegames.arqueiro.domain.Game;
 
 public class LevelUpTask extends BukkitRunnable {
 	
@@ -18,9 +17,15 @@ public class LevelUpTask extends BukkitRunnable {
     @Override
     public void run() {
     	
+    	Game game = controller.getGame();
+    	if(!game.isStarted()) {
+    		return;
+    	}
+    	
     	//Aumentar de nível depois de 15 segundos
     	//Caso seja o último nível, terminar o jogo
-    	if(controller.getGame().getLevel().lifeTime() >= 15000) {
+    	if(controller.getGame().getLevel().lifeTime() >= 2000) {
+    		this.controller.getGame().setGameState(GameState.LEVELUP);
     		if(controller.isLastLevel()) {
     			controller.endGame();
     		} else {

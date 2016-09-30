@@ -6,7 +6,7 @@ public class Level {
 	private int level;
 	
 	public Level() {
-		this.level = 0;
+		this.level = 1;
 		this.levelStartTime = System.currentTimeMillis();
 	}
 	

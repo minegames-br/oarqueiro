@@ -9,21 +9,27 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import br.com.minegames.arqueiro.GameController;
+import br.com.minegames.arqueiro.domain.Game;
 
 public class SpawnBatTask extends BukkitRunnable {
 	
-	private GameController game;
+	private GameController controller;
 	
 	public SpawnBatTask(GameController game) {
-		this.game = game;
+		this.controller = game;
 	}
 	
     @Override
     public void run() {
+    	
+    	Game game = controller.getGame();
+    	if(!game.isStarted()) {
+    		return;
+    	}
 
-    	Entity bat = game.getWorld().spawnEntity( new Location(game.getWorld(), 470, 15 ,1180) , EntityType.BAT);
+    	Entity bat = controller.getWorld().spawnEntity( new Location(controller.getWorld(), 470, 15 ,1180) , EntityType.BAT);
 
-    	Skeleton skeleton = (Skeleton)game.getWorld().spawnEntity( new Location(game.getWorld(), 470, 4 ,1180) , EntityType.SKELETON);
+    	Skeleton skeleton = (Skeleton)controller.getWorld().spawnEntity( new Location(controller.getWorld(), 470, 4 ,1180) , EntityType.SKELETON);
     	ItemStack i = new ItemStack(Material.BOW, 1);
     	ItemStack a = new ItemStack(Material.ARROW, 64);
     	skeleton.getEquipment().setItemInMainHand(i);

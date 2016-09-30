@@ -315,8 +315,8 @@ public class GameController extends JavaPlugin {
 			BossBar bar = createBossBar();
 			archer.addBaseBar(bar);
 			bar.addPlayer(player);
-
-			Logger.log("preparar score board archer: " + archer.getPlayer().getName() + " base: " + new Double(archer.getBaseHealth()/10) );
+			
+			Logger.log("preparar score board archer: " + archer.getPlayer().getName() + " base: " + new Double(archer.getBaseHealth()) );
 			
 			setupPlayerToStartGame(player);
 			loc++;
@@ -466,10 +466,26 @@ public class GameController extends JavaPlugin {
 	 * Iniciar novo Nível / Round / Level
 	 */
 	public void levelUp() {
-		this.game.levelUp();
-		for (Archer archer : this.livePlayers) {
-			TitleUtil.sendTitle(archer.getPlayer(), 1, 20, 10, "Nível " + this.game.getLevel().getLevel(), "");
-			archer.getArcherChest().refillChest();
+		//limpar targets e moving targets
+		//destroyTargets();
+		
+		//matar os mobs
+		//killEntityTargets();
+		
+		if(this.game.getLevel().getLevel() > 1){
+			for (Archer archer : this.livePlayers) {
+				TitleUtil.sendTitle(archer.getPlayer(), 1, 70, 10, "Nível " + this.game.getLevel().getLevel(), "");
+				archer.getArcherChest().refillChest();
+			}
+			
+			//liberar o jogo novamente após 5 segundos
+			Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
+				public void run(){
+					game.levelUp();
+				}
+			}, 100L);
+		} else {
+			this.game.levelUp();
 		}
 	}
 
@@ -714,14 +730,6 @@ public class GameController extends JavaPlugin {
 		}
 	}
 
-	public void kill2EntityTarget(EntityTarget target, Player shooter) {
-		livingTargets.remove(target);
-		this.givePoints(shooter, target.getKillPoints());
-		Location loc = target.getLivingEntity().getLocation();
-		this.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 1.0F, false, false);
-		this.givePoints(shooter, target.getKillPoints());
-	}
-
 	public void sendToLobby(Player player) {
 		player.teleport(lobbyLocation);
 	}
@@ -793,6 +801,14 @@ public class GameController extends JavaPlugin {
 		return et;
 	}
 
+	public void killEntityTargets() {
+		for(EntityTarget eTarget: this.livingTargets) {
+			if( eTarget instanceof ZombieTarget) {
+				this.killZombie(((ZombieTarget) eTarget).getZombie());
+			}
+		}
+	}
+	
 	public void killZombie(Zombie zombie) {
 		ZombieTarget et = (ZombieTarget) findEntityTargetByZombie(zombie);
 		Location loc = zombie.getLocation();
@@ -826,13 +842,15 @@ public class GameController extends JavaPlugin {
 			}
 		}
 		if (archer != null) {
-			Logger.log("base: " + new Double(archer.getBaseHealth()/10) );
+			Logger.log("base: " + new Double(archer.getBaseHealth()) );
 			if (archer.getBaseHealth() <= 0) {
 				archer.getBaseBar().setProgress(0);
 				return false;
 			} else {
-				archer.damageBase();
-				archer.getBaseBar().setProgress( new Double(archer.getBaseHealth() ) );
+				if(archer.getBaseHealth() > 0) {
+					archer.damageBase();
+					archer.getBaseBar().setProgress( new Double(archer.getBaseHealth() ) );
+				}
 			}
 		}
 		return true;
@@ -848,7 +866,7 @@ public class GameController extends JavaPlugin {
 	}
 
 	public boolean isLastLevel() {
-		return this.game.getLevel().getLevel() == 10;
+		return this.game.getLevel().getLevel() == 11;
 	}
 
 	public int getMaxTarget() {

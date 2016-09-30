@@ -41,6 +41,10 @@ public class Game {
 	public boolean isStarted() {
 		return this.state.equals(GameState.RUNNING);
 	}
+	
+	public GameState getState() {
+		return this.state;
+	}
 
 	public boolean isWaitingPlayers() {
 		return this.state.equals(GameState.WAITING) || this.state.equals(GameState.STARTING);	
@@ -64,6 +68,11 @@ public class Game {
 
 	public void levelUp() {
 		this.level = new Level(this.level);
+		this.state = GameState.RUNNING;
+	}
+	
+	public void setGameState(GameState state) {
+		this.state = state;
 	}
 
 
