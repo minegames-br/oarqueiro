@@ -1,6 +1,5 @@
 package br.com.minegames.arqueiro;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,9 +10,11 @@ import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -304,6 +305,14 @@ public class GameController extends JavaPlugin {
 			Logger.log("" + spawnPoint.getMiddle2());
 
 			// Preparar o jogador para a rodada. Dar armaduras, armas, etc...
+			archer.setBow(ArcherBow.DEFAULT);
+
+			BossBar bar = createBossBar();
+			archer.addBaseBar(bar);
+			bar.addPlayer(player);
+
+			Logger.log("preparar score board archer: " + archer.getPlayer().getName() + " base: " + new Double(archer.getBaseHealth()/10) );
+			
 			setupPlayerToStartGame(player);
 			loc++;
 		}
@@ -325,6 +334,12 @@ public class GameController extends JavaPlugin {
 		this.levelUpThreadID = scheduler.scheduleSyncRepeatingTask(this, this.levelUpTask, 0L, 100L);
 		this.explodeZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.explodeZombieTask, 0L, 20L);
 
+	}
+
+	private BossBar createBossBar() {
+		BossBar bar = Bukkit.createBossBar("Base", BarColor.PINK, BarStyle.SOLID);
+		bar.setProgress(1F);
+		return bar;
 	}
 
 	private void updateScoreBoards() {
@@ -396,6 +411,8 @@ public class GameController extends JavaPlugin {
 		// manda os jogadores para o podium
 		teleportPlayersToPodium();
 
+		//remover as bossbars
+		removeBossBars();
 		// mandar os jogadores de volta para o lobby
 		// teleportPlayersBackToLobby();
 
@@ -407,6 +424,21 @@ public class GameController extends JavaPlugin {
 			init();
 		}
 
+	}
+	
+	private void removeBossBars() {
+		for (Archer archer : livePlayers) {
+			archer.getBaseBar().removeAll();
+		}
+	}
+	
+	private void removeBossBar(Player player) {
+		Archer archer = findArcherByPlayer(player);
+		archer.getBaseBar().removeAll();
+	}
+
+	private void removeBossBar(Archer archer) {
+		archer.getBaseBar().removeAll();
 	}
 
 	private void clearPlayersInventory() {
@@ -439,6 +471,10 @@ public class GameController extends JavaPlugin {
 				BlockTarget bTarget = (BlockTarget)target;
 				this.destroyBlockTarget(bTarget);
 			}
+		}
+		
+		for (MovingTarget mTarget: this.movingTargets) {
+			this.destroyMovingTarget(mTarget);
 		}
 	}
 
@@ -511,6 +547,9 @@ public class GameController extends JavaPlugin {
 		player.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
 		player.getInventory().clear();
 		player.teleport(lobbyLocation);
+		
+		archer.getBaseBar().removeAll();
+		
 		livePlayers.remove(archer);
 
 		if (livePlayers.size() == 0) {
@@ -631,7 +670,11 @@ public class GameController extends JavaPlugin {
 	
 	public void giveBonus(Player shooter) {
 		Archer archer = findArcherByPlayer(shooter);
-		archer.setBow(ArcherBow.DOUBLE);
+		if(archer.getBow().equals(ArcherBow.DEFAULT)) {
+			archer.setBow(ArcherBow.DOUBLE);
+		}else if(archer.getBow().equals(ArcherBow.DOUBLE)) {
+			archer.setBow(ArcherBow.TRIPPLE);
+		}
 	}
 	
 	public void destroyMovingTarget(MovingTarget mTarget) {
@@ -696,12 +739,14 @@ public class GameController extends JavaPlugin {
 		String deadname = dead.getDisplayName();
 		Bukkit.broadcastMessage(ChatColor.GOLD + " " + deadname + "" + ChatColor.GREEN + " died.");
 
-		dead.setHealth(20); // Do not show the respawn screen
+		dead.setHealth(100); // Do not show the respawn screen
 		dead.getInventory().clear();
 		if (this.game.isStarted()) {
 			this.removeLivePlayer(dead);
 		}
 
+		removeBossBar(dead);
+		
 		this.sendToLobby(dead);
 	}
 
@@ -745,18 +790,22 @@ public class GameController extends JavaPlugin {
 		Location zl = zombie.getLocation();
 		Iterator<Archer> it = this.livePlayers.iterator();
 		Archer archer = null;
+
 		while (it.hasNext()) {
 			archer = it.next();
+			Logger.log("archer: " + archer.getPlayer().getName() + " base: " + new Double(archer.getBaseHealth()) );
 			if (archer.isNear(zl)) {
 				break;
 			}
 		}
 		if (archer != null) {
+			Logger.log("base: " + new Double(archer.getBaseHealth()/10) );
 			if (archer.getBaseHealth() <= 0) {
+				archer.getBaseBar().setProgress(0);
 				return false;
 			} else {
 				archer.damageBase();
-				Logger.log("base: " + archer.getBaseHealth());
+				archer.getBaseBar().setProgress( new Double(archer.getBaseHealth() ) );
 			}
 		}
 		return true;
@@ -861,7 +910,7 @@ public class GameController extends JavaPlugin {
 		    double z = Math.cos(pitch);
 		 
 		    Vector vector = new Vector(x, z, y);
-		    vector.multiply(2);
+		    vector.multiply(3);
 
 		    Arrow a = player.getWorld().spawn(player_location, Arrow.class);
 		    //a.setVelocity(vector);
