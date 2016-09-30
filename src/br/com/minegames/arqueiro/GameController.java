@@ -893,22 +893,28 @@ public class GameController extends JavaPlugin {
 		}
 		
 		Location player_location = player.getLocation();
-		for(int i = 0 ; i < iArrows ; i++) {
+		for(int i = 0 ; i <= iArrows ; i++) {
 			 
+			if( i == 1 && iArrows == 2) {
+				continue;
+			} else if (i == 1 && iArrows == 1) {
+				break;
+			}
 		    int spread = 0;
 		 
-		    if(i == 0)      spread = -3;
-		    else if (i == 2) spread = 3;
+		    if(i == 0)      spread = -2;
+		    else if (i == 2) spread = 2;
 		 
 		    double pitch = ((player_location.getPitch() + 90) * Math.PI) / 180;
 		    double yaw  = ((player_location.getYaw() + 90 + spread) * Math.PI) / 180;
 		 
 		    double z_axis = Math.sin(pitch);
-		 
 		    double x = z_axis * Math.cos(yaw);
 		    double y = z_axis * Math.sin(yaw);
 		    double z = Math.cos(pitch);
 		 
+		    Logger.log("i " + i + " spread " + spread + " pitch " + pitch + " yaw " + yaw + " x " + x + " y " + y + " z " + z + " z_axis " + z_axis );
+
 		    Vector vector = new Vector(x, z, y);
 		    vector.multiply(3);
 
