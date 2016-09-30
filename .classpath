@@ -4,6 +4,5 @@
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/spigot-1.10.2.jar"/>
-	<classpathentry kind="lib" path="lib/Zenchantments1.9-1.10.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
