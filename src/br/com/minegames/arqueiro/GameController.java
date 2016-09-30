@@ -12,10 +12,14 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+<<<<<<< HEAD
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Arrow;
+=======
+import org.bukkit.block.Chest;
+>>>>>>> refs/remotes/origin/MLA-9
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -36,7 +40,11 @@ import br.com.minegames.arqueiro.command.StartGameCommand;
 import br.com.minegames.arqueiro.command.TeleportToArenaCommand;
 import br.com.minegames.arqueiro.command.TriggerFireworkCommand;
 import br.com.minegames.arqueiro.domain.Archer;
+<<<<<<< HEAD
 import br.com.minegames.arqueiro.domain.ArcherBow;
+=======
+import br.com.minegames.arqueiro.domain.ArcherChest;
+>>>>>>> refs/remotes/origin/MLA-9
 import br.com.minegames.arqueiro.domain.Area2D;
 import br.com.minegames.arqueiro.domain.Area3D;
 import br.com.minegames.arqueiro.domain.Game;
@@ -122,13 +130,16 @@ public class GameController extends JavaPlugin {
 
 	private Area2D spawnArea;
 	private Area2D player1Arena;
+	private Area2D player2Arena;
+	private Area2D player3Arena;
+	private Area2D player4Arena;
 	private Area2D blackWall;
 	private Area3D arena;
 	private Area3D floatingArena;
 
 	private Scoreboard scoreboard;
 
-	// private Archer a;
+	// private ArcherChest[] playerChest;
 
 	@Override
 	public void onEnable() {
@@ -170,20 +181,20 @@ public class GameController extends JavaPlugin {
 		Location s2 = new Location(this.getWorld(), 490, 6, 1200);
 		this.spawnArea = new Area2D(s1, s2);
 
-		Location p1a = new Location(this.getWorld(), 457, a1.getY(), 1164);
-		Location p1b = new Location(this.getWorld(), 466, a1.getY(), 1169);
-
+		this.player1Arena = new Area2D(new Location(this.getWorld(), 457, a1.getY(), a1.getZ()),
+				new Location(this.getWorld(), 466, a1.getY(), 1169));
+		this.player2Arena = new Area2D(new Location(this.getWorld(), 468, a1.getY(), a1.getZ()),
+				new Location(this.getWorld(), 475, a1.getY(), 1169));
+		this.player3Arena = new Area2D(new Location(this.getWorld(), 477, a1.getY(), a1.getZ()),
+				new Location(this.getWorld(), 484, a1.getY(), 1169));
+		this.player4Arena = new Area2D(new Location(this.getWorld(), 486, a1.getY(), 1164),
+				new Location(this.getWorld(), 493, a1.getY(), 1169));
 
 		this.arenaSpawnPoints.clear();
-
-		this.arenaSpawnPoints.add(new Area2D(new Location(this.getWorld(), p1a.getX(), p1a.getY(), p1a.getZ()),
-				new Location(this.getWorld(), p1b.getX(), p1b.getY(), p1b.getZ())));	
-		this.arenaSpawnPoints.add(new Area2D(new Location(this.getWorld(), 467, a1.getY(), a1.getZ()),
-				new Location(this.getWorld(), 473, a1.getY(), a1.getZ())));
-		this.arenaSpawnPoints.add(new Area2D(new Location(this.getWorld(), 477, a1.getY(), a1.getZ()),
-				new Location(this.getWorld(), 483, a1.getY(), a1.getZ())));
-		this.arenaSpawnPoints.add(new Area2D(new Location(this.getWorld(), 487, a1.getY(), a1.getZ()),
-				new Location(this.getWorld(), 493, a1.getY(), a1.getZ())));
+		this.arenaSpawnPoints.add(this.player1Arena);
+		this.arenaSpawnPoints.add(this.player2Arena);
+		this.arenaSpawnPoints.add(this.player3Arena);
+		this.arenaSpawnPoints.add(this.player4Arena);
 
 		this.lobbyLocation = new Location(this.getWorld(), 530, 4, 1210);
 
@@ -203,7 +214,6 @@ public class GameController extends JavaPlugin {
 		}
 
 		init();
-
 	}
 
 	private void init() {
@@ -301,8 +311,9 @@ public class GameController extends JavaPlugin {
 			Player player = archer.getPlayer();
 			Area2D spawnPoint = ((Area2D) this.arenaSpawnPoints.toArray()[loc]);
 			archer.setSpawnPoint(spawnPoint);
-			player.teleport(spawnPoint.getMiddle2());
-			Logger.log("" + spawnPoint.getMiddle2());
+			player.teleport(spawnPoint.getMiddle());
+			archer.regainHealthToPlayer(archer);
+			addChests(archer);
 
 			// Preparar o jogador para a rodada. Dar armaduras, armas, etc...
 			archer.setBow(ArcherBow.DEFAULT);
@@ -343,7 +354,6 @@ public class GameController extends JavaPlugin {
 	}
 
 	private void updateScoreBoards() {
-
 		int index = 0;
 		for (Archer archer : this.livePlayers) {
 			Player player = archer.getPlayer();
@@ -351,7 +361,6 @@ public class GameController extends JavaPlugin {
 			this.scoreboard.getObjective(DisplaySlot.SIDEBAR).getScore(name).setScore(archer.getPoint());
 			index++;
 		}
-
 	}
 
 	/*
@@ -400,10 +409,14 @@ public class GameController extends JavaPlugin {
 			player.getInventory().clear();
 			player.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
 			player.sendMessage("Você fez " + archer.getPoint() + " pontos.");
+			archer.regainHealthToPlayer(archer);
 		}
 
 		// destroyTargets()
 		destroyTargets();
+
+		// destroyChests();
+		destroyChests();
 
 		// restaurar parede preta
 		createBlackWall();
@@ -462,13 +475,14 @@ public class GameController extends JavaPlugin {
 		this.game.levelUp();
 		for (Archer archer : this.livePlayers) {
 			TitleUtil.sendTitle(archer.getPlayer(), 1, 20, 10, "Nível " + this.game.getLevel().getLevel(), "");
+			archer.getArcherChest().refillChest();
 		}
 	}
 
 	private void destroyTargets() {
 		for (Target target : targets) {
-			if(target instanceof BlockTarget) {
-				BlockTarget bTarget = (BlockTarget)target;
+			if (target instanceof BlockTarget) {
+				BlockTarget bTarget = (BlockTarget) target;
 				this.destroyBlockTarget(bTarget);
 			}
 		}
@@ -538,6 +552,25 @@ public class GameController extends JavaPlugin {
 			playerNames.add(player.getName());
 		} else {
 			Logger.log("Jogador já está na lista");
+		}
+	}
+
+	public void addChests(Archer archer) {
+		Player player = archer.getPlayer();
+		Location chestLocation = new Location(this.getWorld(), player.getLocation().getX(), 4,
+				player.getLocation().getZ() - 3);
+		chestLocation.getBlock().setType(Material.CHEST);
+		ArcherChest chest = new ArcherChest((Chest) chestLocation.getBlock().getState());
+		archer.setArcherChest(chest);
+	}
+
+	public void destroyChests() {
+		Object[] aList = playerList.toArray();
+		for (int i = 0; i < aList.length; i++) {
+			Archer archer = (Archer) aList[i];
+			ArcherChest a = archer.getArcherChest();
+			a.clearChest();
+			a.getChest().getBlock().setType(Material.AIR);
 		}
 	}
 
@@ -634,7 +667,7 @@ public class GameController extends JavaPlugin {
 	public CopyOnWriteArraySet<MovingTarget> getMovingTargets() {
 		return this.movingTargets;
 	}
-	
+
 	public CopyOnWriteArraySet<EntityTarget> getLivingTargets() {
 		return this.livingTargets;
 	}
@@ -651,8 +684,8 @@ public class GameController extends JavaPlugin {
 		targets.remove(target);
 		target.hitTarget2(shooter);
 		Location loc = target.getBlock().getLocation();
-	    this.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ()-1, 1.0F, false, false);
-	    destroyBlockTarget(target);
+		this.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 1.0F, false, false);
+		destroyBlockTarget(target);
 	}
 
 	public void hitEntityTarget(Target target, Player shooter) {
@@ -676,14 +709,14 @@ public class GameController extends JavaPlugin {
 			archer.setBow(ArcherBow.TRIPPLE);
 		}
 	}
-	
+
 	public void destroyMovingTarget(MovingTarget mTarget) {
 		Location loc = mTarget.getBlock().getLocation();
 		Logger.log("destroyMovingTarget: " + loc);
 		movingTargets.remove(mTarget);
 		mTarget.getBlock().setType(Material.AIR);
-		if(!mTarget.isHit()) {
-			this.world.createExplosion(loc.getX(), loc.getY(), loc.getZ()-1, 1.0F, false, false);
+		if (!mTarget.isHit()) {
+			this.world.createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 1.0F, false, false);
 		}
 	}
 
@@ -691,8 +724,8 @@ public class GameController extends JavaPlugin {
 		livingTargets.remove(target);
 		this.givePoints(shooter, target.getKillPoints());
 		Location loc = target.getLivingEntity().getLocation();
-	    this.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ()-1, 1.0F, false, false);
-	    this.givePoints(shooter, target.getKillPoints());
+		this.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 1.0F, false, false);
+		this.givePoints(shooter, target.getKillPoints());
 	}
 
 	public void sendToLobby(Player player) {
@@ -744,9 +777,12 @@ public class GameController extends JavaPlugin {
 		if (this.game.isStarted()) {
 			this.removeLivePlayer(dead);
 		}
+<<<<<<< HEAD
 
 		removeBossBar(dead);
 		
+=======
+>>>>>>> refs/remotes/origin/MLA-9
 		this.sendToLobby(dead);
 	}
 
@@ -848,37 +884,37 @@ public class GameController extends JavaPlugin {
 	}
 
 	public void destroyBlockTarget(BlockTarget bTarget) {
-		if(bTarget instanceof GroundBlockTarget) {
+		if (bTarget instanceof GroundBlockTarget) {
 			destroyGroundBlockTarget(bTarget);
-		} else if( bTarget instanceof WallBlockTarget) {
+		} else if (bTarget instanceof WallBlockTarget) {
 			destroyWallBlockTarget(bTarget);
-		} else if( bTarget instanceof FloatingBlockTarget) {
+		} else if (bTarget instanceof FloatingBlockTarget) {
 			destrobyFloatingBlockTarget(bTarget);
 		}
 	}
 
 	private void destrobyFloatingBlockTarget(BlockTarget bTarget) {
-		//restaurar o local do target 
+		// restaurar o local do target
 		Block block = bTarget.getBlock();
-		Location l1 = new Location(this.getWorld(), block.getX()-1, block.getY()-1, block.getZ());
-		Location l2 = new Location(this.getWorld(), block.getX()+1, block.getY()+1, block.getZ());
+		Location l1 = new Location(this.getWorld(), block.getX() - 1, block.getY() - 1, block.getZ());
+		Location l2 = new Location(this.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
 		BlockManipulationUtil.clearBlocks(l1, l2);
 	}
 
 	private void destroyWallBlockTarget(BlockTarget bTarget) {
-	    //restaurar a parte preta
+		// restaurar a parte preta
 		Block block = bTarget.getBlock();
 
-	    Location l1 = new Location(this.getWorld(), block.getX()-1, block.getY()-1, block.getZ());
-	    Location l2 = new Location(this.getWorld(), block.getX()+1, block.getY()+1, block.getZ());
-	    BlockManipulationUtil.createWoolBlocks(l1, l2, DyeColor.BLACK);
+		Location l1 = new Location(this.getWorld(), block.getX() - 1, block.getY() - 1, block.getZ());
+		Location l2 = new Location(this.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
+		BlockManipulationUtil.createWoolBlocks(l1, l2, DyeColor.BLACK);
 	}
 
 	private void destroyGroundBlockTarget(BlockTarget bTarget) {
 		Block block = bTarget.getBlock();
-	    Location l1 = new Location(this.getWorld(), block.getX()-1, block.getY()-2, block.getZ());
-	    Location l2 = new Location(this.getWorld(), block.getX()+1, block.getY()+1, block.getZ());
-	    BlockManipulationUtil.clearBlocks(l1, l2);
+		Location l1 = new Location(this.getWorld(), block.getX() - 1, block.getY() - 2, block.getZ());
+		Location l2 = new Location(this.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
+		BlockManipulationUtil.clearBlocks(l1, l2);
 	}
 
 	public void shootArrows(Player player) {

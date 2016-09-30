@@ -1,8 +1,11 @@
 package br.com.minegames.arqueiro.task;
 
+import org.bukkit.Material;
+import org.bukkit.block.Chest;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import br.com.minegames.arqueiro.GameController;
+import br.com.minegames.arqueiro.domain.ArcherChest;
 
 public class LevelUpTask extends BukkitRunnable {
 	
