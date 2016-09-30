@@ -41,7 +41,7 @@ public class SpawnZombieTask extends BukkitRunnable {
     	Archer archer = (Archer)controller.getLivePlayers().toArray()[index];
     	entity.setTarget(archer.getPlayer());
     	controller.addEntityTarget(new ZombieTarget(entity));
-		Utilities.addPotion(entity, PotionEffectType.SPEED, 10000, 1*controller.getGame().getLevel().getLevel());
+		Utilities.addPotion(entity, PotionEffectType.SPEED, 10000, controller.getGame().getLevel().getLevel());
     	return entity;
     }
     
