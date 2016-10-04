@@ -12,7 +12,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -24,6 +23,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -39,7 +39,6 @@ import br.com.minegames.arqueiro.command.TeleportToArenaCommand;
 import br.com.minegames.arqueiro.command.TriggerFireworkCommand;
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.ArcherBow;
-import br.com.minegames.arqueiro.domain.ArcherChest;
 import br.com.minegames.arqueiro.domain.Area2D;
 import br.com.minegames.arqueiro.domain.Area3D;
 import br.com.minegames.arqueiro.domain.Game;
@@ -306,7 +305,6 @@ public class GameController extends JavaPlugin {
 			archer.setSpawnPoint(spawnPoint);
 			player.teleport(spawnPoint.getMiddle());
 			archer.regainHealthToPlayer(archer);
-			addChests(archer);
 
 			// Preparar o jogador para a rodada. Dar armaduras, armas, etc...
 			archer.setBow(ArcherBow.DEFAULT);
@@ -314,9 +312,10 @@ public class GameController extends JavaPlugin {
 			BossBar bar = createBossBar();
 			archer.addBaseBar(bar);
 			bar.addPlayer(player);
-			
-			Logger.log("preparar score board archer: " + archer.getPlayer().getName() + " base: " + new Double(archer.getBaseHealth()) );
-			
+
+			Logger.log("preparar score board archer: " + archer.getPlayer().getName() + " base: "
+					+ new Double(archer.getBaseHealth()));
+
 			setupPlayerToStartGame(player);
 			loc++;
 		}
@@ -331,12 +330,15 @@ public class GameController extends JavaPlugin {
 
 		// Iniciar threads do jogo
 		this.placeTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeTargetTask, 0L, 50L);
-		this.placeMovingTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeMovingTargetTask, 200L, 30L);
+		this.placeMovingTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeMovingTargetTask, 200L,
+				30L);
 		this.destroyTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 100L);
 		this.endGameThreadID = scheduler.scheduleSyncRepeatingTask(this, this.endGameTask, 0L, 50L);
 		this.spawnZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 50L);
 		this.levelUpThreadID = scheduler.scheduleSyncRepeatingTask(this, this.levelUpTask, 0L, 100L);
-		this.explodeZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.explodeZombieTask, 0L, 20L);
+		// this.explodeZombieThreadID =
+		// scheduler.scheduleSyncRepeatingTask(this, this.explodeZombieTask, 0L,
+		// 20L);
 
 	}
 
@@ -350,7 +352,7 @@ public class GameController extends JavaPlugin {
 		for (Archer archer : this.livePlayers) {
 			Player player = archer.getPlayer();
 			Scoreboard scoreboard = player.getScoreboard();
-			for(Archer a1: this.livePlayers) {
+			for (Archer a1 : this.livePlayers) {
 				String name = a1.getPlayer().getName();
 				scoreboard.getObjective(DisplaySlot.SIDEBAR).getScore(name).setScore(a1.getPoint());
 			}
@@ -368,9 +370,15 @@ public class GameController extends JavaPlugin {
 
 		ItemStack bow = new ItemStack(Material.BOW);
 		ItemStack arrow = new ItemStack(Material.ARROW);
+		ItemStack sword = new ItemStack(Material.DIAMOND_SWORD);
+
+		bow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 500);
+		bow.addEnchantment(Enchantment.ARROW_INFINITE, 1);
+		sword.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 100);
 
 		inventory.addItem(bow);
 		inventory.addItem(arrow);
+		inventory.addItem(sword);
 
 		Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 		Objective objective = scoreboard.registerNewObjective(Utils.color("&6Placar"), "placar");
@@ -411,16 +419,13 @@ public class GameController extends JavaPlugin {
 		// destroyTargets()
 		destroyTargets();
 
-		// destroyChests();
-		destroyChests();
-
 		// restaurar parede preta
 		createBlackWall();
 
 		// manda os jogadores para o podium
 		teleportPlayersToPodium();
 
-		//remover as bossbars
+		// remover as bossbars
 		removeBossBars();
 		// mandar os jogadores de volta para o lobby
 		// teleportPlayersBackToLobby();
@@ -434,13 +439,13 @@ public class GameController extends JavaPlugin {
 		}
 
 	}
-	
+
 	private void removeBossBars() {
 		for (Archer archer : livePlayers) {
 			archer.getBaseBar().removeAll();
 		}
 	}
-	
+
 	private void removeBossBar(Player player) {
 		Archer archer = findArcherByPlayer(player);
 		archer.getBaseBar().removeAll();
@@ -468,32 +473,33 @@ public class GameController extends JavaPlugin {
 	 * Iniciar novo Nível / Round / Level
 	 */
 	public void levelUp() {
-		//limpar targets e moving targets
-		//destroyTargets();
-		
-		//matar os mobs
-		//killEntityTargets();
-		
-		if(this.game.getLevel().getLevel() > 1){
+
+		// limpar targets e moving targets
+		// destroyTargets();
+
+		// matar os mobs
+		// killEntityTargets();
+
+		if (this.game.getLevel().getLevel() >= 1) {
 			for (Archer archer : this.livePlayers) {
 				TitleUtil.sendTitle(archer.getPlayer(), 1, 70, 10, "Nível " + this.game.getLevel().getLevel(), "");
-				archer.getArcherChest().refillChest();
 
-				//aumentar a força dos arcos
-				Player player = archer.getPlayer();
-				player.getInventory().clear();
-				ItemStack it = new ItemStack(Material.BOW);
-				if( (this.game.getLevel().getLevel() % 2) == 0 ) {
-					it.addEnchantment(Enchantment.ARROW_DAMAGE, this.game.getLevel().getLevel()/2);
-				}
-				it.addEnchantment(Enchantment.ARROW_INFINITE, 1);
-				player.getInventory().addItem(it);
-				player.getInventory().addItem(new ItemStack(Material.ARROW));
+				/*
+				 * //aumentar a força dos arcos Player player =
+				 * archer.getPlayer(); player.getInventory().clear(); ItemStack
+				 * it = new ItemStack(Material.BOW); if(
+				 * (this.game.getLevel().getLevel() % 2) == 0 ) {
+				 * //it.addEnchantment(Enchantment.ARROW_DAMAGE,
+				 * this.game.getLevel().getLevel()/2); }
+				 * it.addEnchantment(Enchantment.ARROW_INFINITE, 1);
+				 * player.getInventory().addItem(it);
+				 * player.getInventory().addItem(new ItemStack(Material.ARROW));
+				 */
 			}
 
-			//liberar o jogo novamente após 5 segundos
-			Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
-				public void run(){
+			// liberar o jogo novamente após 5 segundos
+			Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+				public void run() {
 					game.levelUp();
 				}
 			}, 100L);
@@ -509,8 +515,8 @@ public class GameController extends JavaPlugin {
 				this.destroyBlockTarget(bTarget);
 			}
 		}
-		
-		for (MovingTarget mTarget: this.movingTargets) {
+
+		for (MovingTarget mTarget : this.movingTargets) {
 			this.destroyMovingTarget(mTarget);
 		}
 	}
@@ -578,30 +584,11 @@ public class GameController extends JavaPlugin {
 		}
 	}
 
-	public void addChests(Archer archer) {
-		Player player = archer.getPlayer();
-		Location chestLocation = new Location(this.getWorld(), player.getLocation().getX(), 4,
-				player.getLocation().getZ() - 3);
-		chestLocation.getBlock().setType(Material.CHEST);
-		ArcherChest chest = new ArcherChest((Chest) chestLocation.getBlock().getState());
-		archer.setArcherChest(chest);
-	}
-
-	public void destroyChests() {
-		Object[] aList = playerList.toArray();
-		for (int i = 0; i < aList.length; i++) {
-			Archer archer = (Archer) aList[i];
-			ArcherChest a = archer.getArcherChest();
-			a.clearChest();
-			a.getChest().getBlock().setType(Material.AIR);
-		}
-	}
-
 	public void removeLivePlayer(Player player) {
 		Archer archer = findArcherByPlayer(player);
 
-		if(archer != null) {
-			if(player != null) {
+		if (archer != null) {
+			if (player != null) {
 				player.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
 				player.getInventory().clear();
 				player.teleport(lobbyLocation);
@@ -609,7 +596,7 @@ public class GameController extends JavaPlugin {
 			removeBossBar(archer);
 			livePlayers.remove(archer);
 		}
-		
+
 		if (livePlayers.size() == 0) {
 			this.game.endGame();
 			this.endGame();
@@ -707,7 +694,7 @@ public class GameController extends JavaPlugin {
 
 	public void hitTarget(BlockTarget target, Player shooter) {
 		targets.remove(target);
-		if(shooter!= null){
+		if (shooter != null) {
 			givePoints(shooter, target.getHitPoints());
 		}
 		target.hitTarget2(shooter);
@@ -724,16 +711,16 @@ public class GameController extends JavaPlugin {
 		mTarget.hitTarget2(shooter);
 		Utils.shootFirework(shooter.getLocation());
 		destroyMovingTarget(mTarget);
-		if(shooter != null) {
+		if (shooter != null) {
 			this.giveBonus(shooter);
 		}
 	}
-	
+
 	public void giveBonus(Player shooter) {
 		Archer archer = findArcherByPlayer(shooter);
-		if(archer.getBow().equals(ArcherBow.DEFAULT)) {
+		if (archer.getBow().equals(ArcherBow.DEFAULT)) {
 			archer.setBow(ArcherBow.DOUBLE);
-		}else if(archer.getBow().equals(ArcherBow.DOUBLE)) {
+		} else if (archer.getBow().equals(ArcherBow.DOUBLE)) {
 			archer.setBow(ArcherBow.TRIPPLE);
 		}
 	}
@@ -792,7 +779,7 @@ public class GameController extends JavaPlugin {
 
 		dead.setHealth(20); // Do not show the respawn screen
 		dead.getInventory().clear();
-		
+
 		if (this.game.isStarted()) {
 			this.removeLivePlayer(dead);
 		}
@@ -815,13 +802,13 @@ public class GameController extends JavaPlugin {
 	}
 
 	public void killEntityTargets() {
-		for(EntityTarget eTarget: this.livingTargets) {
-			if( eTarget instanceof ZombieTarget) {
+		for (EntityTarget eTarget : this.livingTargets) {
+			if (eTarget instanceof ZombieTarget) {
 				this.killZombie(((ZombieTarget) eTarget).getZombie());
 			}
 		}
 	}
-	
+
 	public void killZombie(Zombie zombie) {
 		ZombieTarget et = (ZombieTarget) findEntityTargetByZombie(zombie);
 		Location loc = zombie.getLocation();
@@ -849,20 +836,20 @@ public class GameController extends JavaPlugin {
 
 		while (it.hasNext()) {
 			archer = it.next();
-			Logger.log("archer: " + archer.getPlayer().getName() + " base: " + new Double(archer.getBaseHealth()) );
+			Logger.log("archer: " + archer.getPlayer().getName() + " base: " + new Double(archer.getBaseHealth()));
 			if (archer.isNear(zl)) {
 				break;
 			}
 		}
 		if (archer != null) {
-			Logger.log("base: " + new Double(archer.getBaseHealth()) );
+			Logger.log("base: " + new Double(archer.getBaseHealth()));
 			if (archer.getBaseHealth() <= 0) {
 				archer.getBaseBar().setProgress(0);
 				return false;
 			} else {
 				archer.damageBase();
-				if(archer.getBaseHealth() > 0) {
-					archer.getBaseBar().setProgress( new Double(archer.getBaseHealth() ) );
+				if (archer.getBaseHealth() > 0) {
+					archer.getBaseBar().setProgress(new Double(archer.getBaseHealth()));
 				}
 			}
 		}
@@ -942,44 +929,47 @@ public class GameController extends JavaPlugin {
 	public void shootArrows(Player player) {
 		int iArrows = 1;
 		Archer archer = findArcherByPlayer(player);
-		if( archer.getBow().equals(ArcherBow.DEFAULT) ) {
+		if (archer.getBow().equals(ArcherBow.DEFAULT)) {
 			return;
-		} else if( archer.getBow().equals(ArcherBow.DOUBLE)) {
+		} else if (archer.getBow().equals(ArcherBow.DOUBLE)) {
 			iArrows = 1;
-		} else if( archer.getBow().equals(ArcherBow.TRIPPLE)) {
+		} else if (archer.getBow().equals(ArcherBow.TRIPPLE)) {
 			iArrows = 2;
 		}
-		
+
 		Location player_location = player.getLocation();
-		for(int i = 0 ; i <= iArrows ; i++) {
-			 
-			if( i == 1 && iArrows == 2) {
+		for (int i = 0; i <= iArrows; i++) {
+
+			if (i == 1 && iArrows == 2) {
 				continue;
 			} else if (i == 1 && iArrows == 1) {
 				break;
 			}
-		    int spread = 0;
-		 
-		    if(i == 0)      spread = -2;
-		    else if (i == 2) spread = 2;
-		 
-		    double pitch = ((player_location.getPitch() + 90) * Math.PI) / 180;
-		    double yaw  = ((player_location.getYaw() + 90 + spread) * Math.PI) / 180;
-		 
-		    double z_axis = Math.sin(pitch);
-		    double x = z_axis * Math.cos(yaw);
-		    double y = z_axis * Math.sin(yaw);
-		    double z = Math.cos(pitch);
-		 
-		    Logger.log("i " + i + " spread " + spread + " pitch " + pitch + " yaw " + yaw + " x " + x + " y " + y + " z " + z + " z_axis " + z_axis );
+			int spread = 0;
 
-		    Vector vector = new Vector(x, z, y);
-		    vector.multiply(3);
+			if (i == 0)
+				spread = -2;
+			else if (i == 2)
+				spread = 2;
 
-		    Arrow a = player.getWorld().spawn(player_location, Arrow.class);
-		    //a.setVelocity(vector);
-		    
-		    player.launchProjectile(Arrow.class,vector);
-		}	
+			double pitch = ((player_location.getPitch() + 90) * Math.PI) / 180;
+			double yaw = ((player_location.getYaw() + 90 + spread) * Math.PI) / 180;
+
+			double z_axis = Math.sin(pitch);
+			double x = z_axis * Math.cos(yaw);
+			double y = z_axis * Math.sin(yaw);
+			double z = Math.cos(pitch);
+
+			Logger.log("i " + i + " spread " + spread + " pitch " + pitch + " yaw " + yaw + " x " + x + " y " + y
+					+ " z " + z + " z_axis " + z_axis);
+
+			Vector vector = new Vector(x, z, y);
+			vector.multiply(3);
+
+			Arrow a = player.getWorld().spawn(player_location, Arrow.class);
+			// a.setVelocity(vector);
+
+			player.launchProjectile(Arrow.class, vector);
+		}
 	}
 }

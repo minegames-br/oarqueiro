@@ -24,20 +24,19 @@ public class SpawnSkeletonTask extends BukkitRunnable {
     	Game game = controller.getGame();
     	if(!game.isStarted()) {
     		return;
-    	}
-
+    	} 
+    	
     	//Pegar uma Location aleatória na área de spawn
     	Location l = controller.getRandomSpawnLocationForGroundEnemy();
     	
     	//Fazer spawn do skeleton
-    	Skeleton skeleton = (Skeleton)controller.getWorld().spawnEntity( l , EntityType.SKELETON);
+    	Skeleton entity = (Skeleton)controller.getWorld().spawnEntity( l , EntityType.SKELETON);
     	
     	//Colocar um Arco e Flechas na mão do Skeleton
     	ItemStack i = new ItemStack(Material.BOW, 1);
     	ItemStack a = new ItemStack(Material.ARROW, 32);
-    	skeleton.getEquipment().setItemInMainHand(i);
-    	skeleton.getEquipment().setItemInOffHand(a);
-        
+    	entity.getEquipment().setItemInMainHand(i);
+    	entity.getEquipment().setItemInOffHand(a);
     }
     
 }

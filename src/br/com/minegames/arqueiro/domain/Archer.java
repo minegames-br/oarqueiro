@@ -18,7 +18,6 @@ public class Archer implements Comparable{
 	private Area2D spawnPoint;
 	private ArcherBow bow;
 	private BossBar baseBar;
-	private ArcherChest chest;
 
 	public Player getPlayer() {
 		return player;
@@ -57,13 +56,6 @@ public class Archer implements Comparable{
 	public void regainHealthToPlayer(Archer archer) {
         Player player = archer.getPlayer();
         player.setHealth(player.getMaxHealth());
-    }
-	
-	public void setArcherChest(ArcherChest chest) {
-        this.chest = chest;
-    }
-    public ArcherChest getArcherChest() {
-        return this.chest;
     }
 	
 	public void setSpawnPoint(Area2D l) {

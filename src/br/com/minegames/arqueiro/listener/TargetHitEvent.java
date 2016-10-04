@@ -47,8 +47,6 @@ public class TargetHitEvent implements Listener {
 		    Arrow arrow = (Arrow)event.getEntity();
 		    
 		    Player shooter = (Player) arrow.getShooter();
-		    PlayerInventory inventory = shooter.getInventory();
-		    inventory.addItem(new ItemStack(Material.ARROW, 1));
 		    World world = arrow.getWorld();
 		    BlockIterator bi = new BlockIterator(world, arrow.getLocation().toVector(), arrow.getVelocity().normalize(), 0, 4);
 		    Block hit = null;
