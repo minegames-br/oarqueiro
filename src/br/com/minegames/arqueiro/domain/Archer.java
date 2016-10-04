@@ -1,6 +1,5 @@
 package br.com.minegames.arqueiro.domain;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
@@ -20,7 +19,7 @@ public class Archer implements Comparable{
 	private ArcherBow bow;
 	private BossBar baseBar;
 	private ArcherChest chest;
-	
+
 	public Player getPlayer() {
 		return player;
 	}
@@ -43,10 +42,6 @@ public class Archer implements Comparable{
 		if( this.point < 0) {
 			this.point = 0;
 		}
-	}
-	
-	public int getCurrentArrowDamage() {
-		return 30;
 	}
 	
 	public void damageBase() {

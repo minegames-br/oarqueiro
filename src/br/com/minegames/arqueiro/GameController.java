@@ -12,11 +12,12 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Arrow;
-import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -54,6 +55,7 @@ import br.com.minegames.arqueiro.listener.BowShootListener;
 import br.com.minegames.arqueiro.listener.EntityHitEvent;
 import br.com.minegames.arqueiro.listener.PlayerDeath;
 import br.com.minegames.arqueiro.listener.PlayerJoin;
+import br.com.minegames.arqueiro.listener.PlayerMove;
 import br.com.minegames.arqueiro.listener.PlayerQuit;
 import br.com.minegames.arqueiro.listener.ServerListener;
 import br.com.minegames.arqueiro.listener.TargetHitEvent;
@@ -265,10 +267,6 @@ public class GameController extends JavaPlugin {
 		this.startGameThreadID = scheduler.scheduleSyncRepeatingTask(this, this.startGameTask, 0L, 20L);
 		this.startCountDownThreadID = scheduler.scheduleSyncRepeatingTask(this, this.startCountDownTask, 0L, 25L);
 
-		this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-		Objective objective = this.scoreboard.registerNewObjective(Utils.color("&6Placar"), "placar");
-		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-
 	}
 
 	@Override
@@ -282,6 +280,7 @@ public class GameController extends JavaPlugin {
 	private void registerListeners() {
 		PluginManager pm = Bukkit.getPluginManager();
 		pm.registerEvents(new PlayerJoin(this), this);
+		pm.registerEvents(new PlayerMove(this), this);
 		pm.registerEvents(new PlayerQuit(this), this);
 		pm.registerEvents(new PlayerDeath(this), this);
 		pm.registerEvents(new TargetHitEvent(this), this);
@@ -348,12 +347,13 @@ public class GameController extends JavaPlugin {
 	}
 
 	private void updateScoreBoards() {
-		int index = 0;
 		for (Archer archer : this.livePlayers) {
 			Player player = archer.getPlayer();
-			String name = (String) playerNames.toArray()[index];
-			this.scoreboard.getObjective(DisplaySlot.SIDEBAR).getScore(name).setScore(archer.getPoint());
-			index++;
+			Scoreboard scoreboard = player.getScoreboard();
+			for(Archer a1: this.livePlayers) {
+				String name = a1.getPlayer().getName();
+				scoreboard.getObjective(DisplaySlot.SIDEBAR).getScore(name).setScore(a1.getPoint());
+			}
 		}
 	}
 
@@ -372,8 +372,10 @@ public class GameController extends JavaPlugin {
 		inventory.addItem(bow);
 		inventory.addItem(arrow);
 
-		player.setScoreboard(this.scoreboard);
-
+		Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+		Objective objective = scoreboard.registerNewObjective(Utils.color("&6Placar"), "placar");
+		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+		player.setScoreboard(scoreboard);
 	}
 
 	/**
@@ -476,8 +478,19 @@ public class GameController extends JavaPlugin {
 			for (Archer archer : this.livePlayers) {
 				TitleUtil.sendTitle(archer.getPlayer(), 1, 70, 10, "Nível " + this.game.getLevel().getLevel(), "");
 				archer.getArcherChest().refillChest();
+
+				//aumentar a força dos arcos
+				Player player = archer.getPlayer();
+				player.getInventory().clear();
+				ItemStack it = new ItemStack(Material.BOW);
+				if( (this.game.getLevel().getLevel() % 2) == 0 ) {
+					it.addEnchantment(Enchantment.ARROW_DAMAGE, this.game.getLevel().getLevel()/2);
+				}
+				it.addEnchantment(Enchantment.ARROW_INFINITE, 1);
+				player.getInventory().addItem(it);
+				player.getInventory().addItem(new ItemStack(Material.ARROW));
 			}
-			
+
 			//liberar o jogo novamente após 5 segundos
 			Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
 				public void run(){
@@ -593,6 +606,7 @@ public class GameController extends JavaPlugin {
 				player.getInventory().clear();
 				player.teleport(lobbyLocation);
 			}
+			removeBossBar(archer);
 			livePlayers.remove(archer);
 		}
 		
@@ -760,10 +774,8 @@ public class GameController extends JavaPlugin {
 
 	public void hitZombie(Zombie entity, Player player) {
 		Archer archer = this.findArcherByPlayer(player);
-		int damage = archer.getCurrentArrowDamage();
 		EntityTarget targetZombie = findEntityTargetByZombie(entity);
 		targetZombie.setKiller(player);
-		entity.damage(damage);
 	}
 
 	public int getMaxZombieSpawned() {
