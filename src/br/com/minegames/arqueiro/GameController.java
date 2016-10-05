@@ -64,6 +64,7 @@ import br.com.minegames.arqueiro.task.ExplodeZombieTask;
 import br.com.minegames.arqueiro.task.LevelUpTask;
 import br.com.minegames.arqueiro.task.PlaceMovingTargetTask;
 import br.com.minegames.arqueiro.task.PlaceTargetTask;
+import br.com.minegames.arqueiro.task.SpawnSkeletonTask;
 import br.com.minegames.arqueiro.task.SpawnZombieTask;
 import br.com.minegames.arqueiro.task.StartCoundDownTask;
 import br.com.minegames.arqueiro.task.StartGameTask;
@@ -89,6 +90,8 @@ public class GameController extends JavaPlugin {
 	private int destroyTargetThreadID;
 	private Runnable spawnZombieTask;
 	private int spawnZombieThreadID;
+	private Runnable spawnSkeletonTask;
+	private int spawnSkeletonThreadID;
 	private Runnable endGameTask;
 	private int endGameThreadID;
 	private Runnable levelUpTask;
@@ -112,14 +115,14 @@ public class GameController extends JavaPlugin {
 	private int startCountDownThreadID;
 	private Runnable startGameTask;
 	private int startGameThreadID;
+	private Runnable explodeZombieTask;
+	private int explodeZombieThreadID;
 
 	private Location firstPositionLocation;
 	private Location secondPositionLocation;
 	private Location thirdPositionLocation;
 	private Location fourthPositionLocation;
 
-	private Runnable explodeZombieTask;
-	private int explodeZombieThreadID;
 	private Archer winner;
 	private CopyOnWriteArraySet<String> playerNames = new CopyOnWriteArraySet<String>();
 
@@ -176,8 +179,8 @@ public class GameController extends JavaPlugin {
 		Location s2 = new Location(this.getWorld(), 490, 6, 1200);
 		this.spawnArea = new Area2D(s1, s2);
 
-		this.player1Arena = new Area2D(new Location(this.getWorld(), 457, a1.getY(), a1.getZ()),
-				new Location(this.getWorld(), 466, a1.getY(), 1169));
+		this.player1Arena = (new Area2D(new Location(this.getWorld(), 457, a1.getY(), a1.getZ()),
+				new Location(this.getWorld(), 466, a1.getY(), 1169)));
 		this.player2Arena = new Area2D(new Location(this.getWorld(), 468, a1.getY(), a1.getZ()),
 				new Location(this.getWorld(), 475, a1.getY(), 1169));
 		this.player3Arena = new Area2D(new Location(this.getWorld(), 477, a1.getY(), a1.getZ()),
@@ -242,9 +245,10 @@ public class GameController extends JavaPlugin {
 		this.endGameTask = new EndGameTask(this);
 		this.levelUpTask = new LevelUpTask(this);
 		this.spawnZombieTask = new SpawnZombieTask(this);
+		this.spawnSkeletonTask = new SpawnSkeletonTask(this);
 		this.startCountDownTask = new StartCoundDownTask(this);
 		this.startGameTask = new StartGameTask(this);
-		this.spawnZombieTask = new SpawnZombieTask(this);
+		//this.spawnZombieTask = new SpawnZombieTask(this);
 		this.explodeZombieTask = new ExplodeZombieTask(this);
 
 		this.countDown = 10;
@@ -335,6 +339,7 @@ public class GameController extends JavaPlugin {
 		this.destroyTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 100L);
 		this.endGameThreadID = scheduler.scheduleSyncRepeatingTask(this, this.endGameTask, 0L, 50L);
 		this.spawnZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 50L);
+		this.spawnSkeletonThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnSkeletonTask, 0L, 150L);
 		this.levelUpThreadID = scheduler.scheduleSyncRepeatingTask(this, this.levelUpTask, 0L, 100L);
 		// this.explodeZombieThreadID =
 		// scheduler.scheduleSyncRepeatingTask(this, this.explodeZombieTask, 0L,
@@ -402,6 +407,7 @@ public class GameController extends JavaPlugin {
 		Bukkit.getScheduler().cancelTask(this.destroyTargetThreadID);
 		Bukkit.getScheduler().cancelTask(this.endGameThreadID);
 		Bukkit.getScheduler().cancelTask(this.spawnZombieThreadID);
+		Bukkit.getScheduler().cancelTask(this.spawnSkeletonThreadID);
 		Bukkit.getScheduler().cancelTask(this.levelUpThreadID);
 		Bukkit.getScheduler().cancelTask(this.explodeZombieThreadID);
 
@@ -972,4 +978,5 @@ public class GameController extends JavaPlugin {
 			player.launchProjectile(Arrow.class, vector);
 		}
 	}
+
 }
