@@ -28,4 +28,5 @@ public class Target {
 		return hitPoints;
 	}
 
+
 }

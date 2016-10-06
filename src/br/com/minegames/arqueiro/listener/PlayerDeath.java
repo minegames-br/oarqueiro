@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
@@ -35,14 +36,14 @@ public class PlayerDeath implements Listener {
 			game.killPlayer(dead);
 		} else {
 			Entity entity = event.getEntity();
-			if(entity instanceof Zombie) {
-				Zombie z = (Zombie)entity;
-				if(z.getKiller() == null) {
+			if(entity instanceof Entity) {
+				Entity z = (Entity)entity;
+				if(((LivingEntity) z).getKiller() == null) {
 					Logger.log( "Killer está null" );
 				} else {
-					Logger.log(z.getKiller() + " " + z.getKiller().getName() );
+					Logger.log(((LivingEntity) z).getKiller() + " " + ((LivingEntity) z).getKiller().getName() );
 				}
-				game.killZombie(z);
+				game.killEntity(z);
 			}
 		}
     }

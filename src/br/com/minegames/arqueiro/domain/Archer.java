@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 public class Archer implements Comparable{
 
 	public static int HIT_TARGET = 50;
-	public static int KILL_SEKELETON = 200;
+	public static int KILL_SKELETON = 200;
 	public static int KILL_BAT = 100;
 	public static int HIT_SLOW_MOVING_TARGET = 100;
 	public static int HIT_FAST_MOVING_TARGET = 200;

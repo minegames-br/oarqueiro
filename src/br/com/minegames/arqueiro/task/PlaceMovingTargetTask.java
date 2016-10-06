@@ -49,7 +49,7 @@ public class PlaceMovingTargetTask extends BukkitRunnable {
      */
     private void createVerticalMovingTarget() {
     	Location l = controller.getRandomSpawnLocationForFloatingTarget();
-    	MovingTarget target = createTarget(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ(), Material.RED_SANDSTONE );
+    	MovingTarget target = createTarget(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ(), Material.BEACON );
     	controller.addMovingTarget(target);
     }
     
@@ -84,7 +84,7 @@ public class PlaceMovingTargetTask extends BukkitRunnable {
     		} else {
         		l.setY(y);
         		block = l.getBlock();
-        		block.setType(Material.RED_SANDSTONE);
+        		block.setType(Material.BEACON);
         		mt.setBlock(block);
     		}
     		

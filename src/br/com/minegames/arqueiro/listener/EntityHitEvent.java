@@ -1,8 +1,8 @@
 package br.com.minegames.arqueiro.listener;
 
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -33,11 +33,11 @@ public class EntityHitEvent implements Listener {
         }
         
         Player player = (Player) arrow.getShooter();
-	    if (event.getEntity() instanceof Zombie) {
-        	Logger.log("entity is zombie");
-	    	game.hitZombie((Zombie)event.getEntity(), player);
+	    if (event.getEntity() instanceof Entity) {
+        	Logger.log("entity is mob");
+	    	game.hitEntity(event.getEntity(), player);
 	    }else{
-        	Logger.log("entity not a zombie");
+        	Logger.log("entity not a mob");
 	    }
 	    
 	}

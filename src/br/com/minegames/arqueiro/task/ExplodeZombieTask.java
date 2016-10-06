@@ -3,6 +3,7 @@ package br.com.minegames.arqueiro.task;
 import java.util.Iterator;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Zombie;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -26,12 +27,12 @@ public class ExplodeZombieTask extends BukkitRunnable {
     	Iterator<EntityTarget> iterator = this.controller.getLivingTargets().iterator();
     	while(iterator.hasNext()) {
     		EntityTarget t = iterator.next();
-    		if(t instanceof ZombieTarget) {
-    			ZombieTarget z = (ZombieTarget)t;
-    			Zombie zombie = z.getZombie();
-    			if( controller.shouldExplodeZombie(zombie.getLocation())){
+    		if(t instanceof EntityTarget) {
+    			EntityTarget e = (EntityTarget)t;
+    			Entity entity = e.getLivingEntity();
+    			if( controller.shouldExplodeZombie(entity.getLocation())){
     				//Bukkit.broadcastMessage("Zombie is in region");
-    				controller.killZombie(zombie);
+    				controller.killEntity(entity);
     			}
     		}
     	}

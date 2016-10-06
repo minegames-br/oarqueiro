@@ -17,6 +17,7 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -248,7 +249,7 @@ public class GameController extends JavaPlugin {
 		this.spawnSkeletonTask = new SpawnSkeletonTask(this);
 		this.startCountDownTask = new StartCoundDownTask(this);
 		this.startGameTask = new StartGameTask(this);
-		//this.spawnZombieTask = new SpawnZombieTask(this);
+		// this.spawnZombieTask = new SpawnZombieTask(this);
 		this.explodeZombieTask = new ExplodeZombieTask(this);
 
 		this.countDown = 10;
@@ -377,9 +378,9 @@ public class GameController extends JavaPlugin {
 		ItemStack arrow = new ItemStack(Material.ARROW);
 		ItemStack sword = new ItemStack(Material.DIAMOND_SWORD);
 
-		bow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 500);
+		bow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 15);
 		bow.addEnchantment(Enchantment.ARROW_INFINITE, 1);
-		sword.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 100);
+		sword.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 15);
 
 		inventory.addItem(bow);
 		inventory.addItem(arrow);
@@ -489,18 +490,6 @@ public class GameController extends JavaPlugin {
 		if (this.game.getLevel().getLevel() >= 1) {
 			for (Archer archer : this.livePlayers) {
 				TitleUtil.sendTitle(archer.getPlayer(), 1, 70, 10, "Nível " + this.game.getLevel().getLevel(), "");
-
-				/*
-				 * //aumentar a força dos arcos Player player =
-				 * archer.getPlayer(); player.getInventory().clear(); ItemStack
-				 * it = new ItemStack(Material.BOW); if(
-				 * (this.game.getLevel().getLevel() % 2) == 0 ) {
-				 * //it.addEnchantment(Enchantment.ARROW_DAMAGE,
-				 * this.game.getLevel().getLevel()/2); }
-				 * it.addEnchantment(Enchantment.ARROW_INFINITE, 1);
-				 * player.getInventory().addItem(it);
-				 * player.getInventory().addItem(new ItemStack(Material.ARROW));
-				 */
 			}
 
 			// liberar o jogo novamente após 5 segundos
@@ -700,13 +689,19 @@ public class GameController extends JavaPlugin {
 
 	public void hitTarget(BlockTarget target, Player shooter) {
 		targets.remove(target);
-		if (shooter != null) {
-			givePoints(shooter, target.getHitPoints());
-		}
 		target.hitTarget2(shooter);
 		Location loc = target.getBlock().getLocation();
 		this.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 1.0F, false, false);
 		destroyBlockTarget(target);
+		if (shooter != null) {
+			float pX = (float) (loc.getBlock().getX() - shooter.getPlayer().getLocation().getX());
+			float pY = (float) (loc.getBlock().getY() - shooter.getPlayer().getLocation().getY());
+			float pZ = (float) (loc.getBlock().getZ() - shooter.getPlayer().getLocation().getZ());
+			int totalPoints = (int) (Math.round((pX + pY + pZ) * target.getWeigth()));
+			Logger.log("" + totalPoints);
+			givePoints(shooter, totalPoints);
+		}
+
 	}
 
 	public void hitEntityTarget(Target target, Player shooter) {
@@ -765,10 +760,10 @@ public class GameController extends JavaPlugin {
 		return LocationUtil.getRandomLocationXYZ(world, this.floatingArena);
 	}
 
-	public void hitZombie(Zombie entity, Player player) {
+	public void hitEntity(Entity entity, Player player) {
 		Archer archer = this.findArcherByPlayer(player);
-		EntityTarget targetZombie = findEntityTargetByZombie(entity);
-		targetZombie.setKiller(player);
+		EntityTarget target = findEntityTarget(entity);
+		target.setKiller(player);
 	}
 
 	public int getMaxZombieSpawned() {
@@ -807,25 +802,43 @@ public class GameController extends JavaPlugin {
 		return et;
 	}
 
+	public EntityTarget findEntityTarget(Entity entity) {
+		boolean foundTarget = false;
+		EntityTarget et = null;
+		for (EntityTarget z : this.livingTargets) {
+			if (z.getLivingEntity().equals(entity)) {
+				Logger.log("entity was a target");
+				foundTarget = true;
+				et = z;
+			}
+		}
+		if (!foundTarget) {
+			Logger.log("entity was a NOT target");
+		}
+		return et;
+	}
+
 	public void killEntityTargets() {
 		for (EntityTarget eTarget : this.livingTargets) {
-			if (eTarget instanceof ZombieTarget) {
-				this.killZombie(((ZombieTarget) eTarget).getZombie());
+			if (eTarget instanceof EntityTarget) {
+				this.killEntity(((EntityTarget) eTarget).getLivingEntity()); // this.killZombie...getZombie
 			}
 		}
 	}
 
-	public void killZombie(Zombie zombie) {
-		ZombieTarget et = (ZombieTarget) findEntityTargetByZombie(zombie);
-		Location loc = zombie.getLocation();
+	public void killEntity(Entity z) {
+		EntityTarget et = (EntityTarget) findEntityTarget(z);
+		Location loc = z.getLocation();
 		if (et != null) {
 			if (et.getKiller() != null) {
+				Logger.log("killer not null");
 				Player player = et.getKiller();
 				this.givePoints(player, et.getKillPoints());
 				this.livingTargets.remove(et);
 			} else {
-				if (damageArcherArea(zombie)) {
-					zombie.damage(zombie.getMaxHealth());
+				Logger.log("killer null");
+				if (damageArcherArea(z)) {
+					((Damageable) z).damage(((Damageable) z).getMaxHealth());
 					this.world.createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 2.0F, false, false);
 					this.livingTargets.remove(et);
 				} else {
@@ -835,8 +848,20 @@ public class GameController extends JavaPlugin {
 		}
 	}
 
-	private boolean damageArcherArea(Zombie zombie) {
-		Location zl = zombie.getLocation();
+	/*
+	 * public void killZombie(Zombie zombie) { ZombieTarget et = (ZombieTarget)
+	 * findEntityTargetByZombie(zombie); Location loc = zombie.getLocation(); if
+	 * (et != null) { if (et.getKiller() != null) { Player player =
+	 * et.getKiller(); this.givePoints(player, et.getKillPoints());
+	 * this.livingTargets.remove(et); } else { if (damageArcherArea(zombie)) {
+	 * zombie.damage(zombie.getMaxHealth());
+	 * this.world.createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 2.0F,
+	 * false, false); this.livingTargets.remove(et); } else {
+	 * destroyBase(loc.getBlockX()); } } } }
+	 */
+
+	private boolean damageArcherArea(Entity entity) {
+		Location zl = entity.getLocation();
 		Iterator<Archer> it = this.livePlayers.iterator();
 		Archer archer = null;
 

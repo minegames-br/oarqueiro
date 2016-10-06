@@ -6,7 +6,8 @@ public class GroundBlockTarget extends BlockTarget {
 	
 	public GroundBlockTarget(Block block) {
 		super(block);
-		this.hitPoints = 25;
+		this.hitPoints = 100;
+		this.setWeigth(5);
 	}
-	
+
 }

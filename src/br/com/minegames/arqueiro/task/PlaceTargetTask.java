@@ -18,6 +18,7 @@ import br.com.minegames.util.BlockManipulationUtil;
 public class PlaceTargetTask extends BukkitRunnable {
 	
 	private GameController controller;
+	private GroundBlockTarget groundTarget;
 	
 	public PlaceTargetTask(GameController controller) {
 		this.controller = controller;
