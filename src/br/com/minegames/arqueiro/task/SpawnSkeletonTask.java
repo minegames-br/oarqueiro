@@ -1,11 +1,8 @@
 package br.com.minegames.arqueiro.task;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -14,9 +11,7 @@ import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.Game;
 import br.com.minegames.arqueiro.domain.target.SkeletonTarget;
-import br.com.minegames.arqueiro.domain.target.ZombieTarget;
 import br.com.minegames.logging.Logger;
-import br.com.minegames.util.Utils;
 
 public class SpawnSkeletonTask extends BukkitRunnable {
 
@@ -35,7 +30,7 @@ public class SpawnSkeletonTask extends BukkitRunnable {
 			return;
 		}
 
-		if ((controller.getGame().getLevel().getLevel() == 2)) {
+		if ((controller.getGame().getLevel().getLevel() == 9)) {
 			Logger.log("spawnSkeleton");
 			this.entity = spawnSkeleton();
 		}

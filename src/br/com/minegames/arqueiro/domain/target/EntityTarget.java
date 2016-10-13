@@ -9,6 +9,7 @@ import br.com.minegames.arqueiro.GameController;
 public class EntityTarget extends Target {
 
 	private int killPoints = 50;
+	private double weigth;
 	protected LivingEntity entity;
 	protected Player killer;
 
@@ -18,6 +19,7 @@ public class EntityTarget extends Target {
 	}
 
 	public int getKillPoints() {
+		
 		return this.killPoints;
 	}
 
@@ -39,6 +41,14 @@ public class EntityTarget extends Target {
 
 	public void setKiller(Player killer) {
 		this.killer = killer;
+	}
+
+	public double getWeigth() {
+		return weigth;
+	}
+
+	public void setWeigth(double d) {
+		this.weigth = d;
 	}
 
 }

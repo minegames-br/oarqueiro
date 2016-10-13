@@ -9,7 +9,7 @@ public class BlockTarget extends Target {
 	
 	protected Block block;
 	protected Long creationTime;
-	private int weigth;
+	private double weigth;
 	
 	public BlockTarget(Block block) {
 		super();
@@ -42,11 +42,11 @@ public class BlockTarget extends Target {
 		return System.currentTimeMillis() - this.creationTime;
 	}
 
-	public int getWeigth() {
+	public double getWeigth() {
 		return weigth;
 	}
 
-	public void setWeigth(int weigth) {
+	public void setWeigth(double weigth) {
 		this.weigth = weigth;
 	}
 	

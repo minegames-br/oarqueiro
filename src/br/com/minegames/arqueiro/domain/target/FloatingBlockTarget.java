@@ -12,7 +12,7 @@ public class FloatingBlockTarget extends BlockTarget {
 	public FloatingBlockTarget(Block block) {
 		super(block);
 		this.hitPoints = 150;
-		this.setWeigth(7);
+		this.setWeigth(1.5);
 	}
 
 	@Override

@@ -1,12 +1,8 @@
 package br.com.minegames.arqueiro.listener;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -39,11 +35,11 @@ public class PlayerDeath implements Listener {
 			if(entity instanceof Entity) {
 				Entity z = (Entity)entity;
 				if(((LivingEntity) z).getKiller() == null) {
-					Logger.log( "Killer está null" );
+					Logger.log("Killer está null");
 				} else {
 					Logger.log(((LivingEntity) z).getKiller() + " " + ((LivingEntity) z).getKiller().getName() );
+					game.killEntity(z);
 				}
-				game.killEntity(z);
 			}
 		}
     }

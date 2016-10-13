@@ -45,12 +45,16 @@ public class Archer implements Comparable{
 	
 	public void damageBase() {
 		if(this.baseHealth > 0) {
-			this.baseHealth = (this.baseHealth - 0.1d);
+			this.baseHealth = this.baseHealth - 0.1d;
 		}
 	}
 	
 	public double getBaseHealth() {
 		return this.baseHealth;
+	}
+	
+	public void setBaseHeath(double x) {
+		this.baseHealth = x;
 	}
 	
 	public void regainHealthToPlayer(Archer archer) {

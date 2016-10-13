@@ -26,7 +26,7 @@ public class Utils {
         Firework firework = location.getWorld().spawn(location, Firework.class);
         FireworkMeta data = (FireworkMeta) firework.getFireworkMeta();
         
-        data.addEffects(FireworkEffect.builder().withColor(Color.GREEN).with( FireworkEffect.Type.BALL_LARGE).build());
+        data.addEffects(FireworkEffect.builder().withColor(Color.YELLOW).with( FireworkEffect.Type.STAR).build());
         data.setPower(2);
         
         firework.setFireworkMeta(data);

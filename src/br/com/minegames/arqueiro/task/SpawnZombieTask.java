@@ -50,11 +50,12 @@ public class SpawnZombieTask extends BukkitRunnable {
 		controller.addEntityTarget(new ZombieTarget(entity));
 
 		if (!entity.isBaby()) {
-			if ((this.controller.getGame().getLevel().getLevel() % 2) == 0) {
-				entity.addPotionEffect(
-						new PotionEffect(PotionEffectType.SPEED, 10000, controller.getGame().getLevel().getLevel()/2));
-						Logger.log("zombieSpeedIncreasead = " + (controller.getGame().getLevel().getLevel()/2));
-			}
+			//if ((this.controller.getGame().getLevel().getLevel() % 2) == 0) {
+			int speed = Math.round(controller.getGame().getLevel().getLevel()/2);	
+			entity.addPotionEffect(
+						new PotionEffect(PotionEffectType.SPEED, 10000, speed));
+						Logger.log("zombieSpeedIncreasead = " + speed);
+			//}
 		}
 		return entity;
 	}

@@ -12,7 +12,7 @@ import br.com.minegames.logging.Logger;
 
 public class EntityHitEvent implements Listener {
 
-	private GameController game;	
+	private GameController game;
 	
 	public EntityHitEvent(GameController plugin) {
 		super();
