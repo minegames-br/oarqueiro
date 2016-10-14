@@ -25,21 +25,13 @@ public class SpawnSkeletonTask extends BukkitRunnable {
 	@Override
 	public void run() {
 
-		Game game = controller.getGame();
-		if (!game.isStarted()) {
-			return;
-		}
-
-		if ((controller.getGame().getLevel().getLevel() == 9)) {
-			Logger.log("spawnSkeleton");
-			this.entity = spawnSkeleton();
-		}
+		this.entity = spawnSkeleton();
 
 	}
 
 	private Skeleton spawnSkeleton() {
 		Object aList[] = controller.getLivePlayers().toArray();
-
+		Logger.log("live players: " + aList.length );
 		for (int i = 0; i < aList.length; i++) {
 			Archer a = (Archer) aList[i];
 
@@ -59,10 +51,10 @@ public class SpawnSkeletonTask extends BukkitRunnable {
 
 			// dar equipamentos para o Skeleton
 			entity.getEquipment().setItemInMainHand(new ItemStack(Material.BOW));
-			entity.getEquipment().setBoots(new ItemStack(Material.DIAMOND_BOOTS));
-			entity.getEquipment().setLeggings(new ItemStack(Material.DIAMOND_LEGGINGS));
-			entity.getEquipment().setChestplate(new ItemStack(Material.DIAMOND_CHESTPLATE));
-			entity.getEquipment().setHelmet(new ItemStack(Material.DIAMOND_HELMET));
+			entity.getEquipment().setBoots(new ItemStack(Material.IRON_BOOTS));
+			entity.getEquipment().setLeggings(new ItemStack(Material.IRON_LEGGINGS));
+			entity.getEquipment().setChestplate(new ItemStack(Material.IRON_CHESTPLATE));
+			entity.getEquipment().setHelmet(new ItemStack(Material.IRON_HELMET));
 			entity.setTarget(a.getPlayer());
 			controller.addEntityTarget(new SkeletonTarget(entity));
 		}

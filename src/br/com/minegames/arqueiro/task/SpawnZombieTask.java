@@ -44,18 +44,13 @@ public class SpawnZombieTask extends BukkitRunnable {
 		Zombie entity = (Zombie) controller.getWorld().spawnEntity(l, EntityType.ZOMBIE);
 		int index = new Random().nextInt(controller.getLivePlayers().size());
 		Archer archer = (Archer) controller.getLivePlayers().toArray()[index];
-		Logger.log("index = " + index + " live players: " + controller.getLivePlayers().size()
-				+ archer.getPlayer().getName());
 		entity.setTarget(archer.getPlayer());
 		controller.addEntityTarget(new ZombieTarget(entity));
 
 		if (!entity.isBaby()) {
-			//if ((this.controller.getGame().getLevel().getLevel() % 2) == 0) {
 			int speed = Math.round(controller.getGame().getLevel().getLevel()/2);	
 			entity.addPotionEffect(
 						new PotionEffect(PotionEffectType.SPEED, 10000, speed));
-						Logger.log("zombieSpeedIncreasead = " + speed);
-			//}
 		}
 		return entity;
 	}

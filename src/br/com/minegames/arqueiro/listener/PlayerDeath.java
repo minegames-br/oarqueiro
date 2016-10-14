@@ -28,16 +28,13 @@ public class PlayerDeath implements Listener {
 		if (event instanceof PlayerDeathEvent) {
 			PlayerDeathEvent playerDeathEvent = (PlayerDeathEvent)event;
 			Player dead = (Player)playerDeathEvent.getEntity();
-			Logger.log("player: " + dead.getName() + " died.");
 			game.killPlayer(dead);
 		} else {
 			Entity entity = event.getEntity();
 			if(entity instanceof Entity) {
 				Entity z = (Entity)entity;
 				if(((LivingEntity) z).getKiller() == null) {
-					Logger.log("Killer está null");
 				} else {
-					Logger.log(((LivingEntity) z).getKiller() + " " + ((LivingEntity) z).getKiller().getName() );
 					game.killEntity(z);
 				}
 			}
