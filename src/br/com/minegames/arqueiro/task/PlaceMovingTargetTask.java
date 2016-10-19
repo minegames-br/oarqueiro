@@ -8,6 +8,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Game;
 import br.com.minegames.arqueiro.domain.target.FastMovingTarget;
@@ -31,8 +32,9 @@ public class PlaceMovingTargetTask extends BukkitRunnable {
     	
     	//mover os alvos criados um bloco para baixo
     	moveTargets();
-    	
-    	if(controller.getMovingTargets().size() >= controller.getMaxMovingTarget() ) {
+
+    	int configValue = controller.getGameInstance().getConfigIntValue(Constants.MAX_MOVING_TARGET);
+    	if(controller.getMovingTargets().size() >= configValue ) {
     		return;
     	}
     	

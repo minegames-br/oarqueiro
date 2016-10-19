@@ -7,13 +7,14 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Game;
 import br.com.minegames.arqueiro.domain.target.FloatingBlockTarget;
 import br.com.minegames.arqueiro.domain.target.GroundBlockTarget;
 import br.com.minegames.arqueiro.domain.target.Target;
 import br.com.minegames.arqueiro.domain.target.WallBlockTarget;
-import br.com.minegames.util.BlockManipulationUtil;
+import br.com.minegames.core.util.BlockManipulationUtil;
 
 public class PlaceTargetTask extends BukkitRunnable {
 	
@@ -31,7 +32,8 @@ public class PlaceTargetTask extends BukkitRunnable {
     		return;
     	}
 
-    	if(controller.getTargets().size() >= controller.getMaxTarget() ) {
+    	int configValue = controller.getGameInstance().getConfigIntValue(Constants.MAX_TARGET);
+    	if(controller.getTargets().size() >= configValue ) {
     		return;
     	}
     	
@@ -75,9 +77,11 @@ public class PlaceTargetTask extends BukkitRunnable {
      * @return
      */
     private void createWallTarget() {
+    	/*
     	Location l = controller.getRandomSpawnLocationForWallTarget();
     	Block block = createTarget(l);
     	controller.addTarget(new WallBlockTarget(block));
+    	*/
     }
 
     /**

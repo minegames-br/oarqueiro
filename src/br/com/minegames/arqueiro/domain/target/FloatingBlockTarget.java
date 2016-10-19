@@ -4,15 +4,12 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-import br.com.minegames.arqueiro.GameController;
-import br.com.minegames.util.BlockManipulationUtil;
-
 public class FloatingBlockTarget extends BlockTarget {
 	
 	public FloatingBlockTarget(Block block) {
 		super(block);
 		this.hitPoints = 150;
-		this.setWeigth(1.5);
+		this.setWeigth(7);
 	}
 
 	@Override

@@ -69,7 +69,9 @@ public class TargetHitEvent implements Listener {
 	            	BlockTarget bTarget = (BlockTarget)target;
 	            	Location l1 = hit.getLocation();
 	            	Location l2 = bTarget.getBlock().getLocation();
-	            	           	
+	            	
+	        	    Logger.log("hit: " + l1.getBlockX() + "," + l1.getBlockY() + "," + l1.getBlockZ() + " target: " + l2.getBlockX() + "," + l2.getBlockY() + "," + l2.getBlockZ() );
+	            	
 	            	if( l1.getBlockX() == l2.getBlockX() && l1.getBlockY() == l2.getBlockY() && l1.getBlockZ() == l2.getBlockZ() ) {
 		                game.hitTarget(bTarget, shooter);
 	            	}
@@ -84,6 +86,8 @@ public class TargetHitEvent implements Listener {
 
             	Location l1 = hit.getLocation();
             	Location l2 = target.getBlock().getLocation();
+            	
+        	    Logger.log("hit: " + l1.getBlockX() + "," + l1.getBlockY() + "," + l1.getBlockZ() + " target: " + l2.getBlockX() + "," + l2.getBlockY() + "," + l2.getBlockZ() );
             	
             	if( l1.getBlockX() == l2.getBlockX() && l1.getBlockY() == l2.getBlockY() && l1.getBlockZ() == l2.getBlockZ() ) {
 	                game.hitMovingTarget(target, shooter);

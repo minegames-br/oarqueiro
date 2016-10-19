@@ -26,7 +26,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -40,8 +39,6 @@ import br.com.minegames.arqueiro.command.TeleportToArenaCommand;
 import br.com.minegames.arqueiro.command.TriggerFireworkCommand;
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.ArcherBow;
-import br.com.minegames.arqueiro.domain.Area2D;
-import br.com.minegames.arqueiro.domain.Area3D;
 import br.com.minegames.arqueiro.domain.Game;
 import br.com.minegames.arqueiro.domain.target.BlockTarget;
 import br.com.minegames.arqueiro.domain.target.EntityTarget;
@@ -52,7 +49,6 @@ import br.com.minegames.arqueiro.domain.target.Target;
 import br.com.minegames.arqueiro.domain.target.WallBlockTarget;
 import br.com.minegames.arqueiro.listener.BowShootListener;
 import br.com.minegames.arqueiro.listener.EntityHitEvent;
-import br.com.minegames.arqueiro.listener.ExplodeListener;
 import br.com.minegames.arqueiro.listener.PlayerDeath;
 import br.com.minegames.arqueiro.listener.PlayerJoin;
 import br.com.minegames.arqueiro.listener.PlayerMove;
@@ -61,6 +57,7 @@ import br.com.minegames.arqueiro.listener.ServerListener;
 import br.com.minegames.arqueiro.listener.TargetHitEvent;
 import br.com.minegames.arqueiro.task.DestroyTargetTask;
 import br.com.minegames.arqueiro.task.EndGameTask;
+import br.com.minegames.arqueiro.task.ExplodeZombieTask;
 import br.com.minegames.arqueiro.task.LevelUpTask;
 import br.com.minegames.arqueiro.task.PlaceMovingTargetTask;
 import br.com.minegames.arqueiro.task.PlaceTargetTask;
@@ -68,11 +65,15 @@ import br.com.minegames.arqueiro.task.SpawnSkeletonTask;
 import br.com.minegames.arqueiro.task.SpawnZombieTask;
 import br.com.minegames.arqueiro.task.StartCoundDownTask;
 import br.com.minegames.arqueiro.task.StartGameTask;
+import br.com.minegames.core.domain.Area3D;
+import br.com.minegames.core.domain.GameInstance;
+import br.com.minegames.core.domain.Local;
+import br.com.minegames.core.util.BlockManipulationUtil;
+import br.com.minegames.core.util.LocationUtil;
+import br.com.minegames.core.util.Region;
+import br.com.minegames.core.util.Utils;
+import br.com.minegames.gamemanager.client.delegate.GameDelegate;
 import br.com.minegames.logging.Logger;
-import br.com.minegames.util.BlockManipulationUtil;
-import br.com.minegames.util.LocationUtil;
-import br.com.minegames.util.Region;
-import br.com.minegames.util.Utils;
 import br.com.minegames.util.title.TitleUtil;
 
 public class GameController extends JavaPlugin {
@@ -90,7 +91,7 @@ public class GameController extends JavaPlugin {
 	private int destroyTargetThreadID;
 	private Runnable spawnZombieTask;
 	private int spawnZombieThreadID;
-	private BukkitRunnable spawnSkeletonTask;
+	private Runnable spawnSkeletonTask;
 	private int spawnSkeletonThreadID;
 	private Runnable endGameTask;
 	private int endGameThreadID;
@@ -101,15 +102,6 @@ public class GameController extends JavaPlugin {
 	private CopyOnWriteArraySet<EntityTarget> livingTargets = new CopyOnWriteArraySet<EntityTarget>();
 	private CopyOnWriteArraySet<MovingTarget> movingTargets = new CopyOnWriteArraySet<MovingTarget>();
 
-	private CopyOnWriteArraySet<Area2D> arenaSpawnPoints = new CopyOnWriteArraySet<Area2D>();
-
-	private Location lobbyLocation;
-	private int maxplayers = 4;
-	private int minplayers = 1;
-	private int maxZombieSpawned = 4;
-	private int maxTarget = 3;
-	private int maxMovingTarget = 2;
-	private int countDown = 20;
 	private long gameStartTime;
 	private Runnable startCountDownTask;
 	private int startCountDownThreadID;
@@ -117,31 +109,25 @@ public class GameController extends JavaPlugin {
 	private int startGameThreadID;
 	private Runnable explodeZombieTask;
 	private int explodeZombieThreadID;
-
-	private Location firstPositionLocation;
-	private Location secondPositionLocation;
-	private Location thirdPositionLocation;
-	private Location fourthPositionLocation;
+	private int countDown;
+	private GameInstance instance = new GameInstance();
 
 	private Archer winner;
 	private CopyOnWriteArraySet<String> playerNames = new CopyOnWriteArraySet<String>();
 
-	private Area2D spawnArea;
-	private Area2D player1Arena;
-	private Area2D player2Arena;
-	private Area2D player3Arena;
-	private Area2D player4Arena;
-	private Area2D blackWall;
-	private Area3D arena;
-	private Area3D floatingArena;
-
 	private Scoreboard scoreboard;
 
+	// private ArcherChest[] playerChest;
+
+	public GameInstance getGameInstance() {
+		return this.instance;
+	}
+	
 	@Override
 	public void onEnable() {
 		Bukkit.setSpawnRadius(0);
 		Bukkit.getConsoleSender().sendMessage(Utils.color("&6O 'O Arqueiro - onEnable"));
-
+		
 		// registrar os Listeners de eventos do servidor e do jogo
 		registerListeners();
 
@@ -161,58 +147,11 @@ public class GameController extends JavaPlugin {
 		getCommand("tparena").setExecutor(new TeleportToArenaCommand(this));
 		getCommand("fwk").setExecutor(new TriggerFireworkCommand(this));
 
-		Location a1 = new Location(this.getWorld(), 457, 4, 1165);
-		Location a2 = new Location(this.getWorld(), 493, 18, 1200);
-		this.arena = new Area3D(a1, a2);
-
-		Location f1 = new Location(this.getWorld(), 459, 10, 1170);
-		Location f2 = new Location(this.getWorld(), 491, 14, 1197);
-		this.floatingArena = new Area3D(f1, f2);
-
-		Location b1 = new Location(this.getWorld(), 457, 6, 1200);
-		Location b2 = new Location(this.getWorld(), 493, 18, 1200);
-		this.blackWall = new Area2D(b1, b2);
-
-		Location s1 = new Location(this.getWorld(), 460, 6, 1180);
-		Location s2 = new Location(this.getWorld(), 490, 6, 1200);
-		this.spawnArea = new Area2D(s1, s2);
-
-		this.setPlayer1Arena((new Area2D(new Location(this.getWorld(), 457, a1.getY(), a1.getZ()),
-				new Location(this.getWorld(), 466, a1.getY(), 1169))));
-		this.setPlayer2Arena(new Area2D(new Location(this.getWorld(), 468, a1.getY(), a1.getZ()),
-				new Location(this.getWorld(), 475, a1.getY(), 1169)));
-		this.setPlayer3Arena(new Area2D(new Location(this.getWorld(), 477, a1.getY(), a1.getZ()),
-				new Location(this.getWorld(), 484, a1.getY(), 1169)));
-		this.setPlayer4Arena(new Area2D(new Location(this.getWorld(), 486, a1.getY(), 1164),
-				new Location(this.getWorld(), 493, a1.getY(), 1169)));
-
-		this.arenaSpawnPoints.clear();
-		this.arenaSpawnPoints.add(this.getPlayer1Arena());
-		this.arenaSpawnPoints.add(this.getPlayer2Arena());
-		this.arenaSpawnPoints.add(this.getPlayer3Arena());
-		this.arenaSpawnPoints.add(this.getPlayer4Arena());
-
-		this.lobbyLocation = new Location(this.getWorld(), 530, 4, 1210);
-
-		this.firstPositionLocation = new Location(this.getWorld(), 551, 19, 1227);
-		this.secondPositionLocation = new Location(this.getWorld(), 557, 14, 1220);
-		this.thirdPositionLocation = new Location(this.getWorld(), 564, 10, 1227);
-		this.fourthPositionLocation = new Location(this.getWorld(), 557, 5, 1227);
-
-		for (int i = arena.getPointA().getBlockX(); i < arena.getPointB().getBlockX(); i++) {
-			Location l1 = new Location(this.world, i, 4, 1168);
-			Material m1 = world.getBlockAt(l1).getType();
-			this.materialsToRestore.put(l1, m1);
-
-			Location l2 = new Location(this.world, i, 4, 1169);
-			Material m2 = world.getBlockAt(l2).getType();
-			this.materialsToRestore.put(l2, m2);
-		}
-
 		init();
 	}
 
 	private void init() {
+		this.instance = GameDelegate.getInstance().joinGame();
 
 		this.game = new Game();
 
@@ -236,7 +175,6 @@ public class GameController extends JavaPlugin {
 		}
 
 		// inicializar variaveis de instancia
-		this.maxZombieSpawned = 5;
 		this.placeTargetTask = new PlaceTargetTask(this);
 		this.placeMovingTargetTask = new PlaceMovingTargetTask(this);
 		this.destroyTargetTask = new DestroyTargetTask(this);
@@ -246,12 +184,13 @@ public class GameController extends JavaPlugin {
 		this.spawnSkeletonTask = new SpawnSkeletonTask(this);
 		this.startCountDownTask = new StartCoundDownTask(this);
 		this.startGameTask = new StartGameTask(this);
+		// this.spawnZombieTask = new SpawnZombieTask(this);
+		this.explodeZombieTask = new ExplodeZombieTask(this);
 
-		this.countDown = 10;
 		this.winner = null;
 
 		// re-criar a parede preta no fundo da arena em que aparecem os targets
-		createBlackWall();
+		//createBlackWall();
 
 		// re-criar proteção do player (cerca)
 		Iterator<Location> it = materialsToRestore.keySet().iterator();
@@ -261,6 +200,12 @@ public class GameController extends JavaPlugin {
 			world.getBlockAt(l).setType(m);
 		}
 
+		this.countDown = this.instance.getConfigIntValue(Constants.START_COUNTDOWN);
+		Bukkit.getLogger().info(Constants.START_COUNTDOWN + " " + this.countDown );
+		if(this.countDown == 0) {
+			this.countDown = 10;
+		}
+		
 		// Agendar as threads que vão detectar se o jogo pode comecar
 		BukkitScheduler scheduler = getServer().getScheduler();
 		this.startGameThreadID = scheduler.scheduleSyncRepeatingTask(this, this.startGameTask, 0L, 20L);
@@ -286,9 +231,12 @@ public class GameController extends JavaPlugin {
 		pm.registerEvents(new EntityHitEvent(this), this);
 		pm.registerEvents(new ServerListener(this), this);
 		pm.registerEvents(new BowShootListener(this), this);
-		pm.registerEvents(new ExplodeListener(this), this);
 	}
 
+	public int getCountDown() {
+		return this.countDown;
+	}
+	
 	/*
 	 * Quando esse método rodar, já teremos a quantidade máxima de jogadores na
 	 * arena ou então a quantidade mínima e o tempo de espera terminou.
@@ -302,9 +250,9 @@ public class GameController extends JavaPlugin {
 		int loc = 0;
 		for (Archer archer : livePlayers) {
 			Player player = archer.getPlayer();
-			Area2D spawnPoint = ((Area2D) this.arenaSpawnPoints.toArray()[loc]);
-			archer.setSpawnPoint(spawnPoint);
-			player.teleport(spawnPoint.getMiddle());
+			Area3D spawnPoint = (Area3D)this.instance.getAreaListByType("PLAYER-SPAWN").toArray()[loc];
+			archer.setSpawnPoint(spawnPoint);							   
+			player.teleport(spawnPoint.getMiddle(player.getWorld()));
 			archer.regainHealthToPlayer(archer);
 
 			// Preparar o jogador para a rodada. Dar armaduras, armas, etc...
@@ -313,6 +261,9 @@ public class GameController extends JavaPlugin {
 			BossBar bar = createBossBar();
 			archer.addBaseBar(bar);
 			bar.addPlayer(player);
+
+			Logger.log("preparar score board archer: " + archer.getPlayer().getName() + " base: "
+					+ new Double(archer.getBaseHealth()));
 
 			setupPlayerToStartGame(player);
 			loc++;
@@ -333,7 +284,11 @@ public class GameController extends JavaPlugin {
 		this.destroyTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 100L);
 		this.endGameThreadID = scheduler.scheduleSyncRepeatingTask(this, this.endGameTask, 0L, 50L);
 		this.spawnZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 50L);
+		this.spawnSkeletonThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnSkeletonTask, 0L, 150L);
 		this.levelUpThreadID = scheduler.scheduleSyncRepeatingTask(this, this.levelUpTask, 0L, 100L);
+		// this.explodeZombieThreadID =
+		// scheduler.scheduleSyncRepeatingTask(this, this.explodeZombieTask, 0L, 20L);
+
 	}
 
 	private BossBar createBossBar() {
@@ -384,7 +339,6 @@ public class GameController extends JavaPlugin {
 	 * Quando esse método executar, o jogo terá terminado com um vencedor e/ou o
 	 * tempo terá acabado.
 	 */
-
 	public void endGame() {
 		if (this.game.isStarted()) {
 			this.game.endGame();
@@ -399,7 +353,7 @@ public class GameController extends JavaPlugin {
 		Bukkit.getScheduler().cancelTask(this.spawnZombieThreadID);
 		Bukkit.getScheduler().cancelTask(this.spawnSkeletonThreadID);
 		Bukkit.getScheduler().cancelTask(this.levelUpThreadID);
-		// Bukkit.getScheduler().cancelTask(this.explodeZombieThreadID);
+		Bukkit.getScheduler().cancelTask(this.explodeZombieThreadID);
 
 		// TODO o que vai acontecer com os jogadores quando acabar o jogo?
 		// por enquanto vou tirá-los da arena e zerar os inventarios e recriar a
@@ -416,7 +370,7 @@ public class GameController extends JavaPlugin {
 		destroyTargets();
 
 		// restaurar parede preta
-		createBlackWall();
+		//createBlackWall();
 
 		// manda os jogadores para o podium
 		teleportPlayersToPodium();
@@ -475,14 +429,7 @@ public class GameController extends JavaPlugin {
 
 		// matar os mobs
 		// killEntityTargets();
-		BukkitScheduler scheduler = Bukkit.getScheduler();
 
-		Logger.log("Level: " + this.game.getLevel().getLevel());
-		if(this.game.getLevel().getLevel() == 9) {
-			Logger.log("rodando task spawnSkeleton");
-			spawnSkeletonTask.runTask(this);
-		}
-		
 		if (this.game.getLevel().getLevel() >= 1) {
 			for (Archer archer : this.livePlayers) {
 				TitleUtil.sendTitle(archer.getPlayer(), 1, 70, 10, "Nível " + this.game.getLevel().getLevel(), "");
@@ -493,11 +440,10 @@ public class GameController extends JavaPlugin {
 				public void run() {
 					game.levelUp();
 				}
-			}, 10L);
+			}, 100L);
 		} else {
 			this.game.levelUp();
 		}
-		
 	}
 
 	private void destroyTargets() {
@@ -516,7 +462,8 @@ public class GameController extends JavaPlugin {
 	private void teleportPlayersToPodium() {
 		Object aList[] = livePlayers.toArray();
 		Arrays.sort(aList);
-
+		Logger.log(aList.length + "");
+		/*
 		for (int i = 0; i < aList.length; i++) {
 
 			Archer a = (Archer) aList[i];
@@ -544,21 +491,33 @@ public class GameController extends JavaPlugin {
 				player.teleport(this.fourthPositionLocation);
 				Utils.shootFirework(player);
 			}
+
 		}
+		*/
 	}
 
 	private void teleportPlayersBackToLobby() {
 		// TODO pegar o location do lobby numa configuracao
 		for (Archer archer : livePlayers) {
 			Player player = archer.getPlayer();
-			player.teleport(lobbyLocation);
+			teleportPlayersBackToLobby(player);
 		}
 	}
 
+	public void teleportPlayersBackToLobby(Player player) {
+		
+		Local lobbyLocal = this.instance.getLocalByConfig(Constants.LOBBY_LOCATION);
+		Bukkit.getLogger().info("lobby local: " + lobbyLocal);
+		Location l = Utils.toLocation(player.getWorld(), lobbyLocal);
+		player.teleport(l);
+	}
+	
+	/*
 	// TODO recuperar a parede de alguma configuração
 	private void createBlackWall() {
 		BlockManipulationUtil.createWoolBlocks(this.blackWall.getPointA(), this.blackWall.getPointB(), DyeColor.BLACK);
 	}
+	*/
 
 	public void addPlayer(Player player) {
 		Archer archer = null;
@@ -569,6 +528,8 @@ public class GameController extends JavaPlugin {
 			livePlayers.add(archer);
 			player.sendMessage(Utils.color("&aBem vindo, Arqueiro!"));
 			playerNames.add(player.getName());
+		} else {
+			Logger.log("Jogador já está na lista");
 		}
 	}
 
@@ -579,7 +540,7 @@ public class GameController extends JavaPlugin {
 			if (player != null) {
 				player.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
 				player.getInventory().clear();
-				player.teleport(lobbyLocation);
+				teleportPlayersBackToLobby(player);
 			}
 			removeBossBar(archer);
 			livePlayers.remove(archer);
@@ -611,19 +572,6 @@ public class GameController extends JavaPlugin {
 		livingTargets.add(target);
 	}
 
-	public int getMaxPlayers() {
-		return this.maxplayers;
-	}
-
-	public int getMinPlayers() {
-		return this.minplayers;
-	}
-
-	public int getCoundDown() {
-		// TODO Auto-generated method stub
-		return countDown;
-	}
-
 	public Archer getWinner() {
 		return winner;
 	}
@@ -646,6 +594,7 @@ public class GameController extends JavaPlugin {
 	}
 
 	public void proceedCountdown() {
+		
 		if (this.countDown != 0) {
 			this.countDown--;
 			Bukkit.broadcastMessage(Utils.color("&6O jogo vai começar em " + this.countDown + " ..."));
@@ -672,14 +621,6 @@ public class GameController extends JavaPlugin {
 		return this.livingTargets;
 	}
 
-	public Area2D getSpawnArea() {
-		return spawnArea;
-	}
-
-	public void setSpawnArea(Area2D spawnArea) {
-		this.spawnArea = spawnArea;
-	}
-
 	public void hitTarget(BlockTarget target, Player shooter) {
 		targets.remove(target);
 		target.hitTarget2(shooter);
@@ -690,9 +631,9 @@ public class GameController extends JavaPlugin {
 			float pX = (float) (loc.getBlock().getX() - shooter.getPlayer().getLocation().getX());
 			float pY = (float) (loc.getBlock().getY() - shooter.getPlayer().getLocation().getY());
 			float pZ = (float) (loc.getBlock().getZ() - shooter.getPlayer().getLocation().getZ());
-			int distanceBonus = (int) (Math.round((pX + pY + pZ) * target.getWeigth()));
-			shooter.sendMessage(target.getHitPoints() + " + " + ChatColor.GOLD + distanceBonus);
-			givePoints(shooter, target.getHitPoints() + distanceBonus);
+			int totalPoints = (int) (Math.round((pX + pY + pZ) * target.getWeigth()));
+			Logger.log("" + totalPoints);
+			givePoints(shooter, totalPoints);
 		}
 
 	}
@@ -703,7 +644,7 @@ public class GameController extends JavaPlugin {
 
 	public void hitMovingTarget(MovingTarget mTarget, Player shooter) {
 		mTarget.hitTarget2(shooter);
-		Utils.shootFirework(mTarget.getBlock().getLocation());
+		Utils.shootFirework(shooter.getLocation());
 		destroyMovingTarget(mTarget);
 		if (shooter != null) {
 			this.giveBonus(shooter);
@@ -721,6 +662,7 @@ public class GameController extends JavaPlugin {
 
 	public void destroyMovingTarget(MovingTarget mTarget) {
 		Location loc = mTarget.getBlock().getLocation();
+		Logger.log("destroyMovingTarget: " + loc);
 		movingTargets.remove(mTarget);
 		mTarget.getBlock().setType(Material.AIR);
 		if (!mTarget.isHit()) {
@@ -728,45 +670,32 @@ public class GameController extends JavaPlugin {
 		}
 	}
 
-	public void sendToLobby(Player player) {
-		player.teleport(lobbyLocation);
-	}
-
 	public Location getRandomSpawnLocationForGroundEnemy() {
-		return LocationUtil.getRandomLocationXZ(world, this.spawnArea);
+		Area3D area = this.instance.getArea(Constants.MONSTERS_SPAWN_AREA);
+		return LocationUtil.getRandomLocationXZ(world, area);
 	}
 
 	public Location getRandomSpawnLocationForVerticalMovingTarget() {
-		return LocationUtil.getRandomLocationXYZ(world, this.floatingArena);
+		Area3D area = this.instance.getArea(Constants.FLOATING_AREA);
+		return LocationUtil.getRandomLocationXYZ(world, area);
 	}
 
 	public Location getRandomSpawnLocationForGroundTarget() {
-		return LocationUtil.getRandomLocationXZ(world, this.spawnArea);
-	}
-
-	public Location getRandomSpawnLocationForWallTarget() {
-		return LocationUtil.getRandomLocationXY(world, this.blackWall);
+		Area3D area = this.instance.getArea(Constants.MONSTERS_SPAWN_AREA);
+		return LocationUtil.getRandomLocationXZ(world, area);
 	}
 
 	public Location getRandomSpawnLocationForFloatingTarget() {
-		return LocationUtil.getRandomLocationXYZ(world, this.floatingArena);
+		Area3D area = this.instance.getArea(Constants.FLOATING_AREA);
+		return LocationUtil.getRandomLocationXYZ(world, area);
 	}
 
 	public void hitEntity(Entity entity, Player player) {
 		Archer archer = this.findArcherByPlayer(player);
 		EntityTarget target = findEntityTarget(entity);
 		target.setKiller(player);
-		givePoints(player, (target.getKillPoints() * 40) / 100);
 	}
 
-	public int getMaxZombieSpawned() {
-		return this.maxZombieSpawned;
-	}
-
-	public void setMaxZombieSpawned(int value) {
-		this.maxZombieSpawned = value;
-	}
-	
 	public void killPlayer(Player dead) {
 		String deadname = dead.getDisplayName();
 		Bukkit.broadcastMessage(ChatColor.GOLD + " " + deadname + "" + ChatColor.GREEN + " died.");
@@ -784,9 +713,13 @@ public class GameController extends JavaPlugin {
 		EntityTarget et = null;
 		for (EntityTarget z : this.livingTargets) {
 			if (z.getLivingEntity().equals(zombie)) {
+				Logger.log("zombie was a target");
 				foundTarget = true;
 				et = z;
 			}
+		}
+		if (!foundTarget) {
+			Logger.log("zombie was a NOT target");
 		}
 		return et;
 	}
@@ -796,9 +729,13 @@ public class GameController extends JavaPlugin {
 		EntityTarget et = null;
 		for (EntityTarget z : this.livingTargets) {
 			if (z.getLivingEntity().equals(entity)) {
+				Logger.log("entity was a target");
 				foundTarget = true;
 				et = z;
 			}
+		}
+		if (!foundTarget) {
+			Logger.log("entity was a NOT target");
 		}
 		return et;
 	}
@@ -806,7 +743,7 @@ public class GameController extends JavaPlugin {
 	public void killEntityTargets() {
 		for (EntityTarget eTarget : this.livingTargets) {
 			if (eTarget instanceof EntityTarget) {
-				this.killEntity(((EntityTarget) eTarget).getLivingEntity());
+				this.killEntity(((EntityTarget) eTarget).getLivingEntity()); // this.killZombie...getZombie
 			}
 		}
 	}
@@ -814,39 +751,59 @@ public class GameController extends JavaPlugin {
 	public void killEntity(Entity z) {
 		EntityTarget et = (EntityTarget) findEntityTarget(z);
 		Location loc = z.getLocation();
-		Player player = et.getKiller();
-		if (player != null) {
-			double pX = (loc.getX() - player.getLocation().getX());
-			double pZ = (loc.getZ() - player.getLocation().getZ());
-			int distanceBonus = (int) (Math.round((pX + pZ) * et.getWeigth()));
-			this.givePoints(player, (et.getKillPoints() + (distanceBonus)));
-			player.sendMessage(et.getKillPoints() + " + " + ChatColor.GOLD + distanceBonus);
-			this.livingTargets.remove(et);
-		}
-	}
-
-	public void explodeEntity(Entity e) {
-		Location loc = e.getLocation();
-		destroyBase(loc.getBlockX());
-	}
-
-	public boolean damageArcherArea(Archer archer, Entity entity) {
-		if(!(entity instanceof Zombie)) {
-			return false;
-		}
-		EntityTarget et = findEntityTargetByZombie((Zombie)entity);
-		Location zl = entity.getLocation();
-		if (archer.getBaseHealth() < 0) {
-			archer.getBaseBar().setProgress(0);
-			this.destroyBase((int) zl.getX());
-			return false;
-		} else {
-			archer.damageBase();
-			if (archer.getBaseHealth() >= 0) {
-				archer.getBaseBar().setProgress(new Double(archer.getBaseHealth()));
-				((Damageable) entity).damage(((Damageable) entity).getMaxHealth());
+		if (et != null) {
+			if (et.getKiller() != null) {
+				Logger.log("killer not null");
+				Player player = et.getKiller();
+				this.givePoints(player, et.getKillPoints());
 				this.livingTargets.remove(et);
-				this.world.createExplosion(zl.getX(), zl.getY(), zl.getZ() - 1, 2.0F, false, false);
+			} else {
+				Logger.log("killer null");
+				if (damageArcherArea(z)) {
+					((Damageable) z).damage(((Damageable) z).getMaxHealth());
+					this.world.createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 2.0F, false, false);
+					this.livingTargets.remove(et);
+				} else {
+					destroyBase(loc.getBlockX());
+				}
+			}
+		}
+	}
+
+	/*
+	 * public void killZombie(Zombie zombie) { ZombieTarget et = (ZombieTarget)
+	 * findEntityTargetByZombie(zombie); Location loc = zombie.getLocation(); if
+	 * (et != null) { if (et.getKiller() != null) { Player player =
+	 * et.getKiller(); this.givePoints(player, et.getKillPoints());
+	 * this.livingTargets.remove(et); } else { if (damageArcherArea(zombie)) {
+	 * zombie.damage(zombie.getMaxHealth());
+	 * this.world.createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 2.0F,
+	 * false, false); this.livingTargets.remove(et); } else {
+	 * destroyBase(loc.getBlockX()); } } } }
+	 */
+
+	private boolean damageArcherArea(Entity entity) {
+		Location zl = entity.getLocation();
+		Iterator<Archer> it = this.livePlayers.iterator();
+		Archer archer = null;
+
+		while (it.hasNext()) {
+			archer = it.next();
+			Logger.log("archer: " + archer.getPlayer().getName() + " base: " + new Double(archer.getBaseHealth()));
+			if (archer.isNear(zl)) {
+				break;
+			}
+		}
+		if (archer != null) {
+			Logger.log("base: " + new Double(archer.getBaseHealth()));
+			if (archer.getBaseHealth() <= 0) {
+				archer.getBaseBar().setProgress(0);
+				return false;
+			} else {
+				archer.damageBase();
+				if (archer.getBaseHealth() > 0) {
+					archer.getBaseBar().setProgress(new Double(archer.getBaseHealth()));
+				}
 			}
 		}
 		return true;
@@ -865,15 +822,12 @@ public class GameController extends JavaPlugin {
 		return this.game.getLevel().getLevel() == 11;
 	}
 
-	public int getMaxTarget() {
-		return this.maxTarget;
-	}
-
 	public boolean shouldExplodeZombie(Location location) {
 		Region r = new Region("spawnLocation", new Location(this.world, 457, 3, 1170),
 				new Location(this.world, 493, 3, 1171));
 
 		boolean result = false;
+		Logger.log(location + " " + location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ());
 		if (location.getBlockX() >= 457 && location.getBlockX() <= 493) {
 			if (location.getBlockZ() >= 1170 && location.getBlockZ() <= 1171) {
 				result = true;
@@ -881,10 +835,6 @@ public class GameController extends JavaPlugin {
 		}
 
 		return result;
-	}
-
-	public int getMaxMovingTarget() {
-		return this.maxMovingTarget;
 	}
 
 	public void destroyBlockTarget(BlockTarget bTarget) {
@@ -955,6 +905,9 @@ public class GameController extends JavaPlugin {
 			double y = z_axis * Math.sin(yaw);
 			double z = Math.cos(pitch);
 
+			Logger.log("i " + i + " spread " + spread + " pitch " + pitch + " yaw " + yaw + " x " + x + " y " + y
+					+ " z " + z + " z_axis " + z_axis);
+
 			Vector vector = new Vector(x, z, y);
 			vector.multiply(3);
 
@@ -963,38 +916,6 @@ public class GameController extends JavaPlugin {
 
 			player.launchProjectile(Arrow.class, vector);
 		}
-	}
-
-	public Area2D getPlayer1Arena() {
-		return player1Arena;
-	}
-
-	public void setPlayer1Arena(Area2D player1Arena) {
-		this.player1Arena = player1Arena;
-	}
-
-	public Area2D getPlayer2Arena() {
-		return player2Arena;
-	}
-
-	public void setPlayer2Arena(Area2D player2Arena) {
-		this.player2Arena = player2Arena;
-	}
-
-	public Area2D getPlayer3Arena() {
-		return player3Arena;
-	}
-
-	public void setPlayer3Arena(Area2D player3Arena) {
-		this.player3Arena = player3Arena;
-	}
-
-	public Area2D getPlayer4Arena() {
-		return player4Arena;
-	}
-
-	public void setPlayer4Arena(Area2D player4Arena) {
-		this.player4Arena = player4Arena;
 	}
 
 }

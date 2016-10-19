@@ -7,8 +7,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import br.com.minegames.arqueiro.GameController;
-import br.com.minegames.arqueiro.GameState;
-import br.com.minegames.util.Utils;
+import br.com.minegames.core.util.Utils;
 
 public class PlayerQuit implements Listener {
 
@@ -32,7 +31,7 @@ public class PlayerQuit implements Listener {
         //limpar o inventário do jogador
         player.getInventory().clear();
         
-        game.sendToLobby(player);
+        game.teleportPlayersBackToLobby(player);
     }
 
 }

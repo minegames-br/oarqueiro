@@ -3,28 +3,34 @@ package br.com.minegames.arqueiro.task;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
-import br.com.minegames.util.Utils;
+import br.com.minegames.core.util.Utils;
 
 public class StartGameTask extends BukkitRunnable {
 	
-	private GameController game;
+	private GameController controller;
 	
-	public StartGameTask(GameController game) {
-		this.game = game;
+	public StartGameTask(GameController controller) {
+		this.controller = controller;
 	}
 	
     @Override
     public void run() {
 
-        //Bukkit.getConsoleSender().sendMessage(Utils.color("&6StartGameTask - Verifying if the game can start"));
-    	if( game.getLivePlayers().size() == game.getMaxPlayers() && game.getGame().isWaitingPlayers()) {
+    	int minPlayers = controller.getGameInstance().getConfigIntValue(Constants.MIN_PLAYERS);
+    	int maxPlayers = controller.getGameInstance().getConfigIntValue(Constants.MAX_PLAYERS);
+    	
+    	Bukkit.getLogger().info("minPlayers: " + minPlayers);
+    	Bukkit.getLogger().info("maxPlayers: " + maxPlayers);
+    	
+    	if( controller.getLivePlayers().size() == maxPlayers && controller.getGame().isWaitingPlayers()) {
             Bukkit.getConsoleSender().sendMessage(Utils.color("&6StartGameTask - Max number of players achieved. Starting game."));
-    		game.startGameEngine();
-    	} else if ( (game.getLivePlayers().size() >= game.getMinPlayers())
-    			&& game.getCoundDown() == 0 && game.getGame().isWaitingPlayers() ) {
+            controller.startGameEngine();
+    	} else if ( (controller.getLivePlayers().size() >= minPlayers)
+    			&& controller.getCountDown() == 0 && controller.getGame().isWaitingPlayers() ) {
             Bukkit.getConsoleSender().sendMessage(Utils.color("&6StartGameTask - Min number of players achieved. Countdown 0. Starting game."));
-    		game.startGameEngine();
+            controller.startGameEngine();
     	}
     	
     	

@@ -10,7 +10,6 @@ public class SkeletonTarget extends EntityTarget {
 		super(skeleton);
 		this.skeleton = skeleton;
 		this.setKillPoints(100);
-		this.setWeigth(1.5);
 	}
 	
 	public Skeleton getSkeleton() {

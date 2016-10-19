@@ -8,7 +8,7 @@ public class WallBlockTarget extends BlockTarget {
 	public WallBlockTarget(Block block) {
 		super(block);
 		this.hitPoints = 200;
-		this.setWeigth(1.3);
+		this.setWeigth(10);
 	}
 
 	@Override

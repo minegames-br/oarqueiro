@@ -4,6 +4,8 @@ import org.bukkit.Location;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
+import br.com.minegames.core.domain.Area3D;
+
 public class Archer implements Comparable{
 
 	public static int HIT_TARGET = 50;
@@ -15,7 +17,7 @@ public class Archer implements Comparable{
 	private Player player;
 	private Integer point = 0;
 	private double baseHealth = 1;
-	private Area2D spawnPoint;
+	private Area3D spawnPoint;
 	private ArcherBow bow;
 	private BossBar baseBar;
 
@@ -45,7 +47,7 @@ public class Archer implements Comparable{
 	
 	public void damageBase() {
 		if(this.baseHealth > 0) {
-			this.baseHealth = this.baseHealth - 0.1d;
+			this.baseHealth = (this.baseHealth - 0.1d);
 		}
 	}
 	
@@ -53,33 +55,17 @@ public class Archer implements Comparable{
 		return this.baseHealth;
 	}
 	
-	public void setBaseHeath(double x) {
-		this.baseHealth = x;
-	}
-	
 	public void regainHealthToPlayer(Archer archer) {
         Player player = archer.getPlayer();
         player.setHealth(player.getMaxHealth());
     }
 	
-	public void setSpawnPoint(Area2D l) {
+	public void setSpawnPoint(Area3D l) {
 		this.spawnPoint = l;
 	}
 	
-	public Area2D getSpawnPoint() {
+	public Area3D getSpawnPoint() {
 		return this.spawnPoint;
-	}
-	public boolean isNear(Location l) {
-		int x = l.getBlockX();
-		int minX = spawnPoint.getPointA().getBlockX();
-		int maxX = spawnPoint.getPointA().getBlockX();
-		int maxZ = spawnPoint.getPointB().getBlockZ();
-		if( x >= minX || x <= maxX) {
-			if(l.getBlockZ() == maxZ+1) {
-				return true;
-			}
-		}
-		return false;
 	}
 	
 	@Override
@@ -100,6 +86,19 @@ public class Archer implements Comparable{
 	
 	public BossBar getBaseBar() {
 		return this.baseBar;
+	}
+	
+	public boolean isNear(Location l) {
+		int x = l.getBlockX();
+		int minX = spawnPoint.getPointA().getX();
+		int maxX = spawnPoint.getPointA().getX();
+		int maxZ = spawnPoint.getPointB().getZ();
+		if( x >= minX || x <= maxX) {
+			if(l.getBlockZ() == maxZ+1) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }

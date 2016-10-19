@@ -2,7 +2,7 @@ package br.com.minegames.logging;
 
 import org.bukkit.Bukkit;
 
-import br.com.minegames.util.Utils;
+import br.com.minegames.core.util.Utils;
 
 public class Logger {
 

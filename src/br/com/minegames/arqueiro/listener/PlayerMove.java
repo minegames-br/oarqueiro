@@ -5,7 +5,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 import br.com.minegames.arqueiro.GameController;
-import br.com.minegames.util.Utils;
+import br.com.minegames.core.util.Utils;
 
 public class PlayerMove implements Listener {
 
