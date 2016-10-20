@@ -21,7 +21,7 @@ import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.target.BlockTarget;
 import br.com.minegames.arqueiro.domain.target.MovingTarget;
 import br.com.minegames.arqueiro.domain.target.Target;
-import br.com.minegames.logging.Logger;
+import br.com.minegames.core.logging.Logger;
 
 public class TargetHitEvent implements Listener {
 

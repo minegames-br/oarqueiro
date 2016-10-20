@@ -68,13 +68,13 @@ import br.com.minegames.arqueiro.task.StartGameTask;
 import br.com.minegames.core.domain.Area3D;
 import br.com.minegames.core.domain.GameInstance;
 import br.com.minegames.core.domain.Local;
+import br.com.minegames.core.logging.Logger;
 import br.com.minegames.core.util.BlockManipulationUtil;
 import br.com.minegames.core.util.LocationUtil;
 import br.com.minegames.core.util.Region;
 import br.com.minegames.core.util.Utils;
+import br.com.minegames.core.util.title.TitleUtil;
 import br.com.minegames.gamemanager.client.delegate.GameDelegate;
-import br.com.minegames.logging.Logger;
-import br.com.minegames.util.title.TitleUtil;
 
 public class GameController extends JavaPlugin {
 
@@ -117,6 +117,10 @@ public class GameController extends JavaPlugin {
 
 	private Scoreboard scoreboard;
 
+	private String arena;
+
+	private GameDelegate delegate;
+
 	// private ArcherChest[] playerChest;
 
 	public GameInstance getGameInstance() {
@@ -128,9 +132,6 @@ public class GameController extends JavaPlugin {
 		Bukkit.setSpawnRadius(0);
 		Bukkit.getConsoleSender().sendMessage(Utils.color("&6O 'O Arqueiro - onEnable"));
 		
-		// registrar os Listeners de eventos do servidor e do jogo
-		registerListeners();
-
 		// inicializar em que mundo o jogador está. Só deve ter um.
 		// não deixar mudar dia/noite
 		// não deixar fazer spawn de mobs automatico
@@ -147,14 +148,39 @@ public class GameController extends JavaPlugin {
 		getCommand("tparena").setExecutor(new TeleportToArenaCommand(this));
 		getCommand("fwk").setExecutor(new TriggerFireworkCommand(this));
 
-		init();
-	}
-
-	private void init() {
-		this.instance = GameDelegate.getInstance().joinGame();
-
+		this.delegate = GameDelegate.getInstance();
+		
+		//ao criar, o jogo fica imediatamente esperando jogadores
 		this.game = new Game();
 
+		this.countDown = this.delegate.getGlobalConfig(Constants.START_COUNTDOWN).getIntValue();
+		Bukkit.getLogger().info(Constants.START_COUNTDOWN + " " + this.countDown );
+		if(this.countDown == 0) {
+			this.countDown = 10;
+		}
+
+		// Agendar as threads que vão detectar se o jogo pode comecar
+		this.startCountDownTask = new StartCoundDownTask(this);
+		this.startGameTask = new StartGameTask(this);
+
+		BukkitScheduler scheduler = getServer().getScheduler();
+		this.startGameThreadID = scheduler.scheduleSyncRepeatingTask(this, this.startGameTask, 0L, 20L);
+		this.startCountDownThreadID = scheduler.scheduleSyncRepeatingTask(this, this.startCountDownTask, 0L, 25L);
+
+		// inicializar variaveis de instancia
+		this.placeTargetTask = new PlaceTargetTask(this);
+		this.placeMovingTargetTask = new PlaceMovingTargetTask(this);
+		this.destroyTargetTask = new DestroyTargetTask(this);
+		this.endGameTask = new EndGameTask(this);
+		this.levelUpTask = new LevelUpTask(this);
+		this.spawnZombieTask = new SpawnZombieTask(this);
+		this.spawnSkeletonTask = new SpawnSkeletonTask(this);
+		// this.spawnZombieTask = new SpawnZombieTask(this);
+		this.explodeZombieTask = new ExplodeZombieTask(this);
+
+	}
+
+	private void restart() {
 		// zerar lista de players
 		this.playerList.clear();
 		this.livePlayers.clear();
@@ -174,23 +200,7 @@ public class GameController extends JavaPlugin {
 			}
 		}
 
-		// inicializar variaveis de instancia
-		this.placeTargetTask = new PlaceTargetTask(this);
-		this.placeMovingTargetTask = new PlaceMovingTargetTask(this);
-		this.destroyTargetTask = new DestroyTargetTask(this);
-		this.endGameTask = new EndGameTask(this);
-		this.levelUpTask = new LevelUpTask(this);
-		this.spawnZombieTask = new SpawnZombieTask(this);
-		this.spawnSkeletonTask = new SpawnSkeletonTask(this);
-		this.startCountDownTask = new StartCoundDownTask(this);
-		this.startGameTask = new StartGameTask(this);
-		// this.spawnZombieTask = new SpawnZombieTask(this);
-		this.explodeZombieTask = new ExplodeZombieTask(this);
-
 		this.winner = null;
-
-		// re-criar a parede preta no fundo da arena em que aparecem os targets
-		//createBlackWall();
 
 		// re-criar proteção do player (cerca)
 		Iterator<Location> it = materialsToRestore.keySet().iterator();
@@ -200,17 +210,38 @@ public class GameController extends JavaPlugin {
 			world.getBlockAt(l).setType(m);
 		}
 
-		this.countDown = this.instance.getConfigIntValue(Constants.START_COUNTDOWN);
+		this.countDown = this.delegate.getGlobalConfig(Constants.START_COUNTDOWN).getIntValue();
 		Bukkit.getLogger().info(Constants.START_COUNTDOWN + " " + this.countDown );
 		if(this.countDown == 0) {
 			this.countDown = 10;
 		}
 		
-		// Agendar as threads que vão detectar se o jogo pode comecar
 		BukkitScheduler scheduler = getServer().getScheduler();
 		this.startGameThreadID = scheduler.scheduleSyncRepeatingTask(this, this.startGameTask, 0L, 20L);
 		this.startCountDownThreadID = scheduler.scheduleSyncRepeatingTask(this, this.startCountDownTask, 0L, 25L);
 
+	}
+
+	private void start() {
+		this.game = new Game();
+		
+		this.instance = GameDelegate.getInstance().joinGame(this.arena);
+		
+		this.world = Bukkit.getWorld(this.instance.getWorld().getName());
+
+		// Remover qualquer entidade que tenha ficado no mapa
+		for (Entity entity : world.getEntities()) {
+			if (!(entity instanceof Player) && entity instanceof LivingEntity) {
+				entity.remove();
+			}
+		}
+
+		this.countDown = this.delegate.getGlobalConfig(Constants.START_COUNTDOWN).getIntValue();
+		Bukkit.getLogger().info(Constants.START_COUNTDOWN + " " + this.countDown );
+		if(this.countDown == 0) {
+			this.countDown = 10;
+		}
+		
 	}
 
 	@Override
@@ -242,7 +273,12 @@ public class GameController extends JavaPlugin {
 	 * arena ou então a quantidade mínima e o tempo de espera terminou.
 	 */
 	public void startGameEngine() {
+		start();
+		
 		this.game.start();
+
+		// registrar os Listeners de eventos do servidor e do jogo
+		registerListeners();
 
 		Bukkit.getConsoleSender().sendMessage(Utils.color("&6Game.startGameEngine"));
 
@@ -252,7 +288,7 @@ public class GameController extends JavaPlugin {
 			Player player = archer.getPlayer();
 			Area3D spawnPoint = (Area3D)this.instance.getAreaListByType("PLAYER-SPAWN").toArray()[loc];
 			archer.setSpawnPoint(spawnPoint);							   
-			player.teleport(spawnPoint.getMiddle(player.getWorld()));
+			player.teleport(spawnPoint.getMiddle(this.world));
 			archer.regainHealthToPlayer(archer);
 
 			// Preparar o jogador para a rodada. Dar armaduras, armas, etc...
@@ -385,7 +421,7 @@ public class GameController extends JavaPlugin {
 
 		if (!this.game.isShuttingDown()) {
 			// limpar a arena e reiniciar o plugin
-			init();
+			restart();
 		}
 
 	}
@@ -508,7 +544,7 @@ public class GameController extends JavaPlugin {
 		
 		Local lobbyLocal = this.instance.getLocalByConfig(Constants.LOBBY_LOCATION);
 		Bukkit.getLogger().info("lobby local: " + lobbyLocal);
-		Location l = Utils.toLocation(player.getWorld(), lobbyLocal);
+		Location l = Utils.toLocation(this.world, lobbyLocal);
 		player.teleport(l);
 	}
 	
@@ -672,7 +708,7 @@ public class GameController extends JavaPlugin {
 
 	public Location getRandomSpawnLocationForGroundEnemy() {
 		Area3D area = this.instance.getArea(Constants.MONSTERS_SPAWN_AREA);
-		return LocationUtil.getRandomLocationXZ(world, area);
+		return LocationUtil.getRandomLocationXYZ(world, area);
 	}
 
 	public Location getRandomSpawnLocationForVerticalMovingTarget() {
@@ -682,7 +718,7 @@ public class GameController extends JavaPlugin {
 
 	public Location getRandomSpawnLocationForGroundTarget() {
 		Area3D area = this.instance.getArea(Constants.MONSTERS_SPAWN_AREA);
-		return LocationUtil.getRandomLocationXZ(world, area);
+		return LocationUtil.getRandomLocationXYZ(world, area);
 	}
 
 	public Location getRandomSpawnLocationForFloatingTarget() {
@@ -918,4 +954,11 @@ public class GameController extends JavaPlugin {
 		}
 	}
 
+	public void setArena(String value) {
+		this.arena = value;
+	}
+
+	public GameDelegate getGameDelegate() {
+		return this.delegate;
+	}
 }

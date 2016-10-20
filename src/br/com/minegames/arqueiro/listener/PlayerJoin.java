@@ -8,7 +8,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.core.util.Utils;
-import br.com.minegames.util.title.TitleUtil;
+import br.com.minegames.core.util.title.TitleUtil;
 
 public class PlayerJoin implements Listener {
 
@@ -22,12 +22,13 @@ public class PlayerJoin implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
 
+    	/*
         event.setJoinMessage(null);
         Bukkit.getConsoleSender().sendMessage(Utils.color("&6PlayerJoin.onJoin"));
         game.teleportPlayersBackToLobby(event.getPlayer());
         Player player = (Player)event.getPlayer();
     	TitleUtil.sendTabTitle(player,"Header","Footer");
-        
+        */
     }
 
 }

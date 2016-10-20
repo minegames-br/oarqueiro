@@ -6,7 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import br.com.minegames.arqueiro.GameController;
-import br.com.minegames.logging.Logger;
+import br.com.minegames.core.logging.Logger;
 
 public class LeaveGameCommand implements CommandExecutor {
 

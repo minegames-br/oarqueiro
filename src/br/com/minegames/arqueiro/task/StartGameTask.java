@@ -18,8 +18,8 @@ public class StartGameTask extends BukkitRunnable {
     @Override
     public void run() {
 
-    	int minPlayers = controller.getGameInstance().getConfigIntValue(Constants.MIN_PLAYERS);
-    	int maxPlayers = controller.getGameInstance().getConfigIntValue(Constants.MAX_PLAYERS);
+    	int minPlayers = controller.getGameDelegate().getGlobalConfig(Constants.MIN_PLAYERS).getIntValue();
+    	int maxPlayers = controller.getGameDelegate().getGlobalConfig(Constants.MAX_PLAYERS).getIntValue();
     	
     	Bukkit.getLogger().info("minPlayers: " + minPlayers);
     	Bukkit.getLogger().info("maxPlayers: " + maxPlayers);

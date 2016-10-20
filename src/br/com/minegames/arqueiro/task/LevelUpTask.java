@@ -5,7 +5,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.GameState;
 import br.com.minegames.arqueiro.domain.Game;
-import br.com.minegames.logging.Logger;
+import br.com.minegames.core.logging.Logger;
 
 public class LevelUpTask extends BukkitRunnable {
 	

@@ -16,7 +16,7 @@ public class StartCoundDownTask extends BukkitRunnable {
     @Override
     public void run() {
 
-    	int configValue = controller.getGameInstance().getConfigIntValue(Constants.MIN_PLAYERS);
+    	int configValue = controller.getGameDelegate().getGlobalConfig(Constants.MIN_PLAYERS).getIntValue();
     	if( !controller.getGame().isStarting() ) {
         	if( controller.getLivePlayers().size() >= configValue && !controller.getGame().isStarting() ) {
         		controller.startCoundDown();

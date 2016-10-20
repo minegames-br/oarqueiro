@@ -15,8 +15,8 @@ import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.Game;
 import br.com.minegames.arqueiro.domain.target.ZombieTarget;
+import br.com.minegames.core.logging.Logger;
 import br.com.minegames.core.util.Utils;
-import br.com.minegames.logging.Logger;
 
 public class SpawnZombieTask extends BukkitRunnable {
 

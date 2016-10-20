@@ -11,7 +11,7 @@ import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.Game;
 import br.com.minegames.arqueiro.domain.target.SkeletonTarget;
-import br.com.minegames.logging.Logger;
+import br.com.minegames.core.logging.Logger;
 
 public class SpawnSkeletonTask extends BukkitRunnable {
 

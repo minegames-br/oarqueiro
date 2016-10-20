@@ -6,7 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import br.com.minegames.arqueiro.GameController;
-import br.com.minegames.logging.Logger;
+import br.com.minegames.core.logging.Logger;
 
 public class JoinGameCommand implements CommandExecutor {
 
@@ -26,9 +26,24 @@ public class JoinGameCommand implements CommandExecutor {
         	Logger.log(commandSender + " - commando somente para players");
             return false;
         }
-
+        
         Player player = (Player) commandSender;
-        game.addPlayer(player);
+        if(game.getLivePlayers() != null && game.getLivePlayers().size() > 0) {
+        	if(args != null || args.length > 0) {
+        		player.sendMessage("Uma arena está ativa. Vou te mandar pra lá.");
+        	}
+            game.addPlayer(player);
+        } else {
+	        
+	        if(args == null || args.length != 1) {
+	        	player.sendMessage("/jogar <arena> exemplo: /jogar arena1 ou /jogar arena3");
+	        	return false;
+	        } else {
+	        	game.setArena(args[0]);
+	            game.addPlayer(player);
+	        }
+
+        }
         
         return true;
     }

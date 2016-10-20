@@ -8,8 +8,8 @@ import org.bukkit.entity.Player;
 
 import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
+import br.com.minegames.core.logging.Logger;
 import br.com.minegames.core.util.Utils;
-import br.com.minegames.logging.Logger;
 
 public class TeleportToArenaCommand implements CommandExecutor {
 
