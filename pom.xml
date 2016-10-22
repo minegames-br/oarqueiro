@@ -4,6 +4,37 @@
   <artifactId>br.com.minegames.arqueiro</artifactId>
   <version>1.0.0</version>
   <name>Arqueiro</name>
+
+	<properties>
+		<targetDir>D:/minecraft/</targetDir>
+	</properties>
+	<profiles>
+		<profile>
+			<id>renato</id>
+			<activation>
+				<property>
+					<name>developer</name>
+					<value>renato</value>
+				</property>
+			</activation>
+			<properties>
+				<targetDir>c:/temp/</targetDir>
+			</properties>
+		</profile>
+		<profile>
+			<id>joao</id>
+			<activation>
+				<property>
+					<name>developer</name>
+					<value>joao</value>
+				</property>
+			</activation>
+			<properties>
+				<targetDir>D:/minecraft/minecraft-arqueiro/plugins</targetDir>
+			</properties>
+		</profile>
+	</profiles>
+
   <build>
     <sourceDirectory>src</sourceDirectory>
     <resources>
@@ -23,35 +54,60 @@
           <target>1.7</target>
         </configuration>
       </plugin>
+		<plugin>
+    		<artifactId>maven-resources-plugin</artifactId>
+    		<version>3.0.0</version>
+    		<executions>
+        		<execution>
+            		<id>copy-files-on-build</id>
+            		<phase>validate</phase>
+            		<goals>
+                		<goal>copy-resources</goal>
+            		</goals>
+            		<configuration>
+                		<outputDirectory>${targetDir}</outputDirectory>
+                		<resources>
+                    		<resource>
+								<directory>target</directory>
+                        		<includes>
+                        			<include>*.jar</include>
+                        		</includes>
+                        		<filtering>false</filtering>
+                    		</resource>
+                		</resources>
+            		</configuration>
+        		</execution>
+    		</executions>
+		</plugin>
     </plugins>
   </build>
+  <repositories>
+    	<repository>
+        	<id>spigot-repo</id>
+        	<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+    	</repository>
+    </repositories>
   <dependencies>
 
-    	<!--Spigot API-->
-    	<dependency>
-           <groupId>org.spigotmc</groupId>
-           <artifactId>spigot-api</artifactId>
-           <version>1.10.2-R0.1-SNAPSHOT</version>
-           <scope>provided</scope>
-	    </dependency>
-    
-  </dependencies>
+		<!--Spigot API-->
+		<dependency>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>spigot-api</artifactId>
+			<version>1.10.2-R0.1-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+  			<dependency>
+  				<groupId>br.com.minegames.core</groupId>
+  				<artifactId>br.com.minegames.core</artifactId>
+  				<version>1.0.0</version>
+  			</dependency>
+			<dependency>
+  				<groupId>br.com.minegames.gamemanager.client</groupId>
+				<artifactId>br.com.minegames.gamemanager.client</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+			
+	</dependencies>
 
-  <dependencyManagement>
-  	<dependencies>
-  		<dependency>
-  			<groupId>br.com.minegames.core</groupId>
-  			<artifactId>br.com.minegames.core</artifactId>
-  			<version>1.0.0</version>
-  		</dependency>
 
-  		<dependency>
-  			<groupId>br.com.minegames.gamemanager.client</groupId>
-  			<artifactId>
-  				br.com.minegames.gamemanager.client
-  			</artifactId>
-  			<version>1.0.0</version>
-  		</dependency>
-  	</dependencies>
-  </dependencyManagement>
 </project>

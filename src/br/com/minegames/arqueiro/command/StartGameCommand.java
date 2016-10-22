@@ -20,10 +20,10 @@ public class StartGameCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String label, String[] args) {
     	
-    	Logger.log(commandSender.getName() + " " + command.getName() + " " + label + " " + args);
+    	Logger.debug(commandSender.getName() + " " + command.getName() + " " + label + " " + args);
     	
         if (!(commandSender instanceof Player)) {
-        	Logger.log(commandSender + " - commando somente para players");
+        	Logger.debug(commandSender + " - commando somente para players");
             return false;
         }
 

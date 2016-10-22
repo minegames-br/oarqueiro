@@ -31,7 +31,7 @@ public class SpawnSkeletonTask extends BukkitRunnable {
 		}
 
 		if ((controller.getGame().getLevel().getLevel() == 2)) {
-			Logger.log("spawnSkeleton");
+			Logger.debug("spawnSkeleton");
 			this.entity = spawnSkeleton();
 		}
 

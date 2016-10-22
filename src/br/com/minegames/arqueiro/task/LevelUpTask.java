@@ -31,7 +31,7 @@ public class LevelUpTask extends BukkitRunnable {
     			controller.endGame();
     		} else {
         		controller.levelUp();
-        		Logger.log("LevelUp " + controller.getGame().getLevel().getLevel());
+        		Logger.debug("LevelUp " + controller.getGame().getLevel().getLevel());
     		}
     	}
     	

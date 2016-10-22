@@ -33,7 +33,7 @@ public class PlaceMovingTargetTask extends BukkitRunnable {
     	//mover os alvos criados um bloco para baixo
     	moveTargets();
 
-    	int configValue = controller.getGameInstance().getConfigIntValue(Constants.MAX_MOVING_TARGET);
+    	int configValue = controller.getConfigIntValue(Constants.MAX_MOVING_TARGET);
     	if(controller.getMovingTargets().size() >= configValue ) {
     		return;
     	}

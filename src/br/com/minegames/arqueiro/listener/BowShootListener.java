@@ -23,7 +23,7 @@ public class BowShootListener implements Listener {
 		//ItemStack arrow = new ItemStack(Material.ARROW);
 		if (e.getEntity() instanceof Player) {
 			Player player = (Player) e.getEntity();
-			Logger.log("BowShoot tem arrow: " + player.getInventory().contains(Material.ARROW));
+			Logger.debug("BowShoot tem arrow: " + player.getInventory().contains(Material.ARROW));
 			//e.setCancelled(true);
 			controller.shootArrows(player);
 		}

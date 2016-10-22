@@ -34,7 +34,7 @@ public class SpawnZombieTask extends BukkitRunnable {
 			return;
 		}
 
-		int configValue = controller.getGameInstance().getConfigIntValue(Constants.MAX_ZOMBIE_SPAWNED_PER_PLAYER);
+		int configValue = controller.getConfigIntValue(Constants.MAX_ZOMBIE_SPAWNED_PER_PLAYER);
 		if (controller.getLivingTargets().size() < configValue ) {
 			Bukkit.getConsoleSender().sendMessage(Utils.color("&6Spawning Zombie"));
 			Zombie zombie = spawnZombie();
@@ -46,7 +46,7 @@ public class SpawnZombieTask extends BukkitRunnable {
 		Zombie entity = (Zombie) controller.getWorld().spawnEntity(l, EntityType.ZOMBIE);
 		int index = new Random().nextInt(controller.getLivePlayers().size());
 		Archer archer = (Archer) controller.getLivePlayers().toArray()[index];
-		Logger.log("index = " + index + " live players: " + controller.getLivePlayers().size()
+		Logger.debug("index = " + index + " live players: " + controller.getLivePlayers().size()
 				+ archer.getPlayer().getName());
 		entity.setTarget(archer.getPlayer());
 		controller.addEntityTarget(new ZombieTarget(entity));
@@ -55,7 +55,7 @@ public class SpawnZombieTask extends BukkitRunnable {
 			if ((this.controller.getGame().getLevel().getLevel() % 2) == 0) {
 				entity.addPotionEffect(
 						new PotionEffect(PotionEffectType.SPEED, 10000, controller.getGame().getLevel().getLevel()/2));
-						Logger.log("zombieSpeedIncreasead = " + (controller.getGame().getLevel().getLevel()/2));
+						Logger.debug("zombieSpeedIncreasead = " + (controller.getGame().getLevel().getLevel()/2));
 			}
 		}
 		return entity;

@@ -32,7 +32,7 @@ public class PlaceTargetTask extends BukkitRunnable {
     		return;
     	}
 
-    	int configValue = controller.getGameInstance().getConfigIntValue(Constants.MAX_TARGET);
+    	int configValue = controller.getConfigIntValue(Constants.MAX_TARGET);
     	if(controller.getTargets().size() >= configValue ) {
     		return;
     	}
