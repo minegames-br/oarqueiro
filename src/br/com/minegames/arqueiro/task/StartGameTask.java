@@ -21,9 +21,6 @@ public class StartGameTask extends BukkitRunnable {
     	int minPlayers = Integer.parseInt(controller.getGameDelegate().getGlobalConfig(Constants.MIN_PLAYERS).getValue());
     	int maxPlayers = Integer.parseInt(controller.getGameDelegate().getGlobalConfig(Constants.MAX_PLAYERS).getValue());
     	
-    	Bukkit.getLogger().info("minPlayers: " + minPlayers);
-    	Bukkit.getLogger().info("maxPlayers: " + maxPlayers);
-    	
     	if( controller.getLivePlayers().size() == maxPlayers && controller.getGame().isWaitingPlayers()) {
             Bukkit.getConsoleSender().sendMessage(Utils.color("&6StartGameTask - Max number of players achieved. Starting game."));
             controller.startGameEngine();
