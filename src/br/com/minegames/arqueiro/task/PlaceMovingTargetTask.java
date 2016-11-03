@@ -10,36 +10,36 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
-import br.com.minegames.arqueiro.domain.Game;
 import br.com.minegames.arqueiro.domain.target.FastMovingTarget;
 import br.com.minegames.arqueiro.domain.target.MovingTarget;
+import br.com.minegames.core.domain.Area3D;
+import br.com.minegames.core.domain.Arena;
+import br.com.minegames.core.logging.MGLogger;
 
 public class PlaceMovingTargetTask extends BukkitRunnable {
 	
 	private GameController controller;
 	
-	public PlaceMovingTargetTask(GameController game) {
-		this.controller = game;
+	public PlaceMovingTargetTask(GameController controller) {
+		this.controller = controller;
 	}
 	
     @Override
     public void run() {
 
-    	Game game = controller.getGame();
-    	if(!game.isStarted()) {
-    		return;
-    	}
-    	
     	//mover os alvos criados um bloco para baixo
     	moveTargets();
 
-    	int configValue = controller.getConfigIntValue(Constants.MAX_MOVING_TARGET);
+    	int configValue = (int)controller.getGameArenaConfig(Constants.MAX_MOVING_TARGET);
+    	MGLogger.info("max moving targets: " + configValue );
+    	MGLogger.info("moving targets created: " + controller.getMovingTargets().size() );
     	if(controller.getMovingTargets().size() >= configValue ) {
     		return;
     	}
     	
     	//se não tiver um moving target criar um
-    	if(controller.getMovingTargets().size() == 0) {
+    	if(controller.getMovingTargets().size() < configValue) {
+    		MGLogger.info("creating moving target");
     		createVerticalMovingTarget();
     	}
     	
@@ -52,6 +52,8 @@ public class PlaceMovingTargetTask extends BukkitRunnable {
     private void createVerticalMovingTarget() {
     	Location l = controller.getRandomSpawnLocationForFloatingTarget();
     	MovingTarget target = createTarget(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ(), Material.BEACON );
+    	target.setMaxMoves(getMaxMoves());
+    	target.setMoves(0);
     	controller.addMovingTarget(target);
     }
     
@@ -63,6 +65,8 @@ public class PlaceMovingTargetTask extends BukkitRunnable {
        	block.setType(type);
        	
        	FastMovingTarget vmTarget = new FastMovingTarget(block);
+       	vmTarget.setMaxMoves(getMaxMoves());
+       	vmTarget.setMoves(0);
        	vmTarget.setOldBlockType(block.getType());
        	return vmTarget;
     }
@@ -81,7 +85,10 @@ public class PlaceMovingTargetTask extends BukkitRunnable {
     		Location l = mt.getBlock().getLocation();
     		l.getBlock().setType(Material.AIR);
     		int y = l.getBlockY() - 1;
-    		if( y <= 4 ) {
+			mt.setMoves(mt.getMoves()+1);
+			MGLogger.info("moves: " + mt.getMoves());
+    		
+    		if( mt.getMoves() >= mt.getMaxMoves() ) {
     			destroyTarget(mt);
     		} else {
         		l.setY(y);
@@ -95,6 +102,18 @@ public class PlaceMovingTargetTask extends BukkitRunnable {
 
 	private void destroyTarget(MovingTarget mt) {
 		this.controller.destroyMovingTarget(mt);
+	}
+	
+	private Integer getMaxMoves() {
+		int maxMoves = 0;
+		
+    	Arena arena = (Arena)controller.getArena();
+    	Area3D area = (Area3D)controller.getGameArenaConfig(Constants.FLOATING_AREA);
+    	
+    	maxMoves = Math.abs( area.getPointA().getY() - (area.getPointB().getY()) );
+    	MGLogger.info("max moves: " + maxMoves);
+    	
+    	return maxMoves;
 	}
 
 }

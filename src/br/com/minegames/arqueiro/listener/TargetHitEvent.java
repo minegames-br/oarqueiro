@@ -12,8 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.BlockIterator;
 
@@ -21,7 +19,7 @@ import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.target.BlockTarget;
 import br.com.minegames.arqueiro.domain.target.MovingTarget;
 import br.com.minegames.arqueiro.domain.target.Target;
-import br.com.minegames.core.logging.Logger;
+import br.com.minegames.core.logging.MGLogger;
 
 public class TargetHitEvent implements Listener {
 
@@ -41,7 +39,7 @@ public class TargetHitEvent implements Listener {
 	    if(!(event.getEntity().getShooter() instanceof Player))
 	        return;
 
-	    Logger.debug("onProjectileHit");
+	    MGLogger.debug("onProjectileHit");
 
 	    if (event.getEntity() instanceof Arrow){
 		    Arrow arrow = (Arrow)event.getEntity();
@@ -70,7 +68,7 @@ public class TargetHitEvent implements Listener {
 	            	Location l1 = hit.getLocation();
 	            	Location l2 = bTarget.getBlock().getLocation();
 	            	
-	        	    Logger.debug("hit: " + l1.getBlockX() + "," + l1.getBlockY() + "," + l1.getBlockZ() + " target: " + l2.getBlockX() + "," + l2.getBlockY() + "," + l2.getBlockZ() );
+	            	MGLogger.debug("hit: " + l1.getBlockX() + "," + l1.getBlockY() + "," + l1.getBlockZ() + " target: " + l2.getBlockX() + "," + l2.getBlockY() + "," + l2.getBlockZ() );
 	            	
 	            	if( l1.getBlockX() == l2.getBlockX() && l1.getBlockY() == l2.getBlockY() && l1.getBlockZ() == l2.getBlockZ() ) {
 		                game.hitTarget(bTarget, shooter);
@@ -87,7 +85,7 @@ public class TargetHitEvent implements Listener {
             	Location l1 = hit.getLocation();
             	Location l2 = target.getBlock().getLocation();
             	
-        	    Logger.debug("hit: " + l1.getBlockX() + "," + l1.getBlockY() + "," + l1.getBlockZ() + " target: " + l2.getBlockX() + "," + l2.getBlockY() + "," + l2.getBlockZ() );
+            	MGLogger.info("hit: " + l1.getBlockX() + "," + l1.getBlockY() + "," + l1.getBlockZ() + " target: " + l2.getBlockX() + "," + l2.getBlockY() + "," + l2.getBlockZ() );
             	
             	if( l1.getBlockX() == l2.getBlockX() && l1.getBlockY() == l2.getBlockY() && l1.getBlockZ() == l2.getBlockZ() ) {
 	                game.hitMovingTarget(target, shooter);

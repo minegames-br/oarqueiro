@@ -19,7 +19,7 @@ public class PlayerMove implements Listener {
     @EventHandler
     public void onJoin(PlayerMoveEvent event) {
 
-    	if(controller.getGame().isStarted()) {
+    	if(controller.getTheLastArcher().isStarted()) {
     		if( event.getTo().getBlockZ() >= 1169 ) {
     			Utils.shootFirework(event.getTo());
     			event.setCancelled(true);

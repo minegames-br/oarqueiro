@@ -9,9 +9,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
-import br.com.minegames.arqueiro.domain.Game;
+import br.com.minegames.arqueiro.domain.TheLastArcher;
 import br.com.minegames.arqueiro.domain.target.SkeletonTarget;
-import br.com.minegames.core.logging.Logger;
+import br.com.minegames.core.logging.MGLogger;
 
 public class SpawnSkeletonTask extends BukkitRunnable {
 
@@ -25,13 +25,13 @@ public class SpawnSkeletonTask extends BukkitRunnable {
 	@Override
 	public void run() {
 
-		Game game = controller.getGame();
+		TheLastArcher game = controller.getTheLastArcher();
 		if (!game.isStarted()) {
 			return;
 		}
 
-		if ((controller.getGame().getLevel().getLevel() == 2)) {
-			Logger.debug("spawnSkeleton");
+		if ((controller.getTheLastArcher().getLevel().getLevel() == 2)) {
+			MGLogger.debug("spawnSkeleton");
 			this.entity = spawnSkeleton();
 		}
 

@@ -2,7 +2,7 @@ name: Arqueiro
 author: joaoemilio
 version: 1.0.0
 main: br.com.minegames.arqueiro.GameController
-depend: [GameManager-Client,MineGames-Core]
+depend: [GameManager-Client,MineGames-Core,MGPlugin]
 commands:
   jogar:
   sair:

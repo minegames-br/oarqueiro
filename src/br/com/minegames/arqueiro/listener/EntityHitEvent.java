@@ -8,7 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
 import br.com.minegames.arqueiro.GameController;
-import br.com.minegames.core.logging.Logger;
+import br.com.minegames.core.logging.MGLogger;
 
 public class EntityHitEvent implements Listener {
 
@@ -28,16 +28,16 @@ public class EntityHitEvent implements Listener {
         
         Arrow arrow = (Arrow) event.getDamager();
         if(!(arrow.getShooter() instanceof Player)) {
-        	Logger.debug("shooter not player");
+        	MGLogger.debug("shooter not player");
         	return;
         }
         
         Player player = (Player) arrow.getShooter();
 	    if (event.getEntity() instanceof Entity) {
-        	Logger.debug("entity is mob");
+	    	MGLogger.debug("entity is mob");
 	    	game.hitEntity(event.getEntity(), player);
 	    }else{
-        	Logger.debug("entity not a mob");
+	    	MGLogger.debug("entity not a mob");
 	    }
 	    
 	}

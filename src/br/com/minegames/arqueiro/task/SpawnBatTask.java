@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import br.com.minegames.arqueiro.GameController;
-import br.com.minegames.arqueiro.domain.Game;
+import br.com.minegames.arqueiro.domain.TheLastArcher;
 
 public class SpawnBatTask extends BukkitRunnable {
 	
@@ -22,7 +22,7 @@ public class SpawnBatTask extends BukkitRunnable {
     @Override
     public void run() {
     	
-    	Game game = controller.getGame();
+    	TheLastArcher game = controller.getTheLastArcher();
     	if(!game.isStarted()) {
     		return;
     	}

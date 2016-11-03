@@ -9,7 +9,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
-import br.com.minegames.arqueiro.domain.Game;
+import br.com.minegames.arqueiro.domain.TheLastArcher;
 import br.com.minegames.arqueiro.domain.target.FloatingBlockTarget;
 import br.com.minegames.arqueiro.domain.target.GroundBlockTarget;
 import br.com.minegames.arqueiro.domain.target.Target;
@@ -27,12 +27,12 @@ public class PlaceTargetTask extends BukkitRunnable {
 	
     @Override
     public void run() {
-    	Game game = controller.getGame();
+    	TheLastArcher game = controller.getTheLastArcher();
     	if(!game.isStarted()) {
     		return;
     	}
 
-    	int configValue = controller.getConfigIntValue(Constants.MAX_TARGET);
+    	int configValue = (int) controller.getGameArenaConfig(Constants.MAX_TARGET);
     	if(controller.getTargets().size() >= configValue ) {
     		return;
     	}
