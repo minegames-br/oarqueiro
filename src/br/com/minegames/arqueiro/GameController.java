@@ -1,7 +1,6 @@
 package br.com.minegames.arqueiro;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -57,15 +56,13 @@ import br.com.minegames.core.domain.Game;
 import br.com.minegames.core.logging.MGLogger;
 import br.com.minegames.core.util.BlockManipulationUtil;
 import br.com.minegames.core.util.LocationUtil;
-import br.com.minegames.core.util.Region;
 import br.com.minegames.core.util.Utils;
 import br.com.minegames.core.util.title.TitleUtil;
 import br.com.minegames.gamemanager.domain.GamePlayer;
 import br.com.minegames.gamemanager.plugin.MyCloudCraftPlugin;
+import br.com.minegames.gamemanager.plugin.task.LevelUpTask;
 
 public class GameController extends MyCloudCraftPlugin {
-
-	private TheLastArcher theLastArcher;
 
 	private Runnable placeTargetTask;
 	private int placeTargetThreadID;
@@ -77,23 +74,27 @@ public class GameController extends MyCloudCraftPlugin {
 	private int spawnZombieThreadID;
 	private Runnable spawnSkeletonTask;
 	private int spawnSkeletonThreadID;
+	private LevelUpTask levelUpTask;
+	private int levelUpTaskID;
 
-	private HashMap<Location, Material> materialsToRestore = new HashMap<Location, Material>();
 	private CopyOnWriteArraySet<Target> targets = new CopyOnWriteArraySet<Target>();
 	private CopyOnWriteArraySet<EntityTarget> livingTargets = new CopyOnWriteArraySet<EntityTarget>();
 	private CopyOnWriteArraySet<MovingTarget> movingTargets = new CopyOnWriteArraySet<MovingTarget>();
 
 	private Runnable explodeZombieTask;
 	private int explodeZombieThreadID;
+	
+	private LocationUtil locationUtil = new LocationUtil();
+
+	private BlockManipulationUtil blockManipulationUtil = new BlockManipulationUtil();
 
 	@Override
 	public void onEnable() {
 		super.onEnable();
 		Bukkit.setSpawnRadius(0);
-		Bukkit.getLogger().info("O Arqueiro - onEnable");
 		
 		//ao criar, o jogo fica imediatamente esperando jogadores
-		this.theLastArcher = new TheLastArcher();
+		this.myCloudCraftGame = new TheLastArcher();
 
 	}
 
@@ -120,24 +121,26 @@ public class GameController extends MyCloudCraftPlugin {
 		this.spawnSkeletonTask = new SpawnSkeletonTask(this);
 		// this.spawnZombieTask = new SpawnZombieTask(this);
 		this.explodeZombieTask = new ExplodeZombieTask(this);
+		this.levelUpTask = new LevelUpTask(this);
 
 	}
 
 	@Override
 	protected void start() {
 		super.start();
-		this.theLastArcher = new TheLastArcher();
 	}
 
 	@Override
 	public void onDisable() {
-		if (this.theLastArcher.isStarted()) {
-			this.theLastArcher.shutDown();
+		if (this.myCloudCraftGame.isStarted()) {
+			this.myCloudCraftGame.shutDown();
 			this.endGame();
 		}
 	}
 
+	@Override
 	protected void registerListeners() {
+		super.registerListeners();
 		PluginManager pm = Bukkit.getPluginManager();
 		pm.registerEvents(new PlayerMove(this), this);
 		pm.registerEvents(new TargetHitEvent(this), this);
@@ -153,10 +156,8 @@ public class GameController extends MyCloudCraftPlugin {
 	@Override
 	public void startGameEngine() {
 		super.startGameEngine();
-		start();
+		this.start();
 		
-		this.theLastArcher.start();
-
 		// registrar os Listeners de eventos do servidor e do jogo
 		registerListeners();
 
@@ -169,9 +170,8 @@ public class GameController extends MyCloudCraftPlugin {
 			Player player = archer.getPlayer();
 			//this.world = player.getWorld();
 			Area3D spawnPoint = (Area3D)getGameArenaConfig("arqueiro.player" + loc + ".area");
-			Bukkit.getLogger().info("spawn point " + loc + " " + spawnPoint.getPointA() + " / " + spawnPoint.getPointB() );
 			archer.setSpawnPoint(spawnPoint);							   
-			player.teleport(LocationUtil.getMiddle(this.world, spawnPoint) );
+			player.teleport(locationUtil.getMiddle(this.world, spawnPoint) );
 			archer.regainHealthToPlayer(archer);
 
 			// Preparar o jogador para a rodada. Dar armaduras, armas, etc...
@@ -180,9 +180,6 @@ public class GameController extends MyCloudCraftPlugin {
 			BossBar bar = createBossBar();
 			archer.addBaseBar(bar);
 			bar.addPlayer(player);
-
-			MGLogger.debug("preparar score board archer: " + archer.getPlayer().getName() + " base: "
-					+ new Double(archer.getBaseHealth()));
 
 			setupPlayerToStartGame(player);
 			loc++;
@@ -199,18 +196,25 @@ public class GameController extends MyCloudCraftPlugin {
 		this.destroyTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 100L);
 		this.spawnZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 50L);
 		this.spawnSkeletonThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnSkeletonTask, 0L, 150L);
+		this.levelUpTaskID = scheduler.scheduleSyncRepeatingTask(this, this.levelUpTask, 0L, 50L);
 
 	}
 	
+	@Override
+	public GamePlayer createGamePlayer() {
+		Archer archer = new Archer();
+		return archer;
+	}
+
 	public boolean shouldEndGame() {
     	//Terminar o jogo após o 10 Nível
-    	if(this.theLastArcher.getLevel().getLevel() >= 11 && this.theLastArcher.isStarted()) {
+    	if(this.myCloudCraftGame.getLevel().getLevel() >= 11 && this.myCloudCraftGame.isStarted()) {
             Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - Time is Over"));
             return true;
     	}
     	
     	//Terminar o jogo caso não tenha mais jogadores
-    	if( this.getLivePlayers().size() == 0  && theLastArcher.isStarted()) {
+    	if( this.getLivePlayers().size() == 0  && this.myCloudCraftGame.isStarted()) {
             Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - No more players"));
             return true;
     	}
@@ -270,8 +274,8 @@ public class GameController extends MyCloudCraftPlugin {
 	@Override
 	public void endGame() {
 		super.endGame();
-		if (this.theLastArcher.isStarted()) {
-			this.theLastArcher.endGame();
+		if (this.myCloudCraftGame.isStarted()) {
+			this.myCloudCraftGame.endGame();
 		}
 		MGLogger.info("Game.endGame");
 
@@ -309,6 +313,7 @@ public class GameController extends MyCloudCraftPlugin {
 	/**
 	 * Iniciar novo Nível / Round / Level
 	 */
+	@Override
 	public void levelUp() {
 
 		// limpar targets e moving targets
@@ -317,20 +322,20 @@ public class GameController extends MyCloudCraftPlugin {
 		// matar os mobs
 		// killEntityTargets();
 
-		if (this.theLastArcher.getLevel().getLevel() >= 1) {
+		if (this.myCloudCraftGame.getLevel().getLevel() >= 1) {
 			for (GamePlayer gp: this.livePlayers) {
 				Archer archer = (Archer)gp;
-				TitleUtil.sendTitle(archer.getPlayer(), 1, 70, 10, "Nível " + this.theLastArcher.getLevel().getLevel(), "");
+				TitleUtil.sendTitle(archer.getPlayer(), 1, 70, 10, "Nível " + this.myCloudCraftGame.getLevel().getLevel(), "");
 			}
 
 			// liberar o jogo novamente após 5 segundos
 			Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
 				public void run() {
-					theLastArcher.levelUp();
+					myCloudCraftGame.levelUp();
 				}
 			}, 100L);
 		} else {
-			this.theLastArcher.levelUp();
+			this.myCloudCraftGame.levelUp();
 		}
 	}
 
@@ -352,22 +357,6 @@ public class GameController extends MyCloudCraftPlugin {
 		Arrays.sort(aList);
 		MGLogger.trace("teleport players to podium - aList.lengh: " + aList.length + "");
 	}
-
-	private void teleportPlayersBackToLobby() {
-		// TODO pegar o location do lobby numa configuracao
-		for (GamePlayer gp : livePlayers) {
-			Archer archer = (Archer)gp;
-			Player player = archer.getPlayer();
-			teleportPlayersBackToLobby(player);
-		}
-	}
-
-	/*
-	// TODO recuperar a parede de alguma configuração
-	private void createBlackWall() {
-		BlockManipulationUtil.createWoolBlocks(this.blackWall.getPointA(), this.blackWall.getPointB(), DyeColor.BLACK);
-	}
-	*/
 
 	public void addTarget(Target target) {
 		targets.add(target);
@@ -438,7 +427,6 @@ public class GameController extends MyCloudCraftPlugin {
 
 	public void destroyMovingTarget(MovingTarget mTarget) {
 		Location loc = mTarget.getBlock().getLocation();
-		MGLogger.info("destroyMovingTarget - Location " + loc);
 		movingTargets.remove(mTarget);
 		mTarget.getBlock().setType(Material.AIR);
 		if (!mTarget.isHit()) {
@@ -448,28 +436,25 @@ public class GameController extends MyCloudCraftPlugin {
 
 	public Location getRandomSpawnLocationForGroundEnemy() {
 		Area3D area = (Area3D)getGameArenaConfig(Constants.MONSTERS_SPAWN_AREA);
-		Bukkit.getLogger().info("zombie spawn area: A (" + area.getPointA() + ") B (" + area.getPointB() + ")"); 
-		return LocationUtil.getRandomLocationXYZ( this.world, area);
+		return locationUtil.getRandomLocationXYZ( this.world, area);
 	}
 
 	public Location getRandomSpawnLocationForVerticalMovingTarget() {
 		Area3D area = (Area3D)getGameArenaConfig(Constants.FLOATING_AREA);
-		return LocationUtil.getRandomLocationXYZ( this.world, area);
+		return locationUtil.getRandomLocationXYZ( this.world, area);
 	}
 
 	public Location getRandomSpawnLocationForGroundTarget() {
 		Area3D area = (Area3D)getGameArenaConfig(Constants.MONSTERS_SPAWN_AREA);
-		return LocationUtil.getRandomLocationXYZ( this.world , area);
+		return locationUtil.getRandomLocationXYZ( this.world , area);
 	}
 
 	public Location getRandomSpawnLocationForFloatingTarget() {
 		Area3D area = (Area3D)getGameArenaConfig(Constants.FLOATING_AREA);
-		Bukkit.getLogger().info("floating target area: A (" + area.getPointA() + ") B (" + area.getPointB() + ")"); 
-		return LocationUtil.getRandomLocationXYZ( this.world, area);
+		return locationUtil.getRandomLocationXYZ( this.world, area);
 	}
 
 	public void hitEntity(Entity entity, Player player) {
-		Archer archer = (Archer)this.findGamePlayerByPlayer(player);
 		EntityTarget target = findEntityTarget(entity);
 		target.setKiller(player);
 	}
@@ -481,7 +466,7 @@ public class GameController extends MyCloudCraftPlugin {
 		dead.setHealth(20); // Do not show the respawn screen
 		dead.getInventory().clear();
 
-		if (this.theLastArcher.isStarted()) {
+		if (this.myCloudCraftGame.isStarted()) {
 			this.removeLivePlayer(dead);
 		}
 	}
@@ -491,13 +476,11 @@ public class GameController extends MyCloudCraftPlugin {
 		EntityTarget et = null;
 		for (EntityTarget z : this.livingTargets) {
 			if (z.getLivingEntity().equals(zombie)) {
-				MGLogger.debug("zombie was a target");
 				foundTarget = true;
 				et = z;
 			}
 		}
 		if (!foundTarget) {
-			MGLogger.debug("zombie was a NOT target");
 		}
 		return et;
 	}
@@ -507,13 +490,11 @@ public class GameController extends MyCloudCraftPlugin {
 		EntityTarget et = null;
 		for (EntityTarget z : this.livingTargets) {
 			if (z.getLivingEntity().equals(entity)) {
-				MGLogger.debug("entity was a target");
 				foundTarget = true;
 				et = z;
 			}
 		}
 		if (!foundTarget) {
-			MGLogger.debug("entity was a NOT target");
 		}
 		return et;
 	}
@@ -531,12 +512,10 @@ public class GameController extends MyCloudCraftPlugin {
 		Location loc = z.getLocation();
 		if (et != null) {
 			if (et.getKiller() != null) {
-				MGLogger.debug("killEntity: killer not null");
 				Player player = et.getKiller();
 				this.givePoints(player, et.getKillPoints());
 				this.livingTargets.remove(et);
 			} else {
-				MGLogger.debug("killEntity: killer null");
 				if (damageArcherArea(z)) {
 					((Damageable) z).damage(((Damageable) z).getMaxHealth());
 					this.world.createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 2.0F, false, false);
@@ -567,13 +546,11 @@ public class GameController extends MyCloudCraftPlugin {
 
 		while (it.hasNext()) {
 			archer = (Archer)it.next();
-			MGLogger.debug("damageArcherArea - archer: " + archer.getPlayer().getName() + " base: " + new Double(archer.getBaseHealth()));
 			if (archer.isNear(zl)) {
 				break;
 			}
 		}
 		if (archer != null) {
-			MGLogger.debug("damageArcherArea - base: " + new Double(archer.getBaseHealth()));
 			if (archer.getBaseHealth() <= 0) {
 				archer.getBaseBar().setProgress(0);
 				return false;
@@ -592,20 +569,13 @@ public class GameController extends MyCloudCraftPlugin {
 		world.getBlockAt(l).setType(Material.AIR);
 	}
 
-	public TheLastArcher getTheLastArcher() {
-		return this.theLastArcher;
-	}
-
+	@Override
 	public boolean isLastLevel() {
-		return this.theLastArcher.getLevel().getLevel() == 11;
+		return this.myCloudCraftGame.getLevel().getLevel() == 11;
 	}
 
 	public boolean shouldExplodeZombie(Location location) {
-		Region r = new Region("spawnLocation", new Location(this.world, 457, 3, 1170),
-				new Location(this.world, 493, 3, 1171));
-
 		boolean result = false;
-		MGLogger.debug("shouldExplodeZombie - " + location + " " + location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ());
 		if (location.getBlockX() >= 457 && location.getBlockX() <= 493) {
 			if (location.getBlockZ() >= 1170 && location.getBlockZ() <= 1171) {
 				result = true;
@@ -630,7 +600,7 @@ public class GameController extends MyCloudCraftPlugin {
 		Block block = bTarget.getBlock();
 		Location l1 = new Location(this.getWorld(), block.getX() - 1, block.getY() - 1, block.getZ());
 		Location l2 = new Location(this.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
-		BlockManipulationUtil.clearBlocks(l1, l2);
+		blockManipulationUtil.clearBlocks(l1, l2);
 	}
 
 	public World getWorld() {
@@ -643,14 +613,14 @@ public class GameController extends MyCloudCraftPlugin {
 
 		Location l1 = new Location(this.getWorld(), block.getX() - 1, block.getY() - 1, block.getZ());
 		Location l2 = new Location(this.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
-		BlockManipulationUtil.createWoolBlocks(l1, l2, DyeColor.BLACK);
+		blockManipulationUtil.createWoolBlocks(l1, l2, DyeColor.BLACK);
 	}
 
 	private void destroyGroundBlockTarget(BlockTarget bTarget) {
 		Block block = bTarget.getBlock();
 		Location l1 = new Location(this.getWorld(), block.getX() - 1, block.getY() - 2, block.getZ());
 		Location l2 = new Location(this.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
-		BlockManipulationUtil.clearBlocks(l1, l2);
+		blockManipulationUtil .clearBlocks(l1, l2);
 	}
 
 	public void shootArrows(Player player) {
@@ -687,14 +657,8 @@ public class GameController extends MyCloudCraftPlugin {
 			double y = z_axis * Math.sin(yaw);
 			double z = Math.cos(pitch);
 
-			MGLogger.debug("shootArrows - " + i + " spread " + spread + " pitch " + pitch + " yaw " + yaw + " x " + x + " y " + y
-					+ " z " + z + " z_axis " + z_axis);
-
 			Vector vector = new Vector(x, z, y);
 			vector.multiply(3);
-
-			Arrow a = player.getWorld().spawn(player_location, Arrow.class);
-			// a.setVelocity(vector);
 
 			player.launchProjectile(Arrow.class, vector);
 		}

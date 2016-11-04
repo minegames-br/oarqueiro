@@ -28,16 +28,13 @@ public class EntityHitEvent implements Listener {
         
         Arrow arrow = (Arrow) event.getDamager();
         if(!(arrow.getShooter() instanceof Player)) {
-        	MGLogger.debug("shooter not player");
         	return;
         }
         
         Player player = (Player) arrow.getShooter();
 	    if (event.getEntity() instanceof Entity) {
-	    	MGLogger.debug("entity is mob");
 	    	game.hitEntity(event.getEntity(), player);
 	    }else{
-	    	MGLogger.debug("entity not a mob");
 	    }
 	    
 	}

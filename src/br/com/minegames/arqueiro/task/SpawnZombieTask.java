@@ -17,6 +17,7 @@ import br.com.minegames.arqueiro.domain.TheLastArcher;
 import br.com.minegames.arqueiro.domain.target.ZombieTarget;
 import br.com.minegames.core.logging.MGLogger;
 import br.com.minegames.core.util.Utils;
+import br.com.minegames.gamemanager.domain.MyCloudCraftGame;
 
 public class SpawnZombieTask extends BukkitRunnable {
 
@@ -29,15 +30,13 @@ public class SpawnZombieTask extends BukkitRunnable {
 	@Override
 	public void run() {
 
-		TheLastArcher game = controller.getTheLastArcher();
+		MyCloudCraftGame game = controller.getMyCloudCraftGame();
 		if (!game.isStarted()) {
 			return;
 		}
 
 		int configValue = (Integer)controller.getGameArenaConfig(Constants.MAX_ZOMBIE_SPAWNED_PER_PLAYER);
-		Bukkit.getLogger().info("zombies spawned: " + controller.getLivingTargets().size() + " config: " + configValue );
 		if (controller.getLivingTargets().size() < configValue ) {
-			Bukkit.getConsoleSender().sendMessage(Utils.color("&6Spawning Zombie"));
 			Zombie zombie = spawnZombie();
 		}
 	}
@@ -48,16 +47,13 @@ public class SpawnZombieTask extends BukkitRunnable {
 		Zombie entity = (Zombie) controller.getWorld().spawnEntity(l, EntityType.ZOMBIE);
 		int index = new Random().nextInt(controller.getLivePlayers().size());
 		Archer archer = (Archer) controller.getLivePlayers().toArray()[index];
-		MGLogger.debug("index = " + index + " live players: " + controller.getLivePlayers().size()
-				+ archer.getPlayer().getName());
 		entity.setTarget(archer.getPlayer());
 		controller.addEntityTarget(new ZombieTarget(entity));
 
 		if (!entity.isBaby()) {
-			if ((this.controller.getTheLastArcher().getLevel().getLevel() % 2) == 0) {
+			if ((this.controller.getMyCloudCraftGame().getLevel().getLevel() % 2) == 0) {
 				entity.addPotionEffect(
-						new PotionEffect(PotionEffectType.SPEED, 10000, controller.getTheLastArcher().getLevel().getLevel()/2));
-				MGLogger.debug("zombieSpeedIncreasead = " + (controller.getTheLastArcher().getLevel().getLevel()/2));
+						new PotionEffect(PotionEffectType.SPEED, 10000, controller.getMyCloudCraftGame().getLevel().getLevel()/2));
 			}
 		}
 		return entity;

@@ -25,7 +25,6 @@ public class ExplodeListener implements Listener {
 	@EventHandler
 	public void onInteract(EntityInteractEvent event) {
 		Location loc = event.getEntity().getLocation();
-		MGLogger.info(("onInteract" + event.getEntity() + " " + loc.getX()));
 		Object aList[] = controller.getLivePlayers().toArray();
 
 		CopyOnWriteArraySet<Area3D> playerSpawnList = (CopyOnWriteArraySet)controller.getGameArenaConfigByGroup("PLAYER-SPAWN");
@@ -53,8 +52,6 @@ public class ExplodeListener implements Listener {
 		int za = area.getPointA().getZ();
 		int zb = area.getPointB().getZ();
 		
-		MGLogger.info(" x: " + x + " z: " + z + " point a = " + xa + "," + za + " b = " + xb + "," + zb );
-
 		if( ( (x >= xa && x <= xb) || (z >= zb && z <= za) ) 
 				|| ( (x >= xb && x <= xa) ||  (z >= za && z <= zb) ) ) {
 			result = true;

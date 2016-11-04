@@ -1,5 +1,8 @@
 package br.com.minegames.arqueiro.task;
 
+import java.util.Random;
+
+import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -15,11 +18,12 @@ import br.com.minegames.arqueiro.domain.target.GroundBlockTarget;
 import br.com.minegames.arqueiro.domain.target.Target;
 import br.com.minegames.arqueiro.domain.target.WallBlockTarget;
 import br.com.minegames.core.util.BlockManipulationUtil;
+import br.com.minegames.gamemanager.domain.MyCloudCraftGame;
 
 public class PlaceTargetTask extends BukkitRunnable {
 	
 	private GameController controller;
-	private GroundBlockTarget groundTarget;
+	private BlockManipulationUtil blockManipulationUtil = new BlockManipulationUtil();
 	
 	public PlaceTargetTask(GameController controller) {
 		this.controller = controller;
@@ -27,7 +31,7 @@ public class PlaceTargetTask extends BukkitRunnable {
 	
     @Override
     public void run() {
-    	TheLastArcher game = controller.getTheLastArcher();
+    	MyCloudCraftGame game = controller.getMyCloudCraftGame();
     	if(!game.isStarted()) {
     		return;
     	}
@@ -37,25 +41,11 @@ public class PlaceTargetTask extends BukkitRunnable {
     		return;
     	}
     	
-    	int index = 6;
-    	
-    	for(Target target: controller.getTargets()) {
-    		if(target instanceof GroundBlockTarget) {
-    			index --;
-    		} else if(target instanceof FloatingBlockTarget) {
-    			index -= 2;
-    		} else if(target instanceof WallBlockTarget) {
-    			index -= 4;
-    		}
-    	}
+    	int index = new Random().nextInt(2);
 
-    	if( index == 0 || index == 2 || index == 6) {
+    	if( index == 0 || index == 2) {
 			createGroundTarget();
-    	} else if( index == 1 ) {
-			createFloatingTarget();
-    	} else if( index == 3 ) {
-			createWallTarget();
-    	} else if( index == 5 || index == 4 ) {
+    	} else {
 			createFloatingTarget();
     	}
     	
@@ -68,20 +58,8 @@ public class PlaceTargetTask extends BukkitRunnable {
     private void createGroundTarget() {
     	Location l = controller.getRandomSpawnLocationForGroundTarget();
     	Block block = createTarget(l);
-    	BlockManipulationUtil.createNewWool(controller.getWorld(), l.getBlockX(), l.getBlockY()-2, l.getBlockZ(), DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(controller.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ(), DyeColor.WHITE );
     	controller.addTarget(new GroundBlockTarget(block));
-    }
-
-    /**
-     * Criar um alvo que fica na parede
-     * @return
-     */
-    private void createWallTarget() {
-    	/*
-    	Location l = controller.getRandomSpawnLocationForWallTarget();
-    	Block block = createTarget(l);
-    	controller.addTarget(new WallBlockTarget(block));
-    	*/
     }
 
     /**
@@ -96,18 +74,18 @@ public class PlaceTargetTask extends BukkitRunnable {
     
     private Block createTarget(Location l) {
 		int x = l.getBlockX();
-		int y = l.getBlockY();
+		int y = l.getBlockY()+2;
 		int z = l.getBlockZ();
-		
+
     	Block block = createNewBlock(controller.getWorld(), x, y, z, Material.RED_SANDSTONE);
-    	BlockManipulationUtil.createNewWool(controller.getWorld(), x, y+1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(controller.getWorld(), x+1, y+1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(controller.getWorld(), x-1, y+1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(controller.getWorld(), x+1, y, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(controller.getWorld(), x-1, y, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(controller.getWorld(), x, y-1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(controller.getWorld(), x+1, y-1, z, DyeColor.WHITE );
-    	BlockManipulationUtil.createNewWool(controller.getWorld(), x-1, y-1, z, DyeColor.WHITE );
+    	blockManipulationUtil .createNewWool(controller.getWorld(), x, y+1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(controller.getWorld(), x+1, y+1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(controller.getWorld(), x-1, y+1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(controller.getWorld(), x+1, y, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(controller.getWorld(), x-1, y, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(controller.getWorld(), x, y-1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(controller.getWorld(), x+1, y-1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(controller.getWorld(), x-1, y-1, z, DyeColor.WHITE );
     	return block;
     }
     

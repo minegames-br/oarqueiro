@@ -39,8 +39,6 @@ public class TargetHitEvent implements Listener {
 	    if(!(event.getEntity().getShooter() instanceof Player))
 	        return;
 
-	    MGLogger.debug("onProjectileHit");
-
 	    if (event.getEntity() instanceof Arrow){
 		    Arrow arrow = (Arrow)event.getEntity();
 		    
@@ -68,8 +66,6 @@ public class TargetHitEvent implements Listener {
 	            	Location l1 = hit.getLocation();
 	            	Location l2 = bTarget.getBlock().getLocation();
 	            	
-	            	MGLogger.debug("hit: " + l1.getBlockX() + "," + l1.getBlockY() + "," + l1.getBlockZ() + " target: " + l2.getBlockX() + "," + l2.getBlockY() + "," + l2.getBlockZ() );
-	            	
 	            	if( l1.getBlockX() == l2.getBlockX() && l1.getBlockY() == l2.getBlockY() && l1.getBlockZ() == l2.getBlockZ() ) {
 		                game.hitTarget(bTarget, shooter);
 	            	}
@@ -84,8 +80,6 @@ public class TargetHitEvent implements Listener {
 
             	Location l1 = hit.getLocation();
             	Location l2 = target.getBlock().getLocation();
-            	
-            	MGLogger.info("hit: " + l1.getBlockX() + "," + l1.getBlockY() + "," + l1.getBlockZ() + " target: " + l2.getBlockX() + "," + l2.getBlockY() + "," + l2.getBlockZ() );
             	
             	if( l1.getBlockX() == l2.getBlockX() && l1.getBlockY() == l2.getBlockY() && l1.getBlockZ() == l2.getBlockZ() ) {
 	                game.hitMovingTarget(target, shooter);

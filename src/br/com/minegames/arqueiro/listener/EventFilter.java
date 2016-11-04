@@ -16,9 +16,6 @@ public class EventFilter implements Listener {
 
     @EventHandler
     public void onAnyEvent(Event event) {
-    	if(controller.getTheLastArcher() == null || !controller.getTheLastArcher().isStarted() ) {
-    		Bukkit.getConsoleSender().sendMessage("event" + event.getEventName());
-    	}
     }
 
 }

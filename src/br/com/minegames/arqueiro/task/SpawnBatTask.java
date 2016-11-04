@@ -10,6 +10,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.TheLastArcher;
+import br.com.minegames.gamemanager.domain.MyCloudCraftGame;
 
 public class SpawnBatTask extends BukkitRunnable {
 	
@@ -22,7 +23,7 @@ public class SpawnBatTask extends BukkitRunnable {
     @Override
     public void run() {
     	
-    	TheLastArcher game = controller.getTheLastArcher();
+    	MyCloudCraftGame game = controller.getMyCloudCraftGame();
     	if(!game.isStarted()) {
     		return;
     	}

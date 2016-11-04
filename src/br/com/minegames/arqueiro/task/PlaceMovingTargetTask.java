@@ -31,15 +31,12 @@ public class PlaceMovingTargetTask extends BukkitRunnable {
     	moveTargets();
 
     	int configValue = (int)controller.getGameArenaConfig(Constants.MAX_MOVING_TARGET);
-    	MGLogger.info("max moving targets: " + configValue );
-    	MGLogger.info("moving targets created: " + controller.getMovingTargets().size() );
     	if(controller.getMovingTargets().size() >= configValue ) {
     		return;
     	}
     	
     	//se não tiver um moving target criar um
     	if(controller.getMovingTargets().size() < configValue) {
-    		MGLogger.info("creating moving target");
     		createVerticalMovingTarget();
     	}
     	
@@ -86,7 +83,6 @@ public class PlaceMovingTargetTask extends BukkitRunnable {
     		l.getBlock().setType(Material.AIR);
     		int y = l.getBlockY() - 1;
 			mt.setMoves(mt.getMoves()+1);
-			MGLogger.info("moves: " + mt.getMoves());
     		
     		if( mt.getMoves() >= mt.getMaxMoves() ) {
     			destroyTarget(mt);
@@ -111,7 +107,6 @@ public class PlaceMovingTargetTask extends BukkitRunnable {
     	Area3D area = (Area3D)controller.getGameArenaConfig(Constants.FLOATING_AREA);
     	
     	maxMoves = Math.abs( area.getPointA().getY() - (area.getPointB().getY()) );
-    	MGLogger.info("max moves: " + maxMoves);
     	
     	return maxMoves;
 	}
