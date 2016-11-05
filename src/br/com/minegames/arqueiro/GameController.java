@@ -70,9 +70,9 @@ public class GameController extends MyCloudCraftPlugin {
 	private int placeMovingTargetThreadID;
 	private Runnable destroyTargetTask;
 	private int destroyTargetThreadID;
-	private Runnable spawnZombieTask;
+	private SpawnZombieTask spawnZombieTask;
 	private int spawnZombieThreadID;
-	private Runnable spawnSkeletonTask;
+	private SpawnSkeletonTask spawnSkeletonTask;
 	private int spawnSkeletonThreadID;
 	private LevelUpTask levelUpTask;
 	private int levelUpTaskID;
@@ -98,20 +98,9 @@ public class GameController extends MyCloudCraftPlugin {
 
 	}
 
-	protected void restart() {
-		super.restart();
-		// esse target vai ser usado durante o jogo. Dinamicamente vai ser
-		// criado.
-		// quando for acertado vai desaparecer e outro será criado e associado
-		this.targets.clear();
-		this.livingTargets.clear();
-		this.movingTargets.clear();
-
-	}
-	
 	@Override
-	public void init(Game game, Arena arena) {
-		super.init(game, arena);
+	public void init() {
+		super.init();
 
 		// inicializar variaveis de instancia
 		this.placeTargetTask = new PlaceTargetTask(this);
@@ -123,11 +112,6 @@ public class GameController extends MyCloudCraftPlugin {
 		this.explodeZombieTask = new ExplodeZombieTask(this);
 		this.levelUpTask = new LevelUpTask(this);
 
-	}
-
-	@Override
-	protected void start() {
-		super.start();
 	}
 
 	@Override
@@ -156,7 +140,6 @@ public class GameController extends MyCloudCraftPlugin {
 	@Override
 	public void startGameEngine() {
 		super.startGameEngine();
-		this.start();
 		
 		// registrar os Listeners de eventos do servidor e do jogo
 		registerListeners();
@@ -286,6 +269,7 @@ public class GameController extends MyCloudCraftPlugin {
 		Bukkit.getScheduler().cancelTask(this.spawnZombieThreadID);
 		Bukkit.getScheduler().cancelTask(this.spawnSkeletonThreadID);
 		Bukkit.getScheduler().cancelTask(this.explodeZombieThreadID);
+		Bukkit.getScheduler().cancelTask(this.levelUpTaskID);
 
 		// TODO o que vai acontecer com os jogadores quando acabar o jogo?
 		// por enquanto vou tirá-los da arena e zerar os inventarios e recriar a
@@ -468,6 +452,7 @@ public class GameController extends MyCloudCraftPlugin {
 
 		if (this.myCloudCraftGame.isStarted()) {
 			this.removeLivePlayer(dead);
+			dead.teleport(this.lobby); //TELEPORT DEAD PLAYER TO LOBBY
 		}
 	}
 

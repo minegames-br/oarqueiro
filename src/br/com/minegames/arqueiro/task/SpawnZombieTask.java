@@ -19,7 +19,7 @@ import br.com.minegames.core.logging.MGLogger;
 import br.com.minegames.core.util.Utils;
 import br.com.minegames.gamemanager.domain.MyCloudCraftGame;
 
-public class SpawnZombieTask extends BukkitRunnable {
+public class SpawnZombieTask implements Runnable {
 
 	private GameController controller;
 

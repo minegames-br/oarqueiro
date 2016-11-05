@@ -41,9 +41,9 @@ public class PlaceTargetTask extends BukkitRunnable {
     		return;
     	}
     	
-    	int index = new Random().nextInt(2);
+    	int index = (controller.getTargets().size() % 2);
 
-    	if( index == 0 || index == 2) {
+    	if( index == 0 ) {
 			createGroundTarget();
     	} else {
 			createFloatingTarget();
@@ -58,7 +58,7 @@ public class PlaceTargetTask extends BukkitRunnable {
     private void createGroundTarget() {
     	Location l = controller.getRandomSpawnLocationForGroundTarget();
     	Block block = createTarget(l);
-    	blockManipulationUtil.createNewWool(controller.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ(), DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(controller.getWorld(), l.getBlockX(), l.getBlockY()-2, l.getBlockZ(), DyeColor.WHITE );
     	controller.addTarget(new GroundBlockTarget(block));
     }
 
@@ -74,7 +74,7 @@ public class PlaceTargetTask extends BukkitRunnable {
     
     private Block createTarget(Location l) {
 		int x = l.getBlockX();
-		int y = l.getBlockY()+2;
+		int y = l.getBlockY()+3;
 		int z = l.getBlockZ();
 
     	Block block = createNewBlock(controller.getWorld(), x, y, z, Material.RED_SANDSTONE);
