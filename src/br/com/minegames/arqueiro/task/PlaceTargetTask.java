@@ -10,6 +10,9 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import com.thecraftcloud.core.util.BlockManipulationUtil;
+import com.thecraftcloud.domain.MyCloudCraftGame;
+
 import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.TheLastArcher;
@@ -17,8 +20,6 @@ import br.com.minegames.arqueiro.domain.target.FloatingBlockTarget;
 import br.com.minegames.arqueiro.domain.target.GroundBlockTarget;
 import br.com.minegames.arqueiro.domain.target.Target;
 import br.com.minegames.arqueiro.domain.target.WallBlockTarget;
-import br.com.minegames.core.util.BlockManipulationUtil;
-import br.com.minegames.gamemanager.domain.MyCloudCraftGame;
 
 public class PlaceTargetTask extends BukkitRunnable {
 	

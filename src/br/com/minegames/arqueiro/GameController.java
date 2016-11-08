@@ -29,6 +29,18 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
 
+import com.thecraftcloud.core.domain.Area3D;
+import com.thecraftcloud.core.domain.Arena;
+import com.thecraftcloud.core.domain.Game;
+import com.thecraftcloud.core.logging.MGLogger;
+import com.thecraftcloud.core.util.BlockManipulationUtil;
+import com.thecraftcloud.core.util.LocationUtil;
+import com.thecraftcloud.core.util.Utils;
+import com.thecraftcloud.core.util.title.TitleUtil;
+import com.thecraftcloud.domain.GamePlayer;
+import com.thecraftcloud.plugin.MyCloudCraftPlugin;
+import com.thecraftcloud.plugin.task.LevelUpTask;
+
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.ArcherBow;
 import br.com.minegames.arqueiro.domain.TheLastArcher;
@@ -50,17 +62,6 @@ import br.com.minegames.arqueiro.task.PlaceMovingTargetTask;
 import br.com.minegames.arqueiro.task.PlaceTargetTask;
 import br.com.minegames.arqueiro.task.SpawnSkeletonTask;
 import br.com.minegames.arqueiro.task.SpawnZombieTask;
-import br.com.minegames.core.domain.Area3D;
-import br.com.minegames.core.domain.Arena;
-import br.com.minegames.core.domain.Game;
-import br.com.minegames.core.logging.MGLogger;
-import br.com.minegames.core.util.BlockManipulationUtil;
-import br.com.minegames.core.util.LocationUtil;
-import br.com.minegames.core.util.Utils;
-import br.com.minegames.core.util.title.TitleUtil;
-import br.com.minegames.gamemanager.domain.GamePlayer;
-import br.com.minegames.gamemanager.plugin.MyCloudCraftPlugin;
-import br.com.minegames.gamemanager.plugin.task.LevelUpTask;
 
 public class GameController extends MyCloudCraftPlugin {
 

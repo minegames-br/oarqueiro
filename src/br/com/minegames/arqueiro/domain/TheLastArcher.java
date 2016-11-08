@@ -1,8 +1,8 @@
 package br.com.minegames.arqueiro.domain;
 
-import br.com.minegames.gamemanager.domain.GameState;
-import br.com.minegames.gamemanager.domain.Level;
-import br.com.minegames.gamemanager.domain.MyCloudCraftGame;
+import com.thecraftcloud.domain.GameState;
+import com.thecraftcloud.domain.Level;
+import com.thecraftcloud.domain.MyCloudCraftGame;
 
 public class TheLastArcher extends MyCloudCraftGame {
 

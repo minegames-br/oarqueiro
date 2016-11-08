@@ -8,13 +8,14 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import com.thecraftcloud.core.domain.Area3D;
+import com.thecraftcloud.core.domain.Arena;
+import com.thecraftcloud.core.logging.MGLogger;
+
 import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.target.FastMovingTarget;
 import br.com.minegames.arqueiro.domain.target.MovingTarget;
-import br.com.minegames.core.domain.Area3D;
-import br.com.minegames.core.domain.Arena;
-import br.com.minegames.core.logging.MGLogger;
 
 public class PlaceMovingTargetTask extends BukkitRunnable {
 	

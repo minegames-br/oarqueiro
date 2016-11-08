@@ -9,14 +9,15 @@ import org.bukkit.entity.Skeleton;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import com.thecraftcloud.core.domain.Area3D;
+import com.thecraftcloud.core.logging.MGLogger;
+import com.thecraftcloud.domain.GamePlayer;
+import com.thecraftcloud.domain.MyCloudCraftGame;
+
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.ArcherBow;
 import br.com.minegames.arqueiro.domain.target.SkeletonTarget;
-import br.com.minegames.core.domain.Area3D;
-import br.com.minegames.core.logging.MGLogger;
-import br.com.minegames.gamemanager.domain.GamePlayer;
-import br.com.minegames.gamemanager.domain.MyCloudCraftGame;
 
 public class SpawnSkeletonTask implements Runnable {
 

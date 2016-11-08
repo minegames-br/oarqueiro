@@ -10,14 +10,15 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import com.thecraftcloud.core.logging.MGLogger;
+import com.thecraftcloud.core.util.Utils;
+import com.thecraftcloud.domain.MyCloudCraftGame;
+
 import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.TheLastArcher;
 import br.com.minegames.arqueiro.domain.target.ZombieTarget;
-import br.com.minegames.core.logging.MGLogger;
-import br.com.minegames.core.util.Utils;
-import br.com.minegames.gamemanager.domain.MyCloudCraftGame;
 
 public class SpawnZombieTask implements Runnable {
 

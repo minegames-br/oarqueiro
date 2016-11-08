@@ -4,8 +4,8 @@ import org.bukkit.Location;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
-import br.com.minegames.core.domain.Area3D;
-import br.com.minegames.gamemanager.domain.GamePlayer;
+import com.thecraftcloud.core.domain.Area3D;
+import com.thecraftcloud.domain.GamePlayer;
 
 public class Archer extends GamePlayer implements Comparable {
 

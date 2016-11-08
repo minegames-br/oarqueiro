@@ -8,9 +8,10 @@ import org.bukkit.entity.Skeleton;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import com.thecraftcloud.domain.MyCloudCraftGame;
+
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.TheLastArcher;
-import br.com.minegames.gamemanager.domain.MyCloudCraftGame;
 
 public class SpawnBatTask extends BukkitRunnable {
 	

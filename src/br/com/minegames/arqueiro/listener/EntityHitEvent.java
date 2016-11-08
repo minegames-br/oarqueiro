@@ -7,8 +7,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
+import com.thecraftcloud.core.logging.MGLogger;
+
 import br.com.minegames.arqueiro.GameController;
-import br.com.minegames.core.logging.MGLogger;
 
 public class EntityHitEvent implements Listener {
 

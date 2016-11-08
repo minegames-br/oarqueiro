@@ -7,11 +7,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityInteractEvent;
 
+import com.thecraftcloud.core.domain.Area3D;
+import com.thecraftcloud.core.logging.MGLogger;
+import com.thecraftcloud.domain.GamePlayer;
+
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
-import br.com.minegames.core.domain.Area3D;
-import br.com.minegames.core.logging.MGLogger;
-import br.com.minegames.gamemanager.domain.GamePlayer;
 
 public class ExplodeListener implements Listener {
 
