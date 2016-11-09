@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityInteractEvent;
 
 import com.thecraftcloud.core.domain.Area3D;
+import com.thecraftcloud.core.domain.GameArenaConfig;
 import com.thecraftcloud.core.logging.MGLogger;
 import com.thecraftcloud.domain.GamePlayer;
 
@@ -25,16 +26,22 @@ public class ExplodeListener implements Listener {
 
 	@EventHandler
 	public void onInteract(EntityInteractEvent event) {
+		if(!controller.getMyCloudCraftGame().isStarted()) {
+			return;
+		}
 		Location loc = event.getEntity().getLocation();
 		Object aList[] = controller.getLivePlayers().toArray();
 
-		CopyOnWriteArraySet<Area3D> playerSpawnList = (CopyOnWriteArraySet)controller.getGameArenaConfigByGroup("PLAYER-SPAWN");
-		for(Area3D area3d: playerSpawnList) {
+		CopyOnWriteArraySet<GameArenaConfig> playerSpawnList = (CopyOnWriteArraySet)controller.getGameArenaConfigByGroup("PLAYER-SPAWN");
+		for(GameArenaConfig gac: playerSpawnList) {
 			for(GamePlayer gp: controller.getLivePlayers()) {
 				Archer archer = (Archer)gp;
-				if(isInsideArea(loc, area3d)) { 
-					MGLogger.info("iria explodir");
-					controller.killEntity(event.getEntity());
+				if( gac.getAreaValue() != null) {
+					Area3D area3d = gac.getAreaValue();
+					if(isInsideArea(loc, area3d)) { 
+						MGLogger.info("iria explodir");
+						controller.killEntity(event.getEntity());
+					}
 				}
 			}
 		}

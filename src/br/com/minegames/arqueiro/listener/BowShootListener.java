@@ -21,6 +21,9 @@ public class BowShootListener implements Listener {
 
 	@EventHandler
 	public void onBowShoot(EntityShootBowEvent e) {
+		if(!controller.getMyCloudCraftGame().isStarted()) {
+			return;
+		}
 		//ItemStack arrow = new ItemStack(Material.ARROW);
 		if (e.getEntity() instanceof Player) {
 			Player player = (Player) e.getEntity();

@@ -22,6 +22,9 @@ public class EntityHitEvent implements Listener {
 	
 	@EventHandler
 	public void onArrowHit(EntityDamageByEntityEvent event){
+		if(!game.getMyCloudCraftGame().isStarted()) {
+			return;
+		}
 		
         if ( !(event.getDamager() instanceof Arrow) ){
         	return;

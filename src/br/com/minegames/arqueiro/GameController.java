@@ -29,16 +29,18 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
 
+import com.avaje.ebeaninternal.server.persist.Constant;
 import com.thecraftcloud.core.domain.Area3D;
 import com.thecraftcloud.core.domain.Arena;
 import com.thecraftcloud.core.domain.Game;
+import com.thecraftcloud.core.domain.Local;
 import com.thecraftcloud.core.logging.MGLogger;
 import com.thecraftcloud.core.util.BlockManipulationUtil;
 import com.thecraftcloud.core.util.LocationUtil;
 import com.thecraftcloud.core.util.Utils;
 import com.thecraftcloud.core.util.title.TitleUtil;
 import com.thecraftcloud.domain.GamePlayer;
-import com.thecraftcloud.plugin.MyCloudCraftPlugin;
+import com.thecraftcloud.plugin.TheCraftCloudMiniGameAbstract;
 import com.thecraftcloud.plugin.task.LevelUpTask;
 
 import br.com.minegames.arqueiro.domain.Archer;
@@ -63,7 +65,7 @@ import br.com.minegames.arqueiro.task.PlaceTargetTask;
 import br.com.minegames.arqueiro.task.SpawnSkeletonTask;
 import br.com.minegames.arqueiro.task.SpawnZombieTask;
 
-public class GameController extends MyCloudCraftPlugin {
+public class GameController extends TheCraftCloudMiniGameAbstract {
 
 	private Runnable placeTargetTask;
 	private int placeTargetThreadID;
@@ -88,6 +90,9 @@ public class GameController extends MyCloudCraftPlugin {
 	private LocationUtil locationUtil = new LocationUtil();
 
 	private BlockManipulationUtil blockManipulationUtil = new BlockManipulationUtil();
+	private Integer maxPlayers;
+	private Integer minPlayers;
+	private Local lobbyLocal;
 
 	@Override
 	public void onEnable() {
@@ -100,8 +105,8 @@ public class GameController extends MyCloudCraftPlugin {
 	}
 
 	@Override
-	public void init() {
-		super.init();
+	public void init(World _world, Local _lobby) {
+		super.init(_world, _lobby);
 
 		// inicializar variaveis de instancia
 		this.placeTargetTask = new PlaceTargetTask(this);
@@ -677,6 +682,52 @@ public class GameController extends MyCloudCraftPlugin {
 
 	public void setWorld(World world) {
 		this.world = world;
+	}
+
+	@Override
+	public Integer getStartCountDown() {
+		return this.countDown;
+	}
+
+	@Override
+	public void setStartCountDown() {
+		this.countDown = (Integer)this.getGameConfigInstance(Constants.START_COUNTDOWN);
+	}
+
+	@Override
+	public Local getLobby() {
+		return this.lobbyLocal;
+	}
+
+	@Override
+	public void setLobby() {
+		Local l = (Local)this.getGameArenaConfig(Constants.LOBBY_LOCATION);
+		this.lobbyLocal = l;
+	}
+
+	@Override
+	public Integer getMinPlayers() {
+		this.minPlayers = (Integer)this.getGameConfigInstance(Constants.MIN_PLAYERS);
+		return this.minPlayers;
+	}
+
+	@Override
+	public Integer getMaxPlayers() {
+		this.maxPlayers = (Integer)this.getGameConfigInstance(Constants.MAX_PLAYERS);
+		return this.maxPlayers;
+	}
+
+	@Override
+	public boolean isGameReady() {
+		boolean result = true;
+		
+		if(this.lobby == null) {
+			result = false;
+		}
+		
+		result = result && super.isGameReady();
+		
+		return result;
 	}
 
 

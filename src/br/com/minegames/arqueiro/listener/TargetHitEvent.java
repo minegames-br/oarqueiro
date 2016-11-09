@@ -15,8 +15,6 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.BlockIterator;
 
-import com.thecraftcloud.core.logging.MGLogger;
-
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.target.BlockTarget;
 import br.com.minegames.arqueiro.domain.target.MovingTarget;
@@ -34,6 +32,9 @@ public class TargetHitEvent implements Listener {
 	@EventHandler
 	public void onProjectileHit(ProjectileHitEvent event)
 	{
+		if(!game.getMyCloudCraftGame().isStarted()) {
+			return;
+		}
 	    if(!(event.getEntity() instanceof Arrow))
 	        return;
 
