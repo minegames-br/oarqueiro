@@ -14,6 +14,10 @@ public class TheLastArcher extends MyCloudCraftGame {
 		
 	}
 
+	@Override
+	public boolean hasLevels() {
+		return true;
+	}
 
 
 }

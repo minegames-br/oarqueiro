@@ -14,14 +14,17 @@ import com.thecraftcloud.domain.GamePlayer;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
+import br.com.minegames.arqueiro.service.EntityService;
 
 public class ExplodeListener implements Listener {
 
 	private GameController controller;
+	private EntityService entityService;
 
-	public ExplodeListener(GameController plugin) {
+	public ExplodeListener(GameController controller) {
 		super();
-		this.controller = plugin;
+		this.controller = controller;
+		this.entityService = new EntityService(controller);
 	}
 
 	@EventHandler
@@ -40,7 +43,7 @@ public class ExplodeListener implements Listener {
 					Area3D area3d = gac.getAreaValue();
 					if(isInsideArea(loc, area3d)) { 
 						MGLogger.info("iria explodir");
-						controller.killEntity(event.getEntity());
+						this.entityService.killEntity(event.getEntity());
 					}
 				}
 			}

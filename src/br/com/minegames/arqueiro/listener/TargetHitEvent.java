@@ -19,20 +19,23 @@ import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.target.BlockTarget;
 import br.com.minegames.arqueiro.domain.target.MovingTarget;
 import br.com.minegames.arqueiro.domain.target.Target;
+import br.com.minegames.arqueiro.service.TargetService;
 
 public class TargetHitEvent implements Listener {
 
-	private GameController game;	
+	private GameController controller;	
+	private TargetService targetService;
 	
-	public TargetHitEvent(GameController plugin) {
+	public TargetHitEvent(GameController controller) {
 		super();
-		this.game = plugin;
+		this.controller = controller;
+		this.targetService = new TargetService(controller);
 	}
 	
 	@EventHandler
 	public void onProjectileHit(ProjectileHitEvent event)
 	{
-		if(!game.getMyCloudCraftGame().isStarted()) {
+		if(!controller.getMyCloudCraftGame().isStarted()) {
 			return;
 		}
 	    if(!(event.getEntity() instanceof Arrow))
@@ -41,6 +44,8 @@ public class TargetHitEvent implements Listener {
 	    if(!(event.getEntity().getShooter() instanceof Player))
 	        return;
 
+	    
+	    
 	    if (event.getEntity() instanceof Arrow){
 		    Arrow arrow = (Arrow)event.getEntity();
 		    
@@ -57,36 +62,10 @@ public class TargetHitEvent implements Listener {
 		    	}
 		    }
 		    
-	    	Iterator<Target> it = game.getTargets().iterator();
-
-	    	while(it.hasNext()) {
-	    		Target target = it.next();
-
-	            if( target instanceof BlockTarget ) {
-	            	
-	            	BlockTarget bTarget = (BlockTarget)target;
-	            	Location l1 = hit.getLocation();
-	            	Location l2 = bTarget.getBlock().getLocation();
-	            	
-	            	if( l1.getBlockX() == l2.getBlockX() && l1.getBlockY() == l2.getBlockY() && l1.getBlockZ() == l2.getBlockZ() ) {
-		                game.hitTarget(bTarget, shooter);
-	            	}
-	            }
+		    Target target = targetService.hasHittenTarget(hit);
+		    if(target != null) {
+		    	targetService.hitTarget(shooter, target);
 		    }
-	    	
-		    
-	    	Iterator<MovingTarget> it2 = game.getMovingTargets().iterator();
-
-	    	while(it2.hasNext()) {
-	    		MovingTarget target = it2.next();
-
-            	Location l1 = hit.getLocation();
-            	Location l2 = target.getBlock().getLocation();
-            	
-            	if( l1.getBlockX() == l2.getBlockX() && l1.getBlockY() == l2.getBlockY() && l1.getBlockZ() == l2.getBlockZ() ) {
-	                game.hitMovingTarget(target, shooter);
-            	}
-            }
 	    		    	
 	    }
 
@@ -95,7 +74,7 @@ public class TargetHitEvent implements Listener {
 	    final Arrow arrow = (Arrow)event.getEntity();
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
         
-        scheduler.runTaskLater(game, new Runnable() {
+        scheduler.runTaskLater(controller, new Runnable() {
         	public void run() {
         	    arrow.remove();
         	}

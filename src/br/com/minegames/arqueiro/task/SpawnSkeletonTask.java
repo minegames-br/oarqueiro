@@ -1,5 +1,6 @@
 package br.com.minegames.arqueiro.task;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.boss.BossBar;
@@ -13,6 +14,7 @@ import com.thecraftcloud.core.domain.Area3D;
 import com.thecraftcloud.core.logging.MGLogger;
 import com.thecraftcloud.domain.GamePlayer;
 import com.thecraftcloud.domain.MyCloudCraftGame;
+import com.thecraftcloud.plugin.service.ConfigService;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
@@ -23,6 +25,7 @@ public class SpawnSkeletonTask implements Runnable {
 
 	private GameController controller;
 	private Skeleton entity;
+	private ConfigService configService = ConfigService.getInstance();
 
 	public SpawnSkeletonTask(GameController game) {
 		this.controller = game;
@@ -49,7 +52,11 @@ public class SpawnSkeletonTask implements Runnable {
 		for (GamePlayer gp : controller.getLivePlayers()) {
 			Player player = gp.getPlayer();
 			//this.world = player.getWorld();
-			Area3D spawnPoint = (Area3D)controller.getGameArenaConfig("arqueiro.player" + loc + ".area");
+			Area3D spawnPoint = (Area3D)configService.getGameArenaConfig("arqueiro.player" + loc + ".area");
+			
+			Bukkit.getLogger().info("arqueiro.player" + loc + ".area" + spawnPoint);
+			Bukkit.getLogger().info("arqueiro.player" + loc + ".area pointA " + spawnPoint.getPointA() );
+			Bukkit.getLogger().info("arqueiro.player" + loc + ".area pointB " + spawnPoint.getPointB() );
 			
 			int x = (spawnPoint.getPointA().getX() + spawnPoint.getPointB().getX()) / 2; 
 			int z = (spawnPoint.getPointA().getZ() + spawnPoint.getPointB().getZ()) / 2; 
@@ -65,7 +72,7 @@ public class SpawnSkeletonTask implements Runnable {
 			entity.getEquipment().setChestplate(new ItemStack(Material.DIAMOND_CHESTPLATE));
 			entity.getEquipment().setHelmet(new ItemStack(Material.DIAMOND_HELMET));
 			entity.setTarget(player);
-			controller.addEntityTarget(new SkeletonTarget(entity));
+			controller.addEntityPlayer(new SkeletonTarget(entity));
 			loc++;
 		}
 	}

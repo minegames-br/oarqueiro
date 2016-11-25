@@ -1,65 +1,44 @@
 package br.com.minegames.arqueiro;
 
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.DyeColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Damageable;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Zombie;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.util.Vector;
 
-import com.avaje.ebeaninternal.server.persist.Constant;
 import com.thecraftcloud.core.domain.Area3D;
 import com.thecraftcloud.core.domain.Arena;
+import com.thecraftcloud.core.domain.FacingDirection;
 import com.thecraftcloud.core.domain.Game;
 import com.thecraftcloud.core.domain.Local;
 import com.thecraftcloud.core.logging.MGLogger;
-import com.thecraftcloud.core.util.BlockManipulationUtil;
-import com.thecraftcloud.core.util.LocationUtil;
 import com.thecraftcloud.core.util.Utils;
 import com.thecraftcloud.core.util.title.TitleUtil;
 import com.thecraftcloud.domain.GamePlayer;
 import com.thecraftcloud.plugin.TheCraftCloudMiniGameAbstract;
+import com.thecraftcloud.plugin.service.ConfigService;
 import com.thecraftcloud.plugin.task.LevelUpTask;
 
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.ArcherBow;
 import br.com.minegames.arqueiro.domain.TheLastArcher;
-import br.com.minegames.arqueiro.domain.target.BlockTarget;
-import br.com.minegames.arqueiro.domain.target.EntityTarget;
-import br.com.minegames.arqueiro.domain.target.FloatingBlockTarget;
-import br.com.minegames.arqueiro.domain.target.GroundBlockTarget;
 import br.com.minegames.arqueiro.domain.target.MovingTarget;
 import br.com.minegames.arqueiro.domain.target.Target;
-import br.com.minegames.arqueiro.domain.target.WallBlockTarget;
 import br.com.minegames.arqueiro.listener.BowShootListener;
 import br.com.minegames.arqueiro.listener.EntityHitEvent;
 import br.com.minegames.arqueiro.listener.ExplodeListener;
+import br.com.minegames.arqueiro.listener.PlayerDeath;
 import br.com.minegames.arqueiro.listener.PlayerMove;
 import br.com.minegames.arqueiro.listener.TargetHitEvent;
+import br.com.minegames.arqueiro.service.ArcherService;
+import br.com.minegames.arqueiro.service.LocalService;
+import br.com.minegames.arqueiro.service.TargetService;
 import br.com.minegames.arqueiro.task.DestroyTargetTask;
-import br.com.minegames.arqueiro.task.ExplodeZombieTask;
 import br.com.minegames.arqueiro.task.PlaceMovingTargetTask;
 import br.com.minegames.arqueiro.task.PlaceTargetTask;
 import br.com.minegames.arqueiro.task.SpawnSkeletonTask;
@@ -81,18 +60,14 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	private int levelUpTaskID;
 
 	private CopyOnWriteArraySet<Target> targets = new CopyOnWriteArraySet<Target>();
-	private CopyOnWriteArraySet<EntityTarget> livingTargets = new CopyOnWriteArraySet<EntityTarget>();
 	private CopyOnWriteArraySet<MovingTarget> movingTargets = new CopyOnWriteArraySet<MovingTarget>();
 
-	private Runnable explodeZombieTask;
 	private int explodeZombieThreadID;
 	
-	private LocationUtil locationUtil = new LocationUtil();
-
-	private BlockManipulationUtil blockManipulationUtil = new BlockManipulationUtil();
-	private Integer maxPlayers;
-	private Integer minPlayers;
-	private Local lobbyLocal;
+	protected LocalService localService = new LocalService(this);
+	protected TargetService targetService = new TargetService(this);
+	protected ArcherService playerService = new ArcherService(this);
+	protected ConfigService configService = ConfigService.getInstance();
 
 	@Override
 	public void onEnable() {
@@ -115,7 +90,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		this.spawnZombieTask = new SpawnZombieTask(this);
 		this.spawnSkeletonTask = new SpawnSkeletonTask(this);
 		// this.spawnZombieTask = new SpawnZombieTask(this);
-		this.explodeZombieTask = new ExplodeZombieTask(this);
 		this.levelUpTask = new LevelUpTask(this);
 
 	}
@@ -133,6 +107,7 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		super.registerListeners();
 		PluginManager pm = Bukkit.getPluginManager();
 		pm.registerEvents(new PlayerMove(this), this);
+		pm.registerEvents(new PlayerDeath(this), this);
 		pm.registerEvents(new TargetHitEvent(this), this);
 		pm.registerEvents(new EntityHitEvent(this), this);
 		pm.registerEvents(new BowShootListener(this), this);
@@ -158,23 +133,34 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 			Archer archer = (Archer)gp;
 			Player player = archer.getPlayer();
 			//this.world = player.getWorld();
-			Area3D spawnPoint = (Area3D)getGameArenaConfig("arqueiro.player" + loc + ".area");
-			archer.setSpawnPoint(spawnPoint);							   
-			player.teleport(locationUtil.getMiddle(this.world, spawnPoint) );
+			Area3D spawnPoint = (Area3D)configService.getGameArenaConfig("arqueiro.player" + loc + ".area");
+			archer.setSpawnPoint(spawnPoint);
+			Location l = localService.getMiddle(this.world, spawnPoint);
+			System.out.println("yaw: " + l.getYaw());
+			System.out.println("pitch " + l.getPitch());
+			
+			if(!(this.arena.getFacing() == null)) {
+				if(this.arena.getFacing() == FacingDirection.EAST) {
+					l.setYaw(270);
+				} 
+				//l.setPitch();
+			}
+			player.teleport( l );
+			
 			archer.regainHealthToPlayer(archer);
 
 			// Preparar o jogador para a rodada. Dar armaduras, armas, etc...
 			archer.setBow(ArcherBow.DEFAULT);
 
-			BossBar bar = createBossBar();
+			BossBar bar = playerService.createBossBar();
 			archer.addBaseBar(bar);
 			bar.addPlayer(player);
 
-			setupPlayerToStartGame(player);
+			playerService.setupPlayerToStartGame(player);
 			loc++;
 		}
 
-		updateScoreBoards();
+		playerService.updateScoreBoards();
 
 		BukkitScheduler scheduler = getServer().getScheduler();
 
@@ -189,12 +175,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 
 	}
 	
-	@Override
-	public GamePlayer createGamePlayer() {
-		Archer archer = new Archer();
-		return archer;
-	}
-
 	public boolean shouldEndGame() {
     	//Terminar o jogo após o 10 Nível
     	if(this.myCloudCraftGame.getLevel().getLevel() >= 11 && this.myCloudCraftGame.isStarted()) {
@@ -208,52 +188,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
             return true;
     	}
     	return false;
-	}
-
-	private BossBar createBossBar() {
-		BossBar bar = Bukkit.createBossBar("Base", BarColor.PINK, BarStyle.SOLID);
-		bar.setProgress(1F);
-		return bar;
-	}
-
-	private void updateScoreBoards() {
-		for (GamePlayer gp : this.livePlayers) {
-			Archer archer = (Archer)gp;
-			Player player = archer.getPlayer();
-			Scoreboard scoreboard = player.getScoreboard();
-			for (GamePlayer gp1 : this.livePlayers) {
-				Archer a1 = (Archer)gp1;
-				String name = a1.getPlayer().getName();
-				scoreboard.getObjective(DisplaySlot.SIDEBAR).getScore(name).setScore(a1.getPoint());
-			}
-		}
-	}
-
-	/*
-	 * Nesse método poderemos decidir o que dar a cada jogador
-	 */
-	private void setupPlayerToStartGame(Player player) {
-		PlayerInventory inventory = player.getInventory();
-
-		inventory.clear();
-		inventory.setArmorContents(null);
-
-		ItemStack bow = new ItemStack(Material.BOW);
-		ItemStack arrow = new ItemStack(Material.ARROW);
-		ItemStack sword = new ItemStack(Material.DIAMOND_SWORD);
-
-		bow.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 15);
-		bow.addEnchantment(Enchantment.ARROW_INFINITE, 1);
-		sword.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 15);
-
-		inventory.addItem(bow);
-		inventory.addItem(arrow);
-		inventory.addItem(sword);
-
-		Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-		Objective objective = scoreboard.registerNewObjective(Utils.color("&6Placar"), "placar");
-		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-		player.setScoreboard(scoreboard);
 	}
 
 	/**
@@ -290,13 +224,13 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		}
 
 		// destroyTargets()
-		destroyTargets();
+		targetService.destroyTargets();
 
 		// restaurar parede preta
 		//createBlackWall();
 
 		// manda os jogadores para o podium
-		teleportPlayersToPodium();
+		playerService.teleportPlayersToPodium();
 
 	}
 
@@ -329,25 +263,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		}
 	}
 
-	private void destroyTargets() {
-		for (Target target : targets) {
-			if (target instanceof BlockTarget) {
-				BlockTarget bTarget = (BlockTarget) target;
-				this.destroyBlockTarget(bTarget);
-			}
-		}
-
-		for (MovingTarget mTarget : this.movingTargets) {
-			this.destroyMovingTarget(mTarget);
-		}
-	}
-
-	private void teleportPlayersToPodium() {
-		Object aList[] = livePlayers.toArray();
-		Arrays.sort(aList);
-		MGLogger.trace("teleport players to podium - aList.lengh: " + aList.length + "");
-	}
-
 	public void addTarget(Target target) {
 		targets.add(target);
 	}
@@ -356,208 +271,12 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		movingTargets.add(mTarget);
 	}
 
-	public void addEntityTarget(EntityTarget target) {
-		livingTargets.add(target);
-	}
-
-	public void givePoints(Player player, Integer hitPoints) {
-		Archer archer = (Archer)findGamePlayerByPlayer(player);
-		archer.addPoints( hitPoints );
-		updateScoreBoards();
-	}
-
 	public CopyOnWriteArraySet<Target> getTargets() {
 		return this.targets;
 	}
 
 	public CopyOnWriteArraySet<MovingTarget> getMovingTargets() {
 		return this.movingTargets;
-	}
-
-	public CopyOnWriteArraySet<EntityTarget> getLivingTargets() {
-		return this.livingTargets;
-	}
-
-	public void hitTarget(BlockTarget target, Player shooter) {
-		targets.remove(target);
-		target.hitTarget2(shooter);
-		Location loc = target.getBlock().getLocation();
-		shooter.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 1.0F, false, false);
-		destroyBlockTarget(target);
-		if (shooter != null) {
-			Double points = loc.distance(shooter.getLocation());
-			
-			MGLogger.info("shooter: " + shooter.getName() + " total points: " + points);
-			givePoints(shooter, points.intValue());
-		}
-
-	}
-
-	public void hitEntityTarget(Target target, Player shooter) {
-		target.hitTarget2(shooter);
-	}
-
-	public void hitMovingTarget(MovingTarget mTarget, Player shooter) {
-		mTarget.hitTarget2(shooter);
-		Utils.shootFirework(shooter.getLocation());
-		destroyMovingTarget(mTarget);
-		if (shooter != null) {
-			this.giveBonus(shooter);
-		}
-	}
-
-	public void giveBonus(Player shooter) {
-		Archer archer = (Archer)findGamePlayerByPlayer(shooter);
-		if (archer.getBow().equals(ArcherBow.DEFAULT)) {
-			archer.setBow(ArcherBow.DOUBLE);
-		} else if (archer.getBow().equals(ArcherBow.DOUBLE)) {
-			archer.setBow(ArcherBow.TRIPPLE);
-		}
-	}
-
-	public void destroyMovingTarget(MovingTarget mTarget) {
-		Location loc = mTarget.getBlock().getLocation();
-		movingTargets.remove(mTarget);
-		mTarget.getBlock().setType(Material.AIR);
-		if (!mTarget.isHit()) {
-			this.world.createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 1.0F, false, false);
-		}
-	}
-
-	public Location getRandomSpawnLocationForGroundEnemy() {
-		Area3D area = (Area3D)getGameArenaConfig(Constants.MONSTERS_SPAWN_AREA);
-		return locationUtil.getRandomLocationXYZ( this.world, area);
-	}
-
-	public Location getRandomSpawnLocationForVerticalMovingTarget() {
-		Area3D area = (Area3D)getGameArenaConfig(Constants.FLOATING_AREA);
-		return locationUtil.getRandomLocationXYZ( this.world, area);
-	}
-
-	public Location getRandomSpawnLocationForGroundTarget() {
-		Area3D area = (Area3D)getGameArenaConfig(Constants.MONSTERS_SPAWN_AREA);
-		return locationUtil.getRandomLocationXYZ( this.world , area);
-	}
-
-	public Location getRandomSpawnLocationForFloatingTarget() {
-		Area3D area = (Area3D)getGameArenaConfig(Constants.FLOATING_AREA);
-		return locationUtil.getRandomLocationXYZ( this.world, area);
-	}
-
-	public void hitEntity(Entity entity, Player player) {
-		EntityTarget target = findEntityTarget(entity);
-		target.setKiller(player);
-	}
-
-	public void killPlayer(Player dead) {
-		String deadname = dead.getDisplayName();
-		Bukkit.broadcastMessage(ChatColor.GOLD + " " + deadname + "" + ChatColor.GREEN + " died.");
-
-		dead.setHealth(20); // Do not show the respawn screen
-		dead.getInventory().clear();
-
-		if (this.myCloudCraftGame.isStarted()) {
-			this.removeLivePlayer(dead);
-			dead.teleport(this.lobby); //TELEPORT DEAD PLAYER TO LOBBY
-		}
-	}
-
-	public EntityTarget findEntityTargetByZombie(Zombie zombie) {
-		boolean foundTarget = false;
-		EntityTarget et = null;
-		for (EntityTarget z : this.livingTargets) {
-			if (z.getLivingEntity().equals(zombie)) {
-				foundTarget = true;
-				et = z;
-			}
-		}
-		if (!foundTarget) {
-		}
-		return et;
-	}
-
-	public EntityTarget findEntityTarget(Entity entity) {
-		boolean foundTarget = false;
-		EntityTarget et = null;
-		for (EntityTarget z : this.livingTargets) {
-			if (z.getLivingEntity().equals(entity)) {
-				foundTarget = true;
-				et = z;
-			}
-		}
-		if (!foundTarget) {
-		}
-		return et;
-	}
-
-	public void killEntityTargets() {
-		for (EntityTarget eTarget : this.livingTargets) {
-			if (eTarget instanceof EntityTarget) {
-				this.killEntity(((EntityTarget) eTarget).getLivingEntity()); // this.killZombie...getZombie
-			}
-		}
-	}
-
-	public void killEntity(Entity z) {
-		EntityTarget et = (EntityTarget) findEntityTarget(z);
-		Location loc = z.getLocation();
-		if (et != null) {
-			if (et.getKiller() != null) {
-				Player player = et.getKiller();
-				this.givePoints(player, et.getKillPoints());
-				this.livingTargets.remove(et);
-			} else {
-				if (damageArcherArea(z)) {
-					((Damageable) z).damage(((Damageable) z).getMaxHealth());
-					this.world.createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 2.0F, false, false);
-					this.livingTargets.remove(et);
-				} else {
-					destroyBase(loc.getBlockX());
-				}
-			}
-		}
-	}
-
-	/*
-	 * public void killZombie(Zombie zombie) { ZombieTarget et = (ZombieTarget)
-	 * findEntityTargetByZombie(zombie); Location loc = zombie.getLocation(); if
-	 * (et != null) { if (et.getKiller() != null) { Player player =
-	 * et.getKiller(); this.givePoints(player, et.getKillPoints());
-	 * this.livingTargets.remove(et); } else { if (damageArcherArea(zombie)) {
-	 * zombie.damage(zombie.getMaxHealth());
-	 * this.world.createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 2.0F,
-	 * false, false); this.livingTargets.remove(et); } else {
-	 * destroyBase(loc.getBlockX()); } } } }
-	 */
-
-	private boolean damageArcherArea(Entity entity) {
-		Location zl = entity.getLocation();
-		Iterator<GamePlayer> it = this.livePlayers.iterator();
-		Archer archer = null;
-
-		while (it.hasNext()) {
-			archer = (Archer)it.next();
-			if (archer.isNear(zl)) {
-				break;
-			}
-		}
-		if (archer != null) {
-			if (archer.getBaseHealth() <= 0) {
-				archer.getBaseBar().setProgress(0);
-				return false;
-			} else {
-				archer.damageBase();
-				if (archer.getBaseHealth() > 0) {
-					archer.getBaseBar().setProgress(new Double(archer.getBaseHealth()));
-				}
-			}
-		}
-		return true;
-	}
-
-	private void destroyBase(int x) {
-		Location l = new Location(this.world, x, 4, 1169);
-		world.getBlockAt(l).setType(Material.AIR);
 	}
 
 	@Override
@@ -576,91 +295,17 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		return result;
 	}
 
-	public void destroyBlockTarget(BlockTarget bTarget) {
-		if (bTarget instanceof GroundBlockTarget) {
-			destroyGroundBlockTarget(bTarget);
-		} else if (bTarget instanceof WallBlockTarget) {
-			destroyWallBlockTarget(bTarget);
-		} else if (bTarget instanceof FloatingBlockTarget) {
-			destrobyFloatingBlockTarget(bTarget);
-		}
-	}
-
-	private void destrobyFloatingBlockTarget(BlockTarget bTarget) {
-		// restaurar o local do target
-		Block block = bTarget.getBlock();
-		Location l1 = new Location(this.getWorld(), block.getX() - 1, block.getY() - 1, block.getZ());
-		Location l2 = new Location(this.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
-		blockManipulationUtil.clearBlocks(l1, l2);
-	}
-
 	public World getWorld() {
 		return this.world;
 	}
 
-	private void destroyWallBlockTarget(BlockTarget bTarget) {
-		// restaurar a parte preta
-		Block block = bTarget.getBlock();
-
-		Location l1 = new Location(this.getWorld(), block.getX() - 1, block.getY() - 1, block.getZ());
-		Location l2 = new Location(this.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
-		blockManipulationUtil.createWoolBlocks(l1, l2, DyeColor.BLACK);
-	}
-
-	private void destroyGroundBlockTarget(BlockTarget bTarget) {
-		Block block = bTarget.getBlock();
-		Location l1 = new Location(this.getWorld(), block.getX() - 1, block.getY() - 2, block.getZ());
-		Location l2 = new Location(this.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
-		blockManipulationUtil .clearBlocks(l1, l2);
-	}
-
-	public void shootArrows(Player player) {
-		int iArrows = 1;
-		Archer archer = (Archer)findGamePlayerByPlayer(player);
-		if (archer.getBow().equals(ArcherBow.DEFAULT)) {
-			return;
-		} else if (archer.getBow().equals(ArcherBow.DOUBLE)) {
-			iArrows = 1;
-		} else if (archer.getBow().equals(ArcherBow.TRIPPLE)) {
-			iArrows = 2;
-		}
-
-		Location player_location = player.getLocation();
-		for (int i = 0; i <= iArrows; i++) {
-
-			if (i == 1 && iArrows == 2) {
-				continue;
-			} else if (i == 1 && iArrows == 1) {
-				break;
-			}
-			int spread = 0;
-
-			if (i == 0)
-				spread = -2;
-			else if (i == 2)
-				spread = 2;
-
-			double pitch = ((player_location.getPitch() + 90) * Math.PI) / 180;
-			double yaw = ((player_location.getYaw() + 90 + spread) * Math.PI) / 180;
-
-			double z_axis = Math.sin(pitch);
-			double x = z_axis * Math.cos(yaw);
-			double y = z_axis * Math.sin(yaw);
-			double z = Math.cos(pitch);
-
-			Vector vector = new Vector(x, z, y);
-			vector.multiply(3);
-
-			player.launchProjectile(Arrow.class, vector);
-		}
-	}
 
 	public void setArena(Arena value) {
 		this.arena = value;
 	}
 
 	public Integer getConfigIntValue(String name) {
-		return (Integer)this.getGameConfigInstance(name);
+		return (Integer)this.configService.getGameConfigInstance(name);
 	}
 
 	public Arena getArena() {
@@ -691,7 +336,7 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 
 	@Override
 	public void setStartCountDown() {
-		this.countDown = (Integer)this.getGameConfigInstance(Constants.START_COUNTDOWN);
+		this.countDown = (Integer)this.configService.getGameConfigInstance(Constants.START_COUNTDOWN);
 	}
 
 	@Override
@@ -701,19 +346,19 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 
 	@Override
 	public void setLobby() {
-		Local l = (Local)this.getGameArenaConfig(Constants.LOBBY_LOCATION);
+		Local l = (Local)this.configService.getGameArenaConfig(Constants.LOBBY_LOCATION);
 		this.lobbyLocal = l;
 	}
 
 	@Override
 	public Integer getMinPlayers() {
-		this.minPlayers = (Integer)this.getGameConfigInstance(Constants.MIN_PLAYERS);
+		this.minPlayers = (Integer)this.configService.getGameConfigInstance(Constants.MIN_PLAYERS);
 		return this.minPlayers;
 	}
 
 	@Override
 	public Integer getMaxPlayers() {
-		this.maxPlayers = (Integer)this.getGameConfigInstance(Constants.MAX_PLAYERS);
+		this.maxPlayers = (Integer)this.configService.getGameConfigInstance(Constants.MAX_PLAYERS);
 		return this.maxPlayers;
 	}
 
@@ -722,6 +367,7 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		boolean result = true;
 		
 		if(this.lobby == null) {
+			Bukkit.getLogger().info("Lobby is null");
 			result = false;
 		}
 		
@@ -730,5 +376,10 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		return result;
 	}
 
+	@Override
+	public GamePlayer createGamePlayer() {
+		Archer archer = new Archer();
+		return archer;
+	}
 
 }

@@ -2,21 +2,23 @@ package br.com.minegames.arqueiro.task;
 
 import java.util.Iterator;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Zombie;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import com.thecraftcloud.domain.EntityPlayer;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.target.EntityTarget;
-import br.com.minegames.arqueiro.domain.target.ZombieTarget;
+import br.com.minegames.arqueiro.service.EntityService;
 
 public class ExplodeZombieTask extends BukkitRunnable {
 	
 	private GameController controller;
+	private EntityService entityService;
 	
-	public ExplodeZombieTask(GameController game) {
-		this.controller = game;
+	public ExplodeZombieTask(GameController controller) {
+		this.controller = controller;
+		this.entityService = new EntityService(controller);
 	}
 	
     @Override
@@ -24,15 +26,15 @@ public class ExplodeZombieTask extends BukkitRunnable {
     	
     	//Explodir o zombie caso ele esteja na área de algum jogador
     	//A explosão irá causar dano aos blocks de cerca perto do zombie
-    	Iterator<EntityTarget> iterator = this.controller.getLivingTargets().iterator();
+    	Iterator<EntityPlayer> iterator = this.controller.getLivingEntities().iterator();
     	while(iterator.hasNext()) {
-    		EntityTarget t = iterator.next();
+    		EntityPlayer t = iterator.next();
     		if(t instanceof EntityTarget) {
     			EntityTarget e = (EntityTarget)t;
     			Entity entity = e.getLivingEntity();
     			if( controller.shouldExplodeZombie(entity.getLocation())){
     				//Bukkit.broadcastMessage("Zombie is in region");
-    				controller.killEntity(entity);
+    				this.entityService.killEntity(entity);
     			}
     		}
     	}
