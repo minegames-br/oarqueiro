@@ -330,39 +330,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	}
 
 	@Override
-	public Integer getStartCountDown() {
-		return this.countDown;
-	}
-
-	@Override
-	public void setStartCountDown() {
-		this.countDown = (Integer)this.configService.getGameConfigInstance(Constants.START_COUNTDOWN);
-	}
-
-	@Override
-	public Local getLobby() {
-		return this.lobbyLocal;
-	}
-
-	@Override
-	public void setLobby() {
-		Local l = (Local)this.configService.getGameArenaConfig(Constants.LOBBY_LOCATION);
-		this.lobbyLocal = l;
-	}
-
-	@Override
-	public Integer getMinPlayers() {
-		this.minPlayers = (Integer)this.configService.getGameConfigInstance(Constants.MIN_PLAYERS);
-		return this.minPlayers;
-	}
-
-	@Override
-	public Integer getMaxPlayers() {
-		this.maxPlayers = (Integer)this.configService.getGameConfigInstance(Constants.MAX_PLAYERS);
-		return this.maxPlayers;
-	}
-
-	@Override
 	public boolean isGameReady() {
 		boolean result = true;
 		
