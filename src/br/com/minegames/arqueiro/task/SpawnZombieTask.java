@@ -8,8 +8,8 @@ import org.bukkit.entity.Zombie;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import com.thecraftcloud.domain.MyCloudCraftGame;
-import com.thecraftcloud.plugin.service.ConfigService;
+import com.thecraftcloud.minigame.domain.MyCloudCraftGame;
+import com.thecraftcloud.minigame.service.ConfigService;
 
 import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
@@ -31,7 +31,7 @@ public class SpawnZombieTask implements Runnable {
 	@Override
 	public void run() {
 
-		MyCloudCraftGame game = controller.getMyCloudCraftGame();
+		MyCloudCraftGame game = configService.getMyCloudCraftGame();
 		if (!game.isStarted()) {
 			return;
 		}
@@ -45,16 +45,16 @@ public class SpawnZombieTask implements Runnable {
 	private Zombie spawnZombie() {
 		Location l = localService.getRandomSpawnLocationForGroundEnemy();
 		l.setY( l.getBlockY() + 1);
-		Zombie entity = (Zombie) controller.getWorld().spawnEntity(l, EntityType.ZOMBIE);
+		Zombie entity = (Zombie) configService.getWorld().spawnEntity(l, EntityType.ZOMBIE);
 		int index = new Random().nextInt(controller.getLivePlayers().size());
 		Archer archer = (Archer) controller.getLivePlayers().toArray()[index];
 		entity.setTarget(archer.getPlayer());
 		controller.addEntityPlayer(new ZombieTarget(entity));
 
 		if (!entity.isBaby()) {
-			if ((this.controller.getMyCloudCraftGame().getLevel().getLevel() % 2) == 0) {
+			if ((this.configService.getMyCloudCraftGame().getLevel().getLevel() % 2) == 0) {
 				entity.addPotionEffect(
-						new PotionEffect(PotionEffectType.SPEED, 10000, controller.getMyCloudCraftGame().getLevel().getLevel()/2));
+						new PotionEffect(PotionEffectType.SPEED, 10000, configService.getMyCloudCraftGame().getLevel().getLevel()/2));
 			}
 		}
 		return entity;

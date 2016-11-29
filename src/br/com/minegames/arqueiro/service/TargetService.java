@@ -16,8 +16,8 @@ import com.thecraftcloud.core.domain.FacingDirection;
 import com.thecraftcloud.core.logging.MGLogger;
 import com.thecraftcloud.core.util.BlockManipulationUtil;
 import com.thecraftcloud.core.util.Utils;
-import com.thecraftcloud.plugin.service.ConfigService;
-import com.thecraftcloud.plugin.service.PlayerService;
+import com.thecraftcloud.minigame.service.ConfigService;
+import com.thecraftcloud.minigame.service.PlayerService;
 
 import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
@@ -55,7 +55,7 @@ public class TargetService {
     	} else {
     		block = createTarget(l);
     	}
-    	blockManipulationUtil.createNewWool(controller.getWorld(), l.getBlockX(), l.getBlockY()-1, l.getBlockZ(), DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), l.getBlockX(), l.getBlockY()-1, l.getBlockZ(), DyeColor.WHITE );
     	controller.addTarget(new GroundBlockTarget(block));
     }
 
@@ -75,15 +75,15 @@ public class TargetService {
 		int y = l.getBlockY()+3;
 		int z = l.getBlockZ();
 
-    	Block block = createNewBlock(controller.getWorld(), x, y, z, Material.RED_SANDSTONE);
-    	blockManipulationUtil .createNewWool(controller.getWorld(), x, y+1, z, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x+1, y+1, z, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x-1, y+1, z, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x+1, y, z, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x-1, y, z, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x, y-1, z, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x+1, y-1, z, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x-1, y-1, z, DyeColor.WHITE );
+    	Block block = createNewBlock(configService.getWorld(), x, y, z, Material.RED_SANDSTONE);
+    	blockManipulationUtil .createNewWool(configService.getWorld(), x, y+1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x+1, y+1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x-1, y+1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x+1, y, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x-1, y, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x, y-1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x+1, y-1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x-1, y-1, z, DyeColor.WHITE );
     	return block;
     }
     
@@ -93,15 +93,15 @@ public class TargetService {
 		int y = l.getBlockY()+3;
 		int z = l.getBlockZ();
 
-    	Block block = createNewBlock(controller.getWorld(), x, y, z, Material.RED_SANDSTONE);
-    	blockManipulationUtil .createNewWool(controller.getWorld(), x, y+1, z, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x, y+1, z+1, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x, y+1, z-1, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x, y, z+1, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x, y, z-1, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x, y-1, z, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x, y-1, z+1, DyeColor.WHITE );
-    	blockManipulationUtil.createNewWool(controller.getWorld(), x, y-1, z-1, DyeColor.WHITE );
+    	Block block = createNewBlock(configService.getWorld(), x, y, z, Material.RED_SANDSTONE);
+    	blockManipulationUtil .createNewWool(configService.getWorld(), x, y+1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x, y+1, z+1, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x, y+1, z-1, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x, y, z+1, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x, y, z-1, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x, y-1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x, y-1, z+1, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x, y-1, z-1, DyeColor.WHITE );
     	return block;
     }
     
@@ -175,7 +175,7 @@ public class TargetService {
 	private Integer getMaxMoves() {
 		int maxMoves = 0;
 		
-    	Arena arena = (Arena)controller.getArena();
+    	Arena arena = (Arena)configService.getArena();
     	Area3D area = (Area3D)configService.getGameArenaConfig(Constants.FLOATING_AREA);
     	
     	maxMoves = Math.abs( area.getPointA().getY() - (area.getPointB().getY()) ) -4;
@@ -198,12 +198,12 @@ public class TargetService {
 		Block block = bTarget.getBlock();
 		Location l1 = null;
 		Location l2 = null;
-		if(controller.getArena().getFacing() == FacingDirection.EAST || controller.getArena().getFacing() == FacingDirection.WEST) {
-			l1 = new Location(controller.getWorld(), block.getX() , block.getY() - 1, block.getZ()-1);
-			l2 = new Location(controller.getWorld(), block.getX() , block.getY() + 1, block.getZ()+1);
+		if(configService.getArena().getFacing() == FacingDirection.EAST || configService.getArena().getFacing() == FacingDirection.WEST) {
+			l1 = new Location(configService.getWorld(), block.getX() , block.getY() - 1, block.getZ()-1);
+			l2 = new Location(configService.getWorld(), block.getX() , block.getY() + 1, block.getZ()+1);
 		} else {
-			l1 = new Location(controller.getWorld(), block.getX() - 1, block.getY() - 1, block.getZ());
-			l2 = new Location(controller.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
+			l1 = new Location(configService.getWorld(), block.getX() - 1, block.getY() - 1, block.getZ());
+			l2 = new Location(configService.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
 		}
 		blockManipulationUtil.clearBlocks(l1, l2);
 	}
@@ -212,8 +212,8 @@ public class TargetService {
 		// restaurar a parte preta
 		Block block = bTarget.getBlock();
 
-		Location l1 = new Location(controller.getWorld(), block.getX() - 1, block.getY() - 1, block.getZ());
-		Location l2 = new Location(controller.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
+		Location l1 = new Location(configService.getWorld(), block.getX() - 1, block.getY() - 1, block.getZ());
+		Location l2 = new Location(configService.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
 		blockManipulationUtil.createWoolBlocks(l1, l2, DyeColor.BLACK);
 	}
 
@@ -222,12 +222,12 @@ public class TargetService {
 		Location l1 = null;
 		Location l2 = null;
 		//os alvos são criados dependendo da direção que a arena foi construída. X ou Z mudam no caso de ser EAST / NORT
-		if(controller.getArena().getFacing() == FacingDirection.EAST || controller.getArena().getFacing() == FacingDirection.WEST) {
-			l1 = new Location(controller.getWorld(), block.getX(), block.getY() - 2, block.getZ()-1);
-			l2 = new Location(controller.getWorld(), block.getX(), block.getY() + 1, block.getZ()+2);
+		if(configService.getArena().getFacing() == FacingDirection.EAST || configService.getArena().getFacing() == FacingDirection.WEST) {
+			l1 = new Location(configService.getWorld(), block.getX(), block.getY() - 2, block.getZ()-1);
+			l2 = new Location(configService.getWorld(), block.getX(), block.getY() + 1, block.getZ()+2);
 		} else {
-			l1 = new Location(controller.getWorld(), block.getX() - 1, block.getY() - 2, block.getZ());
-			l2 = new Location(controller.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
+			l1 = new Location(configService.getWorld(), block.getX() - 1, block.getY() - 2, block.getZ());
+			l2 = new Location(configService.getWorld(), block.getX() + 1, block.getY() + 1, block.getZ());
 		}
 		blockManipulationUtil .clearBlocks(l1, l2);
 	}
@@ -252,7 +252,7 @@ public class TargetService {
 		controller.getMovingTargets().remove(mTarget);
 		mTarget.getBlock().setType(Material.AIR);
 		if (!mTarget.isHit()) {
-			controller.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 1.0F, false, false);
+			configService.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 1.0F, false, false);
 		}
 	}
 

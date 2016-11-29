@@ -19,10 +19,11 @@ import com.thecraftcloud.core.domain.Local;
 import com.thecraftcloud.core.logging.MGLogger;
 import com.thecraftcloud.core.util.Utils;
 import com.thecraftcloud.core.util.title.TitleUtil;
-import com.thecraftcloud.domain.GamePlayer;
-import com.thecraftcloud.plugin.TheCraftCloudMiniGameAbstract;
-import com.thecraftcloud.plugin.service.ConfigService;
-import com.thecraftcloud.plugin.task.LevelUpTask;
+import com.thecraftcloud.minigame.TheCraftCloudMiniGameAbstract;
+import com.thecraftcloud.minigame.domain.GamePlayer;
+import com.thecraftcloud.minigame.domain.MyCloudCraftGame;
+import com.thecraftcloud.minigame.service.ConfigService;
+import com.thecraftcloud.minigame.task.LevelUpTask;
 
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.ArcherBow;
@@ -73,16 +74,12 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	public void onEnable() {
 		super.onEnable();
 		Bukkit.setSpawnRadius(0);
-		
-		//ao criar, o jogo fica imediatamente esperando jogadores
-		this.myCloudCraftGame = new TheLastArcher();
-
 	}
 
 	@Override
-	public void init(World _world, Local _lobby) {
-		super.init(_world, _lobby);
-
+	public void init() {
+		super.init();
+		
 		// inicializar variaveis de instancia
 		this.placeTargetTask = new PlaceTargetTask(this);
 		this.placeMovingTargetTask = new PlaceMovingTargetTask(this);
@@ -96,8 +93,8 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 
 	@Override
 	public void onDisable() {
-		if (this.myCloudCraftGame.isStarted()) {
-			this.myCloudCraftGame.shutDown();
+		if (this.configService.getMyCloudCraftGame() != null && this.configService.getMyCloudCraftGame().isStarted()) {
+			this.configService.getMyCloudCraftGame().shutDown();
 			this.endGame();
 		}
 	}
@@ -135,12 +132,12 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 			//this.world = player.getWorld();
 			Area3D spawnPoint = (Area3D)configService.getGameArenaConfig("arqueiro.player" + loc + ".area");
 			archer.setSpawnPoint(spawnPoint);
-			Location l = localService.getMiddle(this.world, spawnPoint);
+			Location l = localService.getMiddle(this.configService.getWorld(), spawnPoint);
 			System.out.println("yaw: " + l.getYaw());
 			System.out.println("pitch " + l.getPitch());
 			
-			if(!(this.arena.getFacing() == null)) {
-				if(this.arena.getFacing() == FacingDirection.EAST) {
+			if(!(this.configService.getArena().getFacing() == null)) {
+				if(this.configService.getArena().getFacing() == FacingDirection.EAST) {
 					l.setYaw(270);
 				} 
 				//l.setPitch();
@@ -177,13 +174,13 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	
 	public boolean shouldEndGame() {
     	//Terminar o jogo após o 10 Nível
-    	if(this.myCloudCraftGame.getLevel().getLevel() >= 11 && this.myCloudCraftGame.isStarted()) {
+    	if(this.configService.getMyCloudCraftGame().getLevel().getLevel() >= 11 && this.configService.getMyCloudCraftGame().isStarted()) {
             Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - Time is Over"));
             return true;
     	}
     	
     	//Terminar o jogo caso não tenha mais jogadores
-    	if( this.getLivePlayers().size() == 0  && this.myCloudCraftGame.isStarted()) {
+    	if( this.getLivePlayers().size() == 0  && this.configService.getMyCloudCraftGame().isStarted()) {
             Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - No more players"));
             return true;
     	}
@@ -197,8 +194,8 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	@Override
 	public void endGame() {
 		super.endGame();
-		if (this.myCloudCraftGame.isStarted()) {
-			this.myCloudCraftGame.endGame();
+		if (this.configService.getMyCloudCraftGame().isStarted()) {
+			this.configService.getMyCloudCraftGame().endGame();
 		}
 		MGLogger.info("Game.endGame");
 
@@ -246,20 +243,20 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		// matar os mobs
 		// killEntityTargets();
 
-		if (this.myCloudCraftGame.getLevel().getLevel() >= 1) {
+		if (this.configService.getMyCloudCraftGame().getLevel().getLevel() >= 1) {
 			for (GamePlayer gp: this.livePlayers) {
 				Archer archer = (Archer)gp;
-				TitleUtil.sendTitle(archer.getPlayer(), 1, 70, 10, "Nível " + this.myCloudCraftGame.getLevel().getLevel(), "");
+				TitleUtil.sendTitle(archer.getPlayer(), 1, 70, 10, "Nível " + this.configService.getMyCloudCraftGame().getLevel().getLevel(), "");
 			}
 
 			// liberar o jogo novamente após 5 segundos
 			Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
 				public void run() {
-					myCloudCraftGame.levelUp();
+					configService.getMyCloudCraftGame().levelUp();
 				}
 			}, 100L);
 		} else {
-			this.myCloudCraftGame.levelUp();
+			this.configService.getMyCloudCraftGame().levelUp();
 		}
 	}
 
@@ -281,7 +278,7 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 
 	@Override
 	public boolean isLastLevel() {
-		return this.myCloudCraftGame.getLevel().getLevel() == 11;
+		return this.configService.getMyCloudCraftGame().getLevel().getLevel() == 11;
 	}
 
 	public boolean shouldExplodeZombie(Location location) {
@@ -295,21 +292,8 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		return result;
 	}
 
-	public World getWorld() {
-		return this.world;
-	}
-
-
-	public void setArena(Arena value) {
-		this.arena = value;
-	}
-
 	public Integer getConfigIntValue(String name) {
 		return (Integer)this.configService.getGameConfigInstance(name);
-	}
-
-	public Arena getArena() {
-		return this.arena;
 	}
 
 	public Object getGameEntity() {
@@ -317,36 +301,15 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		return null;
 	}
 
-	public Game getGame() {
-		return this.game;
-	}
-	
-	public void setGame(Game game) {
-		this.game = game;
-	}
-
-	public void setWorld(World world) {
-		this.world = world;
-	}
-
-	@Override
-	public boolean isGameReady() {
-		boolean result = true;
-		
-		if(this.lobby == null) {
-			Bukkit.getLogger().info("Lobby is null");
-			result = false;
-		}
-		
-		result = result && super.isGameReady();
-		
-		return result;
-	}
-
 	@Override
 	public GamePlayer createGamePlayer() {
 		Archer archer = new Archer();
 		return archer;
+	}
+
+	@Override
+	public MyCloudCraftGame createMyCloudCraftGame() {
+		return new TheLastArcher();
 	}
 
 }

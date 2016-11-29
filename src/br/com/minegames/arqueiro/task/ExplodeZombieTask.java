@@ -5,7 +5,7 @@ import java.util.Iterator;
 import org.bukkit.entity.Entity;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import com.thecraftcloud.domain.EntityPlayer;
+import com.thecraftcloud.minigame.domain.EntityPlayer;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.target.EntityTarget;

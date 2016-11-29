@@ -5,6 +5,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityShootBowEvent;
 
+import com.thecraftcloud.minigame.service.ConfigService;
+
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.service.ArcherService;
 
@@ -12,6 +14,7 @@ public class BowShootListener implements Listener {
 
 	private GameController controller;
 	private ArcherService archerService;
+	private ConfigService configService = ConfigService.getInstance();
 
 	public BowShootListener(GameController controller) {
 		super();
@@ -21,7 +24,7 @@ public class BowShootListener implements Listener {
 
 	@EventHandler
 	public void onBowShoot(EntityShootBowEvent e) {
-		if(!controller.getMyCloudCraftGame().isStarted()) {
+		if(!configService.getMyCloudCraftGame().isStarted()) {
 			return;
 		}
 		//ItemStack arrow = new ItemStack(Material.ARROW);

@@ -4,8 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.thecraftcloud.core.domain.FacingDirection;
-import com.thecraftcloud.domain.MyCloudCraftGame;
-import com.thecraftcloud.plugin.service.ConfigService;
+import com.thecraftcloud.minigame.domain.MyCloudCraftGame;
+import com.thecraftcloud.minigame.service.ConfigService;
 
 import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
@@ -24,7 +24,7 @@ public class PlaceTargetTask extends BukkitRunnable {
 	
     @Override
     public void run() {
-    	MyCloudCraftGame game = controller.getMyCloudCraftGame();
+    	MyCloudCraftGame game = configService.getMyCloudCraftGame();
     	if(!game.isStarted()) {
     		return;
     	}
@@ -33,7 +33,7 @@ public class PlaceTargetTask extends BukkitRunnable {
     	int configValue = (int) configService.getGameArenaConfig(Constants.MAX_TARGET);
     	
     	//Essa direção vai indicar como criar e destruir os targets
-    	FacingDirection facing = controller.getArena().getFacing();
+    	FacingDirection facing = configService.getArena().getFacing();
     	Bukkit.getLogger().info("facing: " + facing );
     	if(facing == null) {
     		facing = FacingDirection.NORTH;

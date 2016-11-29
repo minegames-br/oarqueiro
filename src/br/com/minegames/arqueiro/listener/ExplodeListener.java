@@ -10,7 +10,8 @@ import org.bukkit.event.entity.EntityInteractEvent;
 import com.thecraftcloud.core.domain.Area3D;
 import com.thecraftcloud.core.domain.GameArenaConfig;
 import com.thecraftcloud.core.logging.MGLogger;
-import com.thecraftcloud.domain.GamePlayer;
+import com.thecraftcloud.minigame.domain.GamePlayer;
+import com.thecraftcloud.minigame.service.ConfigService;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
@@ -20,6 +21,7 @@ public class ExplodeListener implements Listener {
 
 	private GameController controller;
 	private EntityService entityService;
+	private ConfigService configService = ConfigService.getInstance();
 
 	public ExplodeListener(GameController controller) {
 		super();
@@ -29,13 +31,13 @@ public class ExplodeListener implements Listener {
 
 	@EventHandler
 	public void onInteract(EntityInteractEvent event) {
-		if(!controller.getMyCloudCraftGame().isStarted()) {
+		if(!configService.getMyCloudCraftGame().isStarted()) {
 			return;
 		}
 		Location loc = event.getEntity().getLocation();
 		Object aList[] = controller.getLivePlayers().toArray();
 
-		CopyOnWriteArraySet<GameArenaConfig> playerSpawnList = (CopyOnWriteArraySet)controller.getGameArenaConfigByGroup("PLAYER-SPAWN");
+		CopyOnWriteArraySet<GameArenaConfig> playerSpawnList = (CopyOnWriteArraySet)configService.getGameArenaConfigByGroup("PLAYER-SPAWN");
 		for(GameArenaConfig gac: playerSpawnList) {
 			for(GamePlayer gp: controller.getLivePlayers()) {
 				Archer archer = (Archer)gp;

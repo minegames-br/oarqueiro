@@ -23,8 +23,8 @@ import org.bukkit.util.Vector;
 
 import com.thecraftcloud.core.logging.MGLogger;
 import com.thecraftcloud.core.util.Utils;
-import com.thecraftcloud.domain.GamePlayer;
-import com.thecraftcloud.plugin.service.PlayerService;
+import com.thecraftcloud.minigame.domain.GamePlayer;
+import com.thecraftcloud.minigame.service.PlayerService;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
@@ -106,8 +106,8 @@ public class ArcherService extends PlayerService {
 	}
 	
 	public void destroyBase(int x) {
-		Location l = new Location(controller.getWorld(), x, 4, 1169);
-		controller.getWorld().getBlockAt(l).setType(Material.AIR);
+		Location l = new Location(configService.getWorld(), x, 4, 1169);
+		configService.getWorld().getBlockAt(l).setType(Material.AIR);
 	}
 
 	public void giveBonus(Player shooter) {
@@ -126,9 +126,9 @@ public class ArcherService extends PlayerService {
 		dead.setHealth(20); // Do not show the respawn screen
 		dead.getInventory().clear();
 
-		if (this.controller.getMyCloudCraftGame().isStarted()) {
+		if (this.configService.getMyCloudCraftGame().isStarted()) {
 			this.controller.removeLivePlayer(dead);
-			dead.teleport( locationUtil.toLocation(this.controller.getWorld(), configService.getLobby() ) ); //TELEPORT DEAD PLAYER TO LOBBY
+			dead.teleport( locationUtil.toLocation(this.configService.getWorld(), configService.getLobby() ) ); //TELEPORT DEAD PLAYER TO LOBBY
 		}
 	}
 

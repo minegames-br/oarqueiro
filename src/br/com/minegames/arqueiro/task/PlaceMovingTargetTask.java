@@ -2,7 +2,7 @@ package br.com.minegames.arqueiro.task;
 
 import org.bukkit.scheduler.BukkitRunnable;
 
-import com.thecraftcloud.plugin.service.ConfigService;
+import com.thecraftcloud.minigame.service.ConfigService;
 
 import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;

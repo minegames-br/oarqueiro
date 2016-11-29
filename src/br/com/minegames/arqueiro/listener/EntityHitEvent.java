@@ -7,6 +7,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
+import com.thecraftcloud.minigame.service.ConfigService;
+
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.service.EntityService;
 
@@ -14,6 +16,7 @@ public class EntityHitEvent implements Listener {
 
 	private GameController controller;	
 	private EntityService entityService;
+	private ConfigService configService = ConfigService.getInstance();
 	
 	public EntityHitEvent(GameController controller) {
 		super();
@@ -23,7 +26,7 @@ public class EntityHitEvent implements Listener {
 	
 	@EventHandler
 	public void onArrowHit(EntityDamageByEntityEvent event){
-		if(!controller.getMyCloudCraftGame().isStarted()) {
+		if(!configService.getMyCloudCraftGame().isStarted()) {
 			return;
 		}
 		

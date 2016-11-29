@@ -36,7 +36,8 @@
         	<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
     	</repository>
     </repositories>
-  <dependencies>
+
+	<dependencies>
 
 		<!--Spigot API-->
 		<dependency>
@@ -45,22 +46,19 @@
 			<version>1.10.2-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
-  			<dependency>
-  				<groupId>com.thecraftcloud.core</groupId>
-  				<artifactId>com.thecraftcloud.core</artifactId>
-  				<version>1.0.0</version>
-  			</dependency>
-			<dependency>
-  				<groupId>com.thecraftcloud.client</groupId>
-				<artifactId>com.thecraftcloud.client</artifactId>
-				<version>1.0.0</version>
-			</dependency>
-			<dependency>
-  				<groupId>com.thecraftcloud.plugin</groupId>
-				<artifactId>com.thecraftcloud.plugin</artifactId>
-				<version>1.0.0</version>
-			</dependency>
-	</dependencies>
 
+  		<dependency>
+  			<groupId>com.thecraftcloud.core</groupId>
+  			<artifactId>com.thecraftcloud.core</artifactId>
+  			<version>1.0.0</version>
+  		</dependency>
+
+		<dependency>
+			<groupId>com.thecraftcloud.minigame</groupId>
+			<artifactId>com.thecraftcloud.minigame</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		
+	</dependencies>
 
 </project>

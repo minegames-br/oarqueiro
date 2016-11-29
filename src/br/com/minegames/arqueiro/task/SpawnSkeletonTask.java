@@ -12,9 +12,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import com.thecraftcloud.core.domain.Area3D;
 import com.thecraftcloud.core.logging.MGLogger;
-import com.thecraftcloud.domain.GamePlayer;
-import com.thecraftcloud.domain.MyCloudCraftGame;
-import com.thecraftcloud.plugin.service.ConfigService;
+import com.thecraftcloud.minigame.domain.GamePlayer;
+import com.thecraftcloud.minigame.domain.MyCloudCraftGame;
+import com.thecraftcloud.minigame.service.ConfigService;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
@@ -34,7 +34,7 @@ public class SpawnSkeletonTask implements Runnable {
 	@Override
 	public void run() {
 
-		MyCloudCraftGame game = controller.getMyCloudCraftGame();
+		MyCloudCraftGame game = configService.getMyCloudCraftGame();
 		if (!game.isStarted()) {
 			return;
 		}
@@ -63,7 +63,7 @@ public class SpawnSkeletonTask implements Runnable {
 			
 			Location l = new Location(player.getWorld(), x, player.getLocation().getBlockY()+1, z);
 			
-			entity = (Skeleton) controller.getWorld().spawnEntity(l, EntityType.SKELETON);
+			entity = (Skeleton) configService.getWorld().spawnEntity(l, EntityType.SKELETON);
 
 			// dar equipamentos para o Skeleton
 			entity.getEquipment().setItemInMainHand(new ItemStack(Material.BOW));

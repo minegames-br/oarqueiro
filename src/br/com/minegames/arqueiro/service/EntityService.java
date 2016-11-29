@@ -6,8 +6,9 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
 
-import com.thecraftcloud.domain.EntityPlayer;
-import com.thecraftcloud.plugin.service.PlayerService;
+import com.thecraftcloud.minigame.domain.EntityPlayer;
+import com.thecraftcloud.minigame.service.ConfigService;
+import com.thecraftcloud.minigame.service.PlayerService;
 
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.target.EntityTarget;
@@ -18,6 +19,7 @@ public class EntityService {
 	private GameController controller;
 	private ArcherService archerService;
 	private PlayerService playerService;
+	private ConfigService configService = ConfigService.getInstance();
 	
 	public EntityService(GameController controller) {
 		this.controller = controller;
@@ -81,7 +83,7 @@ public class EntityService {
 			} else {
 				if (archerService.damageArcherArea(z)) {
 					((Damageable) z).damage(((Damageable) z).getMaxHealth());
-					controller.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 2.0F, false, false);
+					configService.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 2.0F, false, false);
 					controller.getLivingEntities().remove(et);
 				} else {
 					archerService.destroyBase(loc.getBlockX());
