@@ -20,6 +20,7 @@ import com.thecraftcloud.core.logging.MGLogger;
 import com.thecraftcloud.core.util.Utils;
 import com.thecraftcloud.core.util.title.TitleUtil;
 import com.thecraftcloud.minigame.TheCraftCloudMiniGameAbstract;
+import com.thecraftcloud.minigame.command.LeaveGameCommand;
 import com.thecraftcloud.minigame.domain.GamePlayer;
 import com.thecraftcloud.minigame.domain.MyCloudCraftGame;
 import com.thecraftcloud.minigame.service.ConfigService;
@@ -73,6 +74,9 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	@Override
 	public void onEnable() {
 		super.onEnable();
+
+		getCommand("sair").setExecutor(new LeaveGameCommand(this));
+		
 		Bukkit.setSpawnRadius(0);
 	}
 

@@ -4,3 +4,4 @@ version: 1.0.0
 main: br.com.minegames.arqueiro.GameController
 depend: [TheCraftCloud-Core,TheCraftCloud-MiniGame]
 commands:
+   sair:

@@ -128,7 +128,6 @@ public class ArcherService extends PlayerService {
 
 		if (this.configService.getMyCloudCraftGame().isStarted()) {
 			this.controller.removeLivePlayer(dead);
-			dead.teleport( locationUtil.toLocation(this.configService.getWorld(), configService.getLobby() ) ); //TELEPORT DEAD PLAYER TO LOBBY
 		}
 	}
 
