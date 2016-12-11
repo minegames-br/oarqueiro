@@ -74,8 +74,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	@Override
 	public void onEnable() {
 		super.onEnable();
-
-		getCommand("sair").setExecutor(new LeaveGameCommand(this));
 		
 		Bukkit.setSpawnRadius(0);
 	}
