@@ -4,7 +4,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
@@ -12,15 +11,11 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.DisplaySlot;
 
 import com.thecraftcloud.core.domain.Area3D;
-import com.thecraftcloud.core.domain.Arena;
 import com.thecraftcloud.core.domain.FacingDirection;
-import com.thecraftcloud.core.domain.Game;
-import com.thecraftcloud.core.domain.Local;
 import com.thecraftcloud.core.logging.MGLogger;
 import com.thecraftcloud.core.util.Utils;
 import com.thecraftcloud.core.util.title.TitleUtil;
 import com.thecraftcloud.minigame.TheCraftCloudMiniGameAbstract;
-import com.thecraftcloud.minigame.command.LeaveGameCommand;
 import com.thecraftcloud.minigame.domain.GamePlayer;
 import com.thecraftcloud.minigame.domain.MyCloudCraftGame;
 import com.thecraftcloud.minigame.service.ConfigService;
