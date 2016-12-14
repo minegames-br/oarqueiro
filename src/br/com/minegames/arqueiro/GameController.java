@@ -10,8 +10,8 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.DisplaySlot;
 
-import com.thecraftcloud.core.domain.Area3D;
 import com.thecraftcloud.core.domain.FacingDirection;
+import com.thecraftcloud.core.domain.Local;
 import com.thecraftcloud.core.logging.MGLogger;
 import com.thecraftcloud.core.util.Utils;
 import com.thecraftcloud.core.util.title.TitleUtil;
@@ -127,11 +127,15 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 			Archer archer = (Archer)gp;
 			Player player = archer.getPlayer();
 			//this.world = player.getWorld();
-			Area3D spawnPoint = (Area3D)configService.getGameArenaConfig("arqueiro.player" + loc + ".area");
+			Local spawnPoint = (Local)configService.getGameArenaConfig("arqueiro.player" + loc + ".spawn");
 			archer.setSpawnPoint(spawnPoint);
-			Location l = localService.getMiddle(this.configService.getWorld(), spawnPoint);
-			System.out.println("yaw: " + l.getYaw());
-			System.out.println("pitch " + l.getPitch());
+			Location l = locationUtil.toLocation( this.configService.getWorld(), spawnPoint);
+			Bukkit.getConsoleSender().sendMessage("PLAYER: " + player.getName() + " SPAWN POINT: ");
+			Bukkit.getConsoleSender().sendMessage("x: " + l.getX());
+			Bukkit.getConsoleSender().sendMessage("y: " + l.getY());
+			Bukkit.getConsoleSender().sendMessage("Z: " + l.getZ());
+			Bukkit.getConsoleSender().sendMessage("yaw: " + l.getYaw());
+			Bukkit.getConsoleSender().sendMessage("pitch " + l.getPitch());
 			
 			if(!(this.configService.getArena().getFacing() == null)) {
 				if(this.configService.getArena().getFacing() == FacingDirection.EAST) {
@@ -139,7 +143,9 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 				} 
 				//l.setPitch();
 			}
+			Bukkit.getConsoleSender().sendMessage("player world: " + player.getWorld().getName() );
 			player.teleport( l );
+			Bukkit.getConsoleSender().sendMessage("player world: " + player.getWorld().getName() );
 			
 			archer.regainHealthToPlayer(archer);
 
@@ -180,6 +186,10 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
     	if( this.getLivePlayers().size() == 0  && this.configService.getMyCloudCraftGame().isStarted()) {
             Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - No more players"));
             return true;
+    	}
+    	
+    	if( this.getGameDuration() > this.getConfigService().getGameDurationInSeconds() ) {
+    		return true;
     	}
     	return false;
 	}
