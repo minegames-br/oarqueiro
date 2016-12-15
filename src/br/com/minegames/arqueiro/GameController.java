@@ -10,6 +10,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.DisplaySlot;
 
+import com.thecraftcloud.core.domain.Area3D;
 import com.thecraftcloud.core.domain.FacingDirection;
 import com.thecraftcloud.core.domain.Local;
 import com.thecraftcloud.core.logging.MGLogger;
@@ -36,6 +37,7 @@ import br.com.minegames.arqueiro.service.ArcherService;
 import br.com.minegames.arqueiro.service.LocalService;
 import br.com.minegames.arqueiro.service.TargetService;
 import br.com.minegames.arqueiro.task.DestroyTargetTask;
+import br.com.minegames.arqueiro.task.ExplodeZombieTask;
 import br.com.minegames.arqueiro.task.PlaceMovingTargetTask;
 import br.com.minegames.arqueiro.task.PlaceTargetTask;
 import br.com.minegames.arqueiro.task.SpawnSkeletonTask;
@@ -55,12 +57,12 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	private int spawnSkeletonThreadID;
 	private LevelUpTask levelUpTask;
 	private int levelUpTaskID;
+	// private Runnable explodeZombieTask;
+	// private int explodeZombieThreadID;
 
 	private CopyOnWriteArraySet<Target> targets = new CopyOnWriteArraySet<Target>();
 	private CopyOnWriteArraySet<MovingTarget> movingTargets = new CopyOnWriteArraySet<MovingTarget>();
 
-	private int explodeZombieThreadID;
-	
 	protected LocalService localService = new LocalService(this);
 	protected TargetService targetService = new TargetService(this);
 	protected ArcherService playerService = new ArcherService(this);
@@ -69,22 +71,23 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	@Override
 	public void onEnable() {
 		super.onEnable();
-		
+
 		Bukkit.setSpawnRadius(0);
 	}
 
 	@Override
 	public void init() {
 		super.init();
-		
+
 		// inicializar variaveis de instancia
 		this.placeTargetTask = new PlaceTargetTask(this);
 		this.placeMovingTargetTask = new PlaceMovingTargetTask(this);
 		this.destroyTargetTask = new DestroyTargetTask(this);
 		this.spawnZombieTask = new SpawnZombieTask(this);
 		this.spawnSkeletonTask = new SpawnSkeletonTask(this);
-		// this.spawnZombieTask = new SpawnZombieTask(this);
-		this.levelUpTask = new LevelUpTask(this);
+		this.spawnZombieTask = new SpawnZombieTask(this);
+		// this.levelUpTask = new LevelUpTask(this);
+		// this.explodeZombieTask = new ExplodeZombieTask(this);
 
 	}
 
@@ -114,39 +117,46 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	 */
 	@Override
 	public void startGameEngine() {
+
 		super.startGameEngine();
-		
+
+		Bukkit.getConsoleSender().sendMessage(Utils.color("&6[START GAME ENGINE]"));
+
 		// registrar os Listeners de eventos do servidor e do jogo
-		registerListeners();
+		this.registerListeners();
 
 		MGLogger.info("Game.startGameEngine");
 
 		// preparar Score Board
 		int loc = 1;
 		for (GamePlayer gp : livePlayers) {
-			Archer archer = (Archer)gp;
+			Archer archer = (Archer) gp;
 			Player player = archer.getPlayer();
-			//this.world = player.getWorld();
-			Local spawnPoint = (Local)configService.getGameArenaConfig("arqueiro.player" + loc + ".spawn");
+			// this.world = player.getWorld();
+			Local spawnPoint = (Local) configService.getGameArenaConfig("arqueiro.player" + loc + ".spawn");
 			archer.setSpawnPoint(spawnPoint);
-			Location l = locationUtil.toLocation( this.configService.getWorld(), spawnPoint);
+			Location l = locationUtil.toLocation(this.configService.getWorld(), spawnPoint);
 			Bukkit.getConsoleSender().sendMessage("PLAYER: " + player.getName() + " SPAWN POINT: ");
 			Bukkit.getConsoleSender().sendMessage("x: " + l.getX());
 			Bukkit.getConsoleSender().sendMessage("y: " + l.getY());
 			Bukkit.getConsoleSender().sendMessage("Z: " + l.getZ());
 			Bukkit.getConsoleSender().sendMessage("yaw: " + l.getYaw());
 			Bukkit.getConsoleSender().sendMessage("pitch " + l.getPitch());
-			
-			if(!(this.configService.getArena().getFacing() == null)) {
-				if(this.configService.getArena().getFacing() == FacingDirection.EAST) {
+
+			if (!(this.configService.getArena().getFacing() == null)) {
+				if (this.configService.getArena().getFacing() == FacingDirection.EAST) {
 					l.setYaw(270);
-				} 
-				//l.setPitch();
+				} else if (this.configService.getArena().getFacing() == FacingDirection.NORTH) {
+					l.setYaw(180);
+				}
+				// l.setPitch();
 			}
-			Bukkit.getConsoleSender().sendMessage("player world: " + player.getWorld().getName() );
-			player.teleport( l );
-			Bukkit.getConsoleSender().sendMessage("player world: " + player.getWorld().getName() );
-			
+			Bukkit.getConsoleSender().sendMessage("player world: " + player.getWorld().getName());
+
+			//Area3D area = (Area3D) configService.getGameArenaConfig("arqueiro.player" + loc + ".area");
+			//archer.setArea(area);
+			player.teleport(l);
+
 			archer.regainHealthToPlayer(archer);
 
 			// Preparar o jogador para a rodada. Dar armaduras, armas, etc...
@@ -170,28 +180,33 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 				15L);
 		this.destroyTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 100L);
 		this.spawnZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 50L);
-		this.spawnSkeletonThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnSkeletonTask, 0L, 150L);
-		this.levelUpTaskID = scheduler.scheduleSyncRepeatingTask(this, this.levelUpTask, 0L, 50L);
+		this.spawnSkeletonThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnSkeletonTask, 0L, 50L);
+		// this.explodeZombieThreadID =
+		// scheduler.scheduleSyncRepeatingTask(this, this.explodeZombieTask, 0L,
+		// 50L);
+		// this.levelUpTaskID = scheduler.scheduleSyncRepeatingTask(this,
+		// this.levelUpTask, 0L, 50L);
 
 	}
-	
+
 	public boolean shouldEndGame() {
-    	//Terminar o jogo após o 10 Nível
-    	if(this.configService.getMyCloudCraftGame().getLevel().getLevel() >= 11 && this.configService.getMyCloudCraftGame().isStarted()) {
-            Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - Time is Over"));
-            return true;
-    	}
-    	
-    	//Terminar o jogo caso não tenha mais jogadores
-    	if( this.getLivePlayers().size() == 0  && this.configService.getMyCloudCraftGame().isStarted()) {
-            Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - No more players"));
-            return true;
-    	}
-    	
-    	if( this.getGameDuration() > this.getConfigService().getGameDurationInSeconds() ) {
-    		return true;
-    	}
-    	return false;
+		// Terminar o jogo após o 10 Nível
+		if (this.configService.getMyCloudCraftGame().getLevel().getLevel() >= 11
+				&& this.configService.getMyCloudCraftGame().isStarted()) {
+			Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - Time is Over"));
+			return true;
+		}
+
+		// Terminar o jogo caso não tenha mais jogadores
+		if (this.getLivePlayers().size() == 0 && this.configService.getMyCloudCraftGame().isStarted()) {
+			Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - No more players"));
+			return true;
+		}
+
+		if (this.getGameDuration() > this.getConfigService().getGameDurationInSeconds()) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -212,14 +227,14 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		Bukkit.getScheduler().cancelTask(this.destroyTargetThreadID);
 		Bukkit.getScheduler().cancelTask(this.spawnZombieThreadID);
 		Bukkit.getScheduler().cancelTask(this.spawnSkeletonThreadID);
-		//Bukkit.getScheduler().cancelTask(this.explodeZombieThreadID);
+		// Bukkit.getScheduler().cancelTask(this.explodeZombieThreadID);
 		Bukkit.getScheduler().cancelTask(this.levelUpTaskID);
 
 		// TODO o que vai acontecer com os jogadores quando acabar o jogo?
 		// por enquanto vou tirá-los da arena e zerar os inventarios e recriar a
 		// parede preta
 		for (GamePlayer gp : livePlayers) {
-			Archer archer = (Archer)gp;
+			Archer archer = (Archer) gp;
 			Player player = archer.getPlayer();
 			player.getInventory().clear();
 			player.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
@@ -231,7 +246,7 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		targetService.destroyTargets();
 
 		// restaurar parede preta
-		//createBlackWall();
+		// createBlackWall();
 
 		// manda os jogadores para o podium
 		playerService.teleportPlayersToPodium();
@@ -251,9 +266,10 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		// killEntityTargets();
 
 		if (this.configService.getMyCloudCraftGame().getLevel().getLevel() >= 1) {
-			for (GamePlayer gp: this.livePlayers) {
-				Archer archer = (Archer)gp;
-				TitleUtil.sendTitle(archer.getPlayer(), 1, 70, 10, "Nível " + this.configService.getMyCloudCraftGame().getLevel().getLevel(), "");
+			for (GamePlayer gp : this.livePlayers) {
+				Archer archer = (Archer) gp;
+				TitleUtil.sendTitle(archer.getPlayer(), 1, 70, 10,
+						"Nível " + this.configService.getMyCloudCraftGame().getLevel().getLevel(), "");
 			}
 
 			// liberar o jogo novamente após 5 segundos
@@ -300,7 +316,7 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	}
 
 	public Integer getConfigIntValue(String name) {
-		return (Integer)this.configService.getGameConfigInstance(name);
+		return (Integer) this.configService.getGameConfigInstance(name);
 	}
 
 	public Object getGameEntity() {
