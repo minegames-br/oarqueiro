@@ -17,6 +17,7 @@ public class Archer extends GamePlayer implements Comparable {
 
 	private double baseHealth = 1;
 	private ArcherBow bow;
+	private Area3D area;
 	
 	public void damageBase() {
 		if(this.baseHealth > 0) {
@@ -44,6 +45,15 @@ public class Archer extends GamePlayer implements Comparable {
 	public Object getBow() {
 		return this.bow;
 	}
+
+	public Area3D getArea() {
+		return area;
+	}
+
+	public void setArea(Area3D area) {
+		this.area = area;
+	}
+
 	
 	
 }

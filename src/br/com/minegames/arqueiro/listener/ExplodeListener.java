@@ -1,15 +1,12 @@
 package br.com.minegames.arqueiro.listener;
 
-import java.util.concurrent.CopyOnWriteArraySet;
-
-import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityInteractEvent;
 
-import com.thecraftcloud.core.domain.Area3D;
-import com.thecraftcloud.core.domain.GameArenaConfig;
-import com.thecraftcloud.core.logging.MGLogger;
+import com.thecraftcloud.core.domain.FacingDirection;
+import com.thecraftcloud.core.domain.Local;
 import com.thecraftcloud.minigame.domain.GamePlayer;
 import com.thecraftcloud.minigame.service.ConfigService;
 
@@ -31,46 +28,41 @@ public class ExplodeListener implements Listener {
 
 	@EventHandler
 	public void onInteract(EntityInteractEvent event) {
-		if(!configService.getMyCloudCraftGame().isStarted()) {
+
+		if (!configService.getMyCloudCraftGame().isStarted()) {
 			return;
 		}
-		Location loc = event.getEntity().getLocation();
-		Object aList[] = controller.getLivePlayers().toArray();
 
-		CopyOnWriteArraySet<GameArenaConfig> playerSpawnList = (CopyOnWriteArraySet)configService.getGameArenaConfigByGroup("PLAYER-SPAWN");
-		for(GameArenaConfig gac: playerSpawnList) {
-			for(GamePlayer gp: controller.getLivePlayers()) {
-				Archer archer = (Archer)gp;
-				if( gac.getAreaValue() != null) {
-					Area3D area3d = gac.getAreaValue();
-					if(isInsideArea(loc, area3d)) { 
-						MGLogger.info("iria explodir");
-						this.entityService.killEntity(event.getEntity());
-					}
-				}
-			}
+		Entity entity = event.getEntity();
+
+		for (GamePlayer gp : controller.getLivePlayers()) {
+			Archer archer = (Archer) gp;
+
+			canExplode(archer, entity);
+
 		}
-		
+
 	}
-	
-	private boolean isInsideArea(Location loc, Area3D area) {
-		boolean result = false;
-		
-		int x = loc.getBlockX();
-		int z = loc.getBlockZ();
-		
-		int xa = area.getPointA().getX();
-		int xb = area.getPointB().getX();
-		
-		int za = area.getPointA().getZ();
-		int zb = area.getPointB().getZ();
-		
-		if( ( (x >= xa && x <= xb) || (z >= zb && z <= za) ) 
-				|| ( (x >= xb && x <= xa) ||  (z >= za && z <= zb) ) ) {
-			result = true;
+
+	private void canExplode(Archer archer, Entity entity) {
+		int entity_X = entity.getLocation().getBlockX();
+		int entity_Z = entity.getLocation().getBlockZ();
+		Local point_A = archer.getArea().getPointA();
+		Local point_B = archer.getArea().getPointB();
+
+		if (this.configService.getArena().getFacing() == FacingDirection.EAST
+				|| this.configService.getArena().getFacing() == FacingDirection.WEST) {
+			if (entity_Z <= point_A.getZ() && entity_Z >= point_B.getZ()) {
+				this.entityService.killEntity(entity);
+			}
+
+		} else if (this.configService.getArena().getFacing() == FacingDirection.NORTH
+				|| this.configService.getArena().getFacing() == FacingDirection.SOUTH) {
+			if (entity_X <= point_A.getX() && entity_X >= point_B.getX()) {
+				this.entityService.killEntity(entity);
+			}
+
 		}
-		
-		return result;
 	}
 
 }

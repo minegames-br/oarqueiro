@@ -153,8 +153,8 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 			}
 			Bukkit.getConsoleSender().sendMessage("player world: " + player.getWorld().getName());
 
-			//Area3D area = (Area3D) configService.getGameArenaConfig("arqueiro.player" + loc + ".area");
-			//archer.setArea(area);
+			Area3D area = (Area3D) configService.getGameArenaConfig("arqueiro.player" + loc + ".area");
+			archer.setArea(area);
 			player.teleport(l);
 
 			archer.regainHealthToPlayer(archer);

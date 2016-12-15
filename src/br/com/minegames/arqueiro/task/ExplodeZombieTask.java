@@ -2,9 +2,11 @@ package br.com.minegames.arqueiro.task;
 
 import java.util.Iterator;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import com.thecraftcloud.core.util.Utils;
 import com.thecraftcloud.minigame.domain.EntityPlayer;
 
 import br.com.minegames.arqueiro.GameController;
@@ -23,6 +25,9 @@ public class ExplodeZombieTask extends BukkitRunnable {
 	
     @Override
     public void run() {
+    	
+    	
+		Bukkit.getConsoleSender().sendMessage(Utils.color("&6[EXPLODE ZOMBIE TASK]"));
     	
     	//Explodir o zombie caso ele esteja na área de algum jogador
     	//A explosão irá causar dano aos blocks de cerca perto do zombie

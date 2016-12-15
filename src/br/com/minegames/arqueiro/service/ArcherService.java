@@ -160,7 +160,7 @@ public class ArcherService extends PlayerService {
 		bow.addEnchantment(Enchantment.ARROW_INFINITE, 1);
 		sword.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 15);
 
-		inventory.addItem(bow);
+		inventory.setItemInMainHand(bow);
 		inventory.addItem(arrow);
 		inventory.addItem(sword);
 
