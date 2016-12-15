@@ -212,7 +212,7 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		Bukkit.getScheduler().cancelTask(this.destroyTargetThreadID);
 		Bukkit.getScheduler().cancelTask(this.spawnZombieThreadID);
 		Bukkit.getScheduler().cancelTask(this.spawnSkeletonThreadID);
-		Bukkit.getScheduler().cancelTask(this.explodeZombieThreadID);
+		//Bukkit.getScheduler().cancelTask(this.explodeZombieThreadID);
 		Bukkit.getScheduler().cancelTask(this.levelUpTaskID);
 
 		// TODO o que vai acontecer com os jogadores quando acabar o jogo?

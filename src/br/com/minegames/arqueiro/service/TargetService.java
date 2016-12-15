@@ -65,7 +65,12 @@ public class TargetService {
      */
     public void createFloatingTarget(FacingDirection facing) {
     	Location l = localService.getRandomSpawnLocationForFloatingTarget();
-    	Block block = createTarget(l);
+    	Block block =  null;
+    	if(facing == FacingDirection.EAST || facing == FacingDirection.WEST) {
+    		block = createTargetInverted(l);
+    	} else {
+    		block = createTarget(l);
+    	}
     	controller.addTarget(new FloatingBlockTarget(block));
     }
     

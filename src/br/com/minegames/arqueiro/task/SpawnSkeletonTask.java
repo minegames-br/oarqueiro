@@ -26,6 +26,7 @@ public class SpawnSkeletonTask implements Runnable {
 	private GameController controller;
 	private Skeleton entity;
 	private ConfigService configService = ConfigService.getInstance();
+	private Boolean isSpawned = false;
 
 	public SpawnSkeletonTask(GameController game) {
 		this.controller = game;
@@ -39,10 +40,14 @@ public class SpawnSkeletonTask implements Runnable {
 			return;
 		}
 
-		if ((game.getLevel().getLevel() == 9)) {
-			MGLogger.debug("spawnSkeleton");
-			this.spawnSkeleton();
+		if (!isSpawned) {
+			if ((game.getLevel().getLevel() == 9)) {
+				MGLogger.debug("spawnSkeleton");
+				this.spawnSkeleton();
+				isSpawned = true;
+			}
 		}
+		
 
 	}
 
@@ -51,18 +56,18 @@ public class SpawnSkeletonTask implements Runnable {
 		int loc = 1;
 		for (GamePlayer gp : controller.getLivePlayers()) {
 			Player player = gp.getPlayer();
-			//this.world = player.getWorld();
-			Area3D spawnPoint = (Area3D)configService.getGameArenaConfig("arqueiro.player" + loc + ".area");
-			
-			Bukkit.getLogger().info("arqueiro.player" + loc + ".area" + spawnPoint);
-			Bukkit.getLogger().info("arqueiro.player" + loc + ".area pointA " + spawnPoint.getPointA() );
-			Bukkit.getLogger().info("arqueiro.player" + loc + ".area pointB " + spawnPoint.getPointB() );
-			
-			int x = (spawnPoint.getPointA().getX() + spawnPoint.getPointB().getX()) / 2; 
-			int z = (spawnPoint.getPointA().getZ() + spawnPoint.getPointB().getZ()) / 2; 
-			
-			Location l = new Location(player.getWorld(), x, player.getLocation().getBlockY()+1, z);
-			
+			// this.world = player.getWorld();
+			Area3D spawnPoint = (Area3D) configService.getGameArenaConfig("arqueiro.player" + loc + ".area");
+
+			//Bukkit.getLogger().info("arqueiro.player" + loc + ".area" + spawnPoint);
+			//Bukkit.getLogger().info("arqueiro.player" + loc + ".area pointA " + spawnPoint.getPointA());
+			//Bukkit.getLogger().info("arqueiro.player" + loc + ".area pointB " + spawnPoint.getPointB());
+
+			int x = (spawnPoint.getPointA().getX() + spawnPoint.getPointB().getX()) / 2;
+			int z = (spawnPoint.getPointA().getZ() + spawnPoint.getPointB().getZ()) / 2;
+
+			Location l = new Location(player.getWorld(), x, player.getLocation().getBlockY() + 1, z);
+
 			entity = (Skeleton) configService.getWorld().spawnEntity(l, EntityType.SKELETON);
 
 			// dar equipamentos para o Skeleton
