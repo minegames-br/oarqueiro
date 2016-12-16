@@ -175,18 +175,12 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		BukkitScheduler scheduler = getServer().getScheduler();
 
 		// Iniciar threads do jogo
-		this.placeTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeTargetTask, 0L, 50L);
-		this.placeMovingTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeMovingTargetTask, 200L,
-				15L);
-		this.destroyTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 100L);
+		this.placeTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeTargetTask, 0L, 200L);
+		//this.placeMovingTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeMovingTargetTask, 200L,
+				//15L);
+		this.destroyTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 20L);
 		this.spawnZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 50L);
 		this.spawnSkeletonThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnSkeletonTask, 0L, 50L);
-		// this.explodeZombieThreadID =
-		// scheduler.scheduleSyncRepeatingTask(this, this.explodeZombieTask, 0L,
-		// 50L);
-		// this.levelUpTaskID = scheduler.scheduleSyncRepeatingTask(this,
-		// this.levelUpTask, 0L, 50L);
-
 	}
 
 	public boolean shouldEndGame() {

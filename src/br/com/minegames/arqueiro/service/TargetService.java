@@ -53,7 +53,7 @@ public class TargetService {
     	if(facing == FacingDirection.EAST || facing == FacingDirection.WEST) {
     		block = createTargetInverted(l);
     	} else {
-    		block = createTarget(l);
+    		block = createGroundTarget(l);
     	}
     	blockManipulationUtil.createNewWool(configService.getWorld(), l.getBlockX(), l.getBlockY()-1, l.getBlockZ(), DyeColor.WHITE );
     	controller.addTarget(new GroundBlockTarget(block));
@@ -80,7 +80,7 @@ public class TargetService {
 		int y = l.getBlockY()+3;
 		int z = l.getBlockZ();
 
-    	Block block = createNewBlock(configService.getWorld(), x, y, z, Material.RED_SANDSTONE);
+    	Block block = createNewBlock(configService.getWorld(), x, y, z, Material.GLOWSTONE);
     	blockManipulationUtil .createNewWool(configService.getWorld(), x, y+1, z, DyeColor.WHITE );
     	blockManipulationUtil.createNewWool(configService.getWorld(), x+1, y+1, z, DyeColor.WHITE );
     	blockManipulationUtil.createNewWool(configService.getWorld(), x-1, y+1, z, DyeColor.WHITE );
@@ -89,6 +89,24 @@ public class TargetService {
     	blockManipulationUtil.createNewWool(configService.getWorld(), x, y-1, z, DyeColor.WHITE );
     	blockManipulationUtil.createNewWool(configService.getWorld(), x+1, y-1, z, DyeColor.WHITE );
     	blockManipulationUtil.createNewWool(configService.getWorld(), x-1, y-1, z, DyeColor.WHITE );
+    	return block;
+    }
+    
+    public Block createGroundTarget(Location l) {
+    	l.setYaw(270);
+		int x = l.getBlockX();
+		int y = l.getBlockY()+3;
+		int z = l.getBlockZ();
+
+    	Block block = createNewBlock(configService.getWorld(), x, y-2, z, Material.GLOWSTONE);
+    	blockManipulationUtil .createNewWool(configService.getWorld(), x, y-1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x+1, y-1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x-1, y-1, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x+1, y-2, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x-1, y-2, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x, y-3, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x+1, y-3, z, DyeColor.WHITE );
+    	blockManipulationUtil.createNewWool(configService.getWorld(), x-1, y-3, z, DyeColor.WHITE );
     	return block;
     }
     

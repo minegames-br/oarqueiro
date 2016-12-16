@@ -1,7 +1,5 @@
 package br.com.minegames.arqueiro.domain;
 
-import org.bukkit.Location;
-import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
 import com.thecraftcloud.core.domain.Area3D;

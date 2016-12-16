@@ -31,17 +31,17 @@ import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.ArcherBow;
 
 public class ArcherService extends PlayerService {
-	
+
 	private GameController controller;
-	
+
 	public ArcherService(GameController controller) {
 		super(controller);
 		this.controller = controller;
 	}
-	
+
 	public void shootArrows(Player player) {
 		int iArrows = 1;
-		Archer archer = (Archer)this.findGamePlayerByPlayer(player);
+		Archer archer = (Archer) this.findGamePlayerByPlayer(player);
 		if (archer.getBow().equals(ArcherBow.DEFAULT)) {
 			return;
 		} else if (archer.getBow().equals(ArcherBow.DOUBLE)) {
@@ -86,11 +86,13 @@ public class ArcherService extends PlayerService {
 		Archer archer = null;
 
 		while (it.hasNext()) {
-			archer = (Archer)it.next();
+			archer = (Archer) it.next();
 			if (archer.isNear(zl)) {
 				break;
 			}
+			archer = null;
 		}
+
 		if (archer != null) {
 			if (archer.getBaseHealth() <= 0) {
 				archer.getBaseBar().setProgress(0);
@@ -104,14 +106,30 @@ public class ArcherService extends PlayerService {
 		}
 		return true;
 	}
-	
+
+	public boolean damageArcherArea(Archer archer) {
+		//Location zl = entity.getLocation();
+		if (archer != null) {
+			if (archer.getBaseHealth() <= 0) {
+				archer.getBaseBar().setProgress(0);
+				return false;
+			} else {
+				archer.damageBase();
+				if (archer.getBaseHealth() > 0) {
+					archer.getBaseBar().setProgress(new Double(archer.getBaseHealth()));
+				}
+			}
+		}
+		return true;
+	}
+
 	public void destroyBase(int x) {
 		Location l = new Location(configService.getWorld(), x, 4, 1169);
 		configService.getWorld().getBlockAt(l).setType(Material.AIR);
 	}
 
 	public void giveBonus(Player shooter) {
-		Archer archer = (Archer)this.findGamePlayerByPlayer(shooter);
+		Archer archer = (Archer) this.findGamePlayerByPlayer(shooter);
 		if (archer.getBow().equals(ArcherBow.DEFAULT)) {
 			archer.setBow(ArcherBow.DOUBLE);
 		} else if (archer.getBow().equals(ArcherBow.DOUBLE)) {
@@ -132,8 +150,8 @@ public class ArcherService extends PlayerService {
 	}
 
 	public void givePoints(Player player, Integer hitPoints) {
-		Archer archer = (Archer)this.findGamePlayerByPlayer(player);
-		archer.addPoints( hitPoints );
+		Archer archer = (Archer) this.findGamePlayerByPlayer(player);
+		archer.addPoints(hitPoints);
 		updateScoreBoards();
 	}
 
@@ -172,11 +190,11 @@ public class ArcherService extends PlayerService {
 
 	public void updateScoreBoards() {
 		for (GamePlayer gp : this.controller.getLivePlayers()) {
-			Archer archer = (Archer)gp;
+			Archer archer = (Archer) gp;
 			Player player = archer.getPlayer();
 			Scoreboard scoreboard = player.getScoreboard();
 			for (GamePlayer gp1 : this.controller.getLivePlayers()) {
-				Archer a1 = (Archer)gp1;
+				Archer a1 = (Archer) gp1;
 				String name = a1.getPlayer().getName();
 				scoreboard.getObjective(DisplaySlot.SIDEBAR).getScore(name).setScore(a1.getPoint());
 			}
@@ -188,6 +206,5 @@ public class ArcherService extends PlayerService {
 		bar.setProgress(1F);
 		return bar;
 	}
-
 
 }
