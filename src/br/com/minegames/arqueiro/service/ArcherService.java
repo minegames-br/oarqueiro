@@ -21,6 +21,7 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
 
+import com.thecraftcloud.core.domain.FacingDirection;
 import com.thecraftcloud.core.logging.MGLogger;
 import com.thecraftcloud.core.util.Utils;
 import com.thecraftcloud.minigame.domain.GamePlayer;
@@ -108,14 +109,13 @@ public class ArcherService extends PlayerService {
 	}
 
 	public boolean damageArcherArea(Archer archer) {
-		//Location zl = entity.getLocation();
 		if (archer != null) {
-			if (archer.getBaseHealth() <= 0) {
+			if (archer.getBaseHealth() < 0) {
 				archer.getBaseBar().setProgress(0);
 				return false;
 			} else {
 				archer.damageBase();
-				if (archer.getBaseHealth() > 0) {
+				if (archer.getBaseHealth() >= 0) {
 					archer.getBaseBar().setProgress(new Double(archer.getBaseHealth()));
 				}
 			}
@@ -123,9 +123,21 @@ public class ArcherService extends PlayerService {
 		return true;
 	}
 
-	public void destroyBase(int x) {
-		Location l = new Location(configService.getWorld(), x, 4, 1169);
-		configService.getWorld().getBlockAt(l).setType(Material.AIR);
+	public void destroyBase(Archer archer, int local) {
+		
+		if (this.configService.getArena().getFacing() == FacingDirection.EAST
+				|| this.configService.getArena().getFacing() == FacingDirection.WEST) {
+			Location l = new Location(configService.getWorld(), archer.getArea().getPointA().getX(), archer.getArea().getPointA().getY(), local);
+			configService.getWorld().getBlockAt(l).setType(Material.AIR);
+			
+		} else if (this.configService.getArena().getFacing() == FacingDirection.NORTH
+				|| this.configService.getArena().getFacing() == FacingDirection.SOUTH) {
+			Location l = new Location(configService.getWorld(), local, archer.getArea().getPointA().getY(), archer.getArea().getPointA().getZ());
+			configService.getWorld().getBlockAt(l).setType(Material.AIR);
+		}
+		
+		
+	
 	}
 
 	public void giveBonus(Player shooter) {

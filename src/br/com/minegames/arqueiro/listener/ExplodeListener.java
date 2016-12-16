@@ -1,6 +1,5 @@
 package br.com.minegames.arqueiro.listener;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
@@ -9,7 +8,6 @@ import org.bukkit.event.entity.EntityInteractEvent;
 
 import com.thecraftcloud.core.domain.FacingDirection;
 import com.thecraftcloud.core.domain.Local;
-import com.thecraftcloud.core.util.Utils;
 import com.thecraftcloud.minigame.domain.GamePlayer;
 import com.thecraftcloud.minigame.service.ConfigService;
 
@@ -32,9 +30,11 @@ public class ExplodeListener implements Listener {
 	@EventHandler
 	public void onInteract(EntityInteractEvent event) {
 
-		if (!configService.getMyCloudCraftGame().isStarted()) {
-			return;
-		}
+		/*
+		 * if (!configService.getMyCloudCraftGame().isStarted()) {
+		 * Bukkit.getConsoleSender().sendMessage(Utils.
+		 * color("&6[O JOGO NÃO COMEÇOU] ")); return; }
+		 */
 
 		Entity entity = event.getEntity();
 
@@ -55,9 +55,6 @@ public class ExplodeListener implements Listener {
 		int entity_Z = entity.getLocation().getBlockZ();
 		Local point_A = archer.getArea().getPointA();
 		Local point_B = archer.getArea().getPointB();
-
-		Bukkit.getConsoleSender().sendMessage(Utils.color("&5[CAN EXPLODE] " + archer.getPlayer().getName() + " "
-				+ archer.getArea().getPointA() + " " + archer.getArea().getPointB()));
 
 		if (this.configService.getArena().getFacing() == FacingDirection.EAST
 				|| this.configService.getArena().getFacing() == FacingDirection.WEST) {

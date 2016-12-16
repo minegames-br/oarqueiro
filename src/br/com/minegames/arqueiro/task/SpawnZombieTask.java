@@ -40,9 +40,6 @@ public class SpawnZombieTask implements Runnable {
 		}
 
 		int configValue = (Integer)configService.getGameArenaConfig(Constants.MAX_ZOMBIE_SPAWNED_PER_PLAYER);
-		Bukkit.getConsoleSender().sendMessage(Utils.color("&5[SPAWNZOMBIE] "));
-		Bukkit.getConsoleSender().sendMessage(Utils.color("&5[GET LIVING ENTITIES] " + controller.getLivingEntities().size() ));
-		Bukkit.getConsoleSender().sendMessage(Utils.color("&5[SPAWNZOMBIE -CONFIGVALUE] " + configValue));
 		if (controller.getLivingEntities().size() < configValue ) {
 			Zombie zombie = spawnZombie();
 		}

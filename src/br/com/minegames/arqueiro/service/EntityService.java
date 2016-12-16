@@ -79,7 +79,6 @@ public class EntityService {
 
 	public void killEntity(Entity z) {
 		EntityTarget et = (EntityTarget) findEntityTarget(z);
-		Location loc = z.getLocation();
 		if (et != null) {
 			if (et.getKiller() != null) {
 				Player player = et.getKiller();
@@ -96,13 +95,11 @@ public class EntityService {
 
 		if (archer != null && et != null) {
 			if (archerService.damageArcherArea(archer)) {
-				Bukkit.getConsoleSender().sendMessage(Utils.color("&6[DamageArcherArea] "));
 				((Damageable) z).damage(((Damageable) z).getMaxHealth());
 				controller.getLivingEntities().remove(et);
 				configService.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 2.0F, false, false);
 			} else {
-				Bukkit.getConsoleSender().sendMessage(Utils.color("&5[DestroyBase] "));
-				archerService.destroyBase(loc.getBlockX());
+				archerService.destroyBase(archer, loc.getBlockX());
 			}
 
 		}
