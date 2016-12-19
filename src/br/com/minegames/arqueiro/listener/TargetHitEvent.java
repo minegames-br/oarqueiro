@@ -1,9 +1,6 @@
 package br.com.minegames.arqueiro.listener;
 
-import java.util.Iterator;
-
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -15,11 +12,10 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.BlockIterator;
 
+import com.thecraftcloud.core.util.Utils;
 import com.thecraftcloud.minigame.service.ConfigService;
 
 import br.com.minegames.arqueiro.GameController;
-import br.com.minegames.arqueiro.domain.target.BlockTarget;
-import br.com.minegames.arqueiro.domain.target.MovingTarget;
 import br.com.minegames.arqueiro.domain.target.Target;
 import br.com.minegames.arqueiro.service.TargetService;
 
@@ -36,11 +32,8 @@ public class TargetHitEvent implements Listener {
 	}
 	
 	@EventHandler
-	public void onProjectileHit(ProjectileHitEvent event)
-	{
-		if(!configService.getMyCloudCraftGame().isStarted()) {
-			return;
-		}
+	public void onProjectileHit(ProjectileHitEvent event) {
+	
 	    if(!(event.getEntity() instanceof Arrow))
 	        return;
 
@@ -56,7 +49,7 @@ public class TargetHitEvent implements Listener {
 		    World world = arrow.getWorld();
 		    BlockIterator bi = new BlockIterator(world, arrow.getLocation().toVector(), arrow.getVelocity().normalize(), 0, 4);
 		    Block hit = null;
-
+		    
 		    while(bi.hasNext()) {
 		    	hit = bi.next();
 		    	if(!hit.getType().equals(Material.AIR)) //Grass/etc should be added probably since arrows doesn't collide with them

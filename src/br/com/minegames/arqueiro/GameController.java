@@ -37,7 +37,6 @@ import br.com.minegames.arqueiro.service.ArcherService;
 import br.com.minegames.arqueiro.service.LocalService;
 import br.com.minegames.arqueiro.service.TargetService;
 import br.com.minegames.arqueiro.task.DestroyTargetTask;
-import br.com.minegames.arqueiro.task.ExplodeZombieTask;
 import br.com.minegames.arqueiro.task.PlaceMovingTargetTask;
 import br.com.minegames.arqueiro.task.PlaceTargetTask;
 import br.com.minegames.arqueiro.task.SpawnSkeletonTask;
@@ -57,8 +56,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	private int spawnSkeletonThreadID;
 	private LevelUpTask levelUpTask;
 	private int levelUpTaskID;
-	// private Runnable explodeZombieTask;
-	// private int explodeZombieThreadID;
 
 	private CopyOnWriteArraySet<Target> targets = new CopyOnWriteArraySet<Target>();
 	private CopyOnWriteArraySet<MovingTarget> movingTargets = new CopyOnWriteArraySet<MovingTarget>();
@@ -85,10 +82,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		this.destroyTargetTask = new DestroyTargetTask(this);
 		this.spawnZombieTask = new SpawnZombieTask(this);
 		this.spawnSkeletonTask = new SpawnSkeletonTask(this);
-		this.spawnZombieTask = new SpawnZombieTask(this);
-		// this.levelUpTask = new LevelUpTask(this);
-		// this.explodeZombieTask = new ExplodeZombieTask(this);
-
 	}
 
 	@Override
@@ -149,7 +142,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 				} else if (this.configService.getArena().getFacing() == FacingDirection.NORTH) {
 					l.setYaw(180);
 				}
-				// l.setPitch();
 			}
 			Bukkit.getConsoleSender().sendMessage("player world: " + player.getWorld().getName());
 
@@ -175,17 +167,17 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		BukkitScheduler scheduler = getServer().getScheduler();
 
 		// Iniciar threads do jogo
-		this.placeTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeTargetTask, 0L, 200L);
-		//this.placeMovingTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeMovingTargetTask, 200L,
-				//15L);
+		this.placeTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeTargetTask, 0L, 50L);
+		this.placeMovingTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeMovingTargetTask, 200L,
+				15L);
 		this.destroyTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 20L);
-		this.spawnZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 50L);
-		this.spawnSkeletonThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnSkeletonTask, 0L, 50L);
+		//this.spawnZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 50L);
+		//this.spawnSkeletonThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnSkeletonTask, 0L, 50L);
 	}
 
 	public boolean shouldEndGame() {
 		// Terminar o jogo após o 10 Nível
-		if (this.configService.getMyCloudCraftGame().getLevel().getLevel() >= 11
+		if (this.configService.getMyCloudCraftGame().getLevel().getLevel() > 10
 				&& this.configService.getMyCloudCraftGame().isStarted()) {
 			Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - Time is Over"));
 			return true;
@@ -196,10 +188,11 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 			Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - No more players"));
 			return true;
 		}
-
+		
+		/*
 		if (this.getGameDuration() > this.getConfigService().getGameDurationInSeconds()) {
 			return true;
-		}
+		}*/
 		return false;
 	}
 

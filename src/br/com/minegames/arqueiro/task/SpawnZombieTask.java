@@ -53,7 +53,6 @@ public class SpawnZombieTask implements Runnable {
 		Archer archer = (Archer) controller.getLivePlayers().toArray()[index];
 		entity.setTarget(archer.getPlayer());
 		controller.addEntityPlayer(new ZombieTarget(entity));
-		Bukkit.getConsoleSender().sendMessage(Utils.color("&5[SPAWNZOMBIE] " + l));
 
 		if (!entity.isBaby()) {
 			if ((this.configService.getMyCloudCraftGame().getLevel().getLevel() % 2) == 0) {

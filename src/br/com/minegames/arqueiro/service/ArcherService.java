@@ -81,33 +81,6 @@ public class ArcherService extends PlayerService {
 		}
 	}
 
-	public boolean damageArcherArea(Entity entity) {
-		Location zl = entity.getLocation();
-		Iterator<GamePlayer> it = controller.getLivePlayers().iterator();
-		Archer archer = null;
-
-		while (it.hasNext()) {
-			archer = (Archer) it.next();
-			if (archer.isNear(zl)) {
-				break;
-			}
-			archer = null;
-		}
-
-		if (archer != null) {
-			if (archer.getBaseHealth() <= 0) {
-				archer.getBaseBar().setProgress(0);
-				return false;
-			} else {
-				archer.damageBase();
-				if (archer.getBaseHealth() > 0) {
-					archer.getBaseBar().setProgress(new Double(archer.getBaseHealth()));
-				}
-			}
-		}
-		return true;
-	}
-
 	public boolean damageArcherArea(Archer archer) {
 		if (archer != null) {
 			if (archer.getBaseHealth() < 0) {
@@ -143,8 +116,10 @@ public class ArcherService extends PlayerService {
 	public void giveBonus(Player shooter) {
 		Archer archer = (Archer) this.findGamePlayerByPlayer(shooter);
 		if (archer.getBow().equals(ArcherBow.DEFAULT)) {
+		  	Bukkit.getConsoleSender().sendMessage(Utils.color("&6[DOUBLE ARROW]"));
 			archer.setBow(ArcherBow.DOUBLE);
 		} else if (archer.getBow().equals(ArcherBow.DOUBLE)) {
+		  	Bukkit.getConsoleSender().sendMessage(Utils.color("&6[TRIPPLE ARROW]"));
 			archer.setBow(ArcherBow.TRIPPLE);
 		}
 	}

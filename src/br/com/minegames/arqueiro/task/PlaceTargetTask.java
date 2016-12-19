@@ -1,6 +1,5 @@
 package br.com.minegames.arqueiro.task;
 
-import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.thecraftcloud.core.domain.FacingDirection;
@@ -34,7 +33,7 @@ public class PlaceTargetTask extends BukkitRunnable {
     	
     	//Essa direção vai indicar como criar e destruir os targets
     	FacingDirection facing = configService.getArena().getFacing();
-    	Bukkit.getLogger().info("facing: " + facing );
+    	//Bukkit.getLogger().info("facing: " + facing );
     	if(facing == null) {
     		facing = FacingDirection.NORTH;
     	}
