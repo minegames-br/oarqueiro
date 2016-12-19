@@ -9,6 +9,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 import br.com.minegames.arqueiro.GameController;
+import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.service.ArcherService;
 import br.com.minegames.arqueiro.service.EntityService;
 
@@ -41,7 +42,8 @@ public class PlayerDeath implements Listener {
 				if(((LivingEntity) z).getKiller() == null) {
 				} else {
 				}
-				this.entityService.killEntity(z);
+				Player player = ((LivingEntity) z).getKiller(); 
+				this.entityService.killEntity(z, player);
 			}
 		}
     }

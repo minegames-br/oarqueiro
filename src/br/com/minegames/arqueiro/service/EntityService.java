@@ -26,6 +26,7 @@ public class EntityService {
 	private PlayerService playerService;
 	private ConfigService configService = ConfigService.getInstance();
 
+
 	public EntityService(GameController controller) {
 		this.controller = controller;
 		this.archerService = new ArcherService(controller);
@@ -72,19 +73,29 @@ public class EntityService {
 	public void killEntityTargets() {
 		for (EntityPlayer eTarget : controller.getLivingEntities()) {
 			if (eTarget instanceof EntityTarget) {
-				this.killEntity(((EntityTarget) eTarget).getLivingEntity()); // this.killZombie...getZombie
+				this.clearAllEntitys(((EntityTarget) eTarget).getLivingEntity()); // this.killZombie...getZombie
 			}
 		}
 	}
 
-	public void killEntity(Entity z) {
+	public void clearAllEntitys(Entity z) {
 		EntityTarget et = (EntityTarget) findEntityTarget(z);
 		if (et != null) {
-			if (et.getKiller() != null) {
-				Player player = et.getKiller();
+			et.setKillPoints(100);
+			controller.getLivingEntities().remove(et);
+
+		}
+	}
+
+	public void killEntity(Entity z, Player player) {
+		EntityTarget et = (EntityTarget) findEntityTarget(z);
+		if (et != null) {
+			if (player != null) {
 				et.kill(player);
 				this.playerService.givePoints(player, et.getKillPoints());
 				controller.getLivingEntities().remove(et);
+				Bukkit.getConsoleSender()
+						.sendMessage(Utils.color("&4[KILL ENTITY] " + controller.getLivingEntities().size()));
 			}
 		}
 	}

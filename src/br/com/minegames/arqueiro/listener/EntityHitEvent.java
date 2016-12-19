@@ -14,36 +14,41 @@ import br.com.minegames.arqueiro.service.EntityService;
 
 public class EntityHitEvent implements Listener {
 
-	private GameController controller;	
+	private GameController controller;
 	private EntityService entityService;
 	private ConfigService configService = ConfigService.getInstance();
-	
+
 	public EntityHitEvent(GameController controller) {
 		super();
 		this.controller = controller;
 		this.entityService = new EntityService(controller);
 	}
-	
+
 	@EventHandler
-	public void onArrowHit(EntityDamageByEntityEvent event){
-		if(!configService.getMyCloudCraftGame().isStarted()) {
+	public void onArrowHit(EntityDamageByEntityEvent event) {
+		if (!configService.getMyCloudCraftGame().isStarted()) {
 			return;
 		}
-		
-        if ( !(event.getDamager() instanceof Arrow) ){
-        	return;
-        }
-        
-        Arrow arrow = (Arrow) event.getDamager();
-        if(!(arrow.getShooter() instanceof Player)) {
-        	return;
-        }
-        
-        Player player = (Player) arrow.getShooter();
-	    if (event.getEntity() instanceof Entity) {
-	    	entityService.hitEntity(event.getEntity(), player);
-	    }else{
-	    }
-	    
+
+		if (!(event.getDamager() instanceof Arrow)) {
+			return;
+		}
+
+		Arrow arrow = (Arrow) event.getDamager();
+		if (!(arrow.getShooter() instanceof Player)) {
+			return;
+		}
+
+		if ((arrow instanceof Player)) {
+			return;
+		}
+
+		Player player = (Player) arrow.getShooter();
+		if (player != null) {
+			if (event.getEntity() instanceof Entity) {
+				entityService.hitEntity(event.getEntity(), player);
+			}
+		}
+
 	}
 }

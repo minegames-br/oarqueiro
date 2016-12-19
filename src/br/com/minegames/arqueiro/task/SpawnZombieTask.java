@@ -17,6 +17,7 @@ import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.target.ZombieTarget;
+import br.com.minegames.arqueiro.service.EntityService;
 import br.com.minegames.arqueiro.service.LocalService;
 
 public class SpawnZombieTask implements Runnable {
@@ -24,6 +25,7 @@ public class SpawnZombieTask implements Runnable {
 	private GameController controller;
 	private LocalService localService;
 	private ConfigService configService = ConfigService.getInstance();
+	private EntityService entityService;
 
 	public SpawnZombieTask(GameController controller) {
 		this.controller = controller;
@@ -32,22 +34,17 @@ public class SpawnZombieTask implements Runnable {
 
 	@Override
 	public void run() {
-	
 
-		MyCloudCraftGame game = configService.getMyCloudCraftGame();
-		if (!game.isStarted()) {
-			return;
-		}
-
-		int configValue = (Integer)configService.getGameArenaConfig(Constants.MAX_ZOMBIE_SPAWNED_PER_PLAYER);
-		if (controller.getLivingEntities().size() < configValue ) {
+		int configValue = (Integer) configService.getGameArenaConfig(Constants.MAX_ZOMBIE_SPAWNED_PER_PLAYER);
+		if (controller.getLivingEntities().size() < configValue) {
 			Zombie zombie = spawnZombie();
 		}
+
 	}
 
 	private Zombie spawnZombie() {
 		Location l = localService.getRandomSpawnLocationForGroundEnemy();
-		l.setY( l.getBlockY() + 1);
+		l.setY(l.getBlockY() + 1);
 		Zombie entity = (Zombie) configService.getWorld().spawnEntity(l, EntityType.ZOMBIE);
 		int index = new Random().nextInt(controller.getLivePlayers().size());
 		Archer archer = (Archer) controller.getLivePlayers().toArray()[index];
@@ -57,7 +54,10 @@ public class SpawnZombieTask implements Runnable {
 		if (!entity.isBaby()) {
 			if ((this.configService.getMyCloudCraftGame().getLevel().getLevel() % 2) == 0) {
 				entity.addPotionEffect(
-						new PotionEffect(PotionEffectType.SPEED, 10000, configService.getMyCloudCraftGame().getLevel().getLevel()/2));
+						new PotionEffect(PotionEffectType.SPEED, 10000, configService.getMyCloudCraftGame().getLevel().getLevel() / 2));
+			} else {
+				entity.addPotionEffect(
+						new PotionEffect(PotionEffectType.SPEED, 10000, (configService.getMyCloudCraftGame().getLevel().getLevel() - 1) / 2));
 			}
 		}
 		return entity;

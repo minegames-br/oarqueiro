@@ -171,17 +171,11 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		this.placeMovingTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeMovingTargetTask, 200L,
 				15L);
 		this.destroyTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 20L);
-		//this.spawnZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 50L);
-		//this.spawnSkeletonThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnSkeletonTask, 0L, 50L);
+		this.spawnZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 80L);
+		this.spawnSkeletonThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnSkeletonTask, 0L, 50L);
 	}
 
 	public boolean shouldEndGame() {
-		// Terminar o jogo após o 10 Nível
-		if (this.configService.getMyCloudCraftGame().getLevel().getLevel() > 10
-				&& this.configService.getMyCloudCraftGame().isStarted()) {
-			Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - Time is Over"));
-			return true;
-		}
 
 		// Terminar o jogo caso não tenha mais jogadores
 		if (this.getLivePlayers().size() == 0 && this.configService.getMyCloudCraftGame().isStarted()) {
@@ -189,10 +183,13 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 			return true;
 		}
 		
-		/*
+		// Terminar o jogo caso o tempo acabe
 		if (this.getGameDuration() > this.getConfigService().getGameDurationInSeconds()) {
+			Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - Time is Over"));
 			return true;
-		}*/
+		}
+		
+
 		return false;
 	}
 
@@ -214,8 +211,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		Bukkit.getScheduler().cancelTask(this.destroyTargetThreadID);
 		Bukkit.getScheduler().cancelTask(this.spawnZombieThreadID);
 		Bukkit.getScheduler().cancelTask(this.spawnSkeletonThreadID);
-		// Bukkit.getScheduler().cancelTask(this.explodeZombieThreadID);
-		Bukkit.getScheduler().cancelTask(this.levelUpTaskID);
 
 		// TODO o que vai acontecer com os jogadores quando acabar o jogo?
 		// por enquanto vou tirá-los da arena e zerar os inventarios e recriar a
@@ -289,17 +284,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	@Override
 	public boolean isLastLevel() {
 		return this.configService.getMyCloudCraftGame().getLevel().getLevel() == 11;
-	}
-
-	public boolean shouldExplodeZombie(Location location) {
-		boolean result = false;
-		if (location.getBlockX() >= 457 && location.getBlockX() <= 493) {
-			if (location.getBlockZ() >= 1170 && location.getBlockZ() <= 1171) {
-				result = true;
-			}
-		}
-
-		return result;
 	}
 
 	public Integer getConfigIntValue(String name) {
