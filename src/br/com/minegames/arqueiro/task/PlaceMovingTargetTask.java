@@ -1,7 +1,10 @@
 package br.com.minegames.arqueiro.task;
 
+import java.util.Random;
+
 import org.bukkit.scheduler.BukkitRunnable;
 
+import com.thecraftcloud.minigame.domain.GamePlayer;
 import com.thecraftcloud.minigame.service.ConfigService;
 
 import br.com.minegames.arqueiro.Constants;
@@ -21,7 +24,7 @@ public class PlaceMovingTargetTask extends BukkitRunnable {
 	
     @Override
     public void run() {
-
+    	
     	//mover os alvos criados um bloco para baixo
     	targetService.moveTargets();
 
@@ -31,9 +34,13 @@ public class PlaceMovingTargetTask extends BukkitRunnable {
     	}
     	
     	//se não tiver um moving target criar um
-    	if(controller.getMovingTargets().size() < configValue) {
-    		targetService.createVerticalMovingTarget();
+    	int r = new Random().nextInt(5);
+    	if(r == 2) {
+    		if(controller.getMovingTargets().size() < configValue) {
+        		targetService.createVerticalMovingTarget();
+        	}
     	}
+    	
     	
     }
     

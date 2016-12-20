@@ -17,11 +17,13 @@ import com.thecraftcloud.core.domain.FacingDirection;
 import com.thecraftcloud.core.logging.MGLogger;
 import com.thecraftcloud.core.util.BlockManipulationUtil;
 import com.thecraftcloud.core.util.Utils;
+import com.thecraftcloud.minigame.domain.GamePlayer;
 import com.thecraftcloud.minigame.service.ConfigService;
 import com.thecraftcloud.minigame.service.PlayerService;
 
 import br.com.minegames.arqueiro.Constants;
 import br.com.minegames.arqueiro.GameController;
+import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.target.BlockTarget;
 import br.com.minegames.arqueiro.domain.target.FastMovingTarget;
 import br.com.minegames.arqueiro.domain.target.FloatingBlockTarget;
@@ -183,7 +185,6 @@ public class TargetService {
 			l.getBlock().setType(Material.AIR);
 			int y = l.getBlockY() - 1;
 			mt.setMoves(mt.getMoves() + 1);
-
 			if (mt.getMoves() >= mt.getMaxMoves()) {
 				destroyTarget(mt);
 			} else {
@@ -194,6 +195,7 @@ public class TargetService {
 			}
 
 		}
+
 	}
 
 	public void destroyTarget(MovingTarget mt) {
@@ -295,16 +297,13 @@ public class TargetService {
 		shooter.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 1.0F, false, false);
 		this.destroyBlockTarget(target);
 		if (shooter != null) {
-			Double points = loc.distance(shooter.getLocation());
-
-			MGLogger.info("shooter: " + shooter.getName() + " total points: " + points);
-			this.archerService.givePoints(shooter, points.intValue());
+			this.archerService.givePointsByTarget(shooter, loc);
 		}
 
 	}
 
 	public void hitMovingTarget(MovingTarget mTarget, Player shooter) {
-  
+
 		mTarget.hitTarget2(shooter);
 		Utils.shootFirework(shooter.getLocation());
 		this.destroyMovingTarget(mTarget);
@@ -356,11 +355,11 @@ public class TargetService {
 	public void hitTarget(Player shooter, Target target) {
 		if (target instanceof MovingTarget) {
 			MovingTarget mTarget = (MovingTarget) target;
-			this.hitMovingTarget(mTarget, shooter);	
+			this.hitMovingTarget(mTarget, shooter);
 		} else {
 			BlockTarget bTarget = (BlockTarget) target;
 			this.hitTarget(bTarget, shooter);
-			
+
 		}
 	}
 }

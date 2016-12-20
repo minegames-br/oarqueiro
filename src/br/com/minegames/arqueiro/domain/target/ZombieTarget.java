@@ -9,7 +9,7 @@ public class ZombieTarget extends EntityTarget {
 	public ZombieTarget(Zombie zombie) {
 		super(zombie);
 		this.zombie = zombie;
-		this.setKillPoints(50);
+		this.setKillPoints(15);
 	}
 	
 	public Zombie getZombie() {

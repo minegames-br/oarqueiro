@@ -97,29 +97,29 @@ public class ArcherService extends PlayerService {
 	}
 
 	public void destroyBase(Archer archer, int local) {
-		
+
 		if (this.configService.getArena().getFacing() == FacingDirection.EAST
 				|| this.configService.getArena().getFacing() == FacingDirection.WEST) {
-			Location l = new Location(configService.getWorld(), archer.getArea().getPointA().getX(), archer.getArea().getPointA().getY(), local);
+			Location l = new Location(configService.getWorld(), archer.getArea().getPointA().getX(),
+					archer.getArea().getPointA().getY(), local);
 			configService.getWorld().getBlockAt(l).setType(Material.AIR);
-			
+
 		} else if (this.configService.getArena().getFacing() == FacingDirection.NORTH
 				|| this.configService.getArena().getFacing() == FacingDirection.SOUTH) {
-			Location l = new Location(configService.getWorld(), local, archer.getArea().getPointA().getY(), archer.getArea().getPointA().getZ());
+			Location l = new Location(configService.getWorld(), local, archer.getArea().getPointA().getY(),
+					archer.getArea().getPointA().getZ());
 			configService.getWorld().getBlockAt(l).setType(Material.AIR);
 		}
-		
-		
-	
+
 	}
 
 	public void giveBonus(Player shooter) {
 		Archer archer = (Archer) this.findGamePlayerByPlayer(shooter);
 		if (archer.getBow().equals(ArcherBow.DEFAULT)) {
-		  	Bukkit.getConsoleSender().sendMessage(Utils.color("&6[DOUBLE ARROW]"));
+			Bukkit.getConsoleSender().sendMessage(Utils.color("&6[DOUBLE ARROW]"));
 			archer.setBow(ArcherBow.DOUBLE);
 		} else if (archer.getBow().equals(ArcherBow.DOUBLE)) {
-		  	Bukkit.getConsoleSender().sendMessage(Utils.color("&6[TRIPPLE ARROW]"));
+			Bukkit.getConsoleSender().sendMessage(Utils.color("&6[TRIPPLE ARROW]"));
 			archer.setBow(ArcherBow.TRIPPLE);
 		}
 	}
@@ -136,9 +136,27 @@ public class ArcherService extends PlayerService {
 		}
 	}
 
-	public void givePoints(Player player, Integer hitPoints) {
+	public void givePointsByTarget(Player player, Location location) {
 		Archer archer = (Archer) this.findGamePlayerByPlayer(player);
-		archer.addPoints(hitPoints);
+		Integer bonus = null;
+		int points = 30;
+
+		if (this.configService.getArena().getFacing() == FacingDirection.NORTH) {
+			int xP = Math.abs(player.getLocation().getBlockX() - location.getBlockX());
+			int yP = Math.abs(player.getLocation().getBlockY() - location.getBlockY());
+			int zP = Math.abs(player.getLocation().getBlockZ() - location.getBlockZ());
+			bonus = xP + yP + zP;
+		}
+
+		int totalPoints = (int) (points + bonus * 1.5);
+		archer.addPoints(totalPoints);
+		player.sendMessage(ChatColor.GOLD + "" + points + " Pontos + " + bonus + " de Bônus!");
+		updateScoreBoards();
+	}
+
+	public void givePoints(Player player, Integer hitpoints) {
+		Archer archer = (Archer) this.findGamePlayerByPlayer(player);
+		archer.addPoints(hitpoints);
 		updateScoreBoards();
 	}
 
