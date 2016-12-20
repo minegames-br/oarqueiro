@@ -108,7 +108,7 @@ public class EntityService {
 				controller.getLivingEntities().remove(et);
 				configService.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ() - 1, 2.0F, false, false);
 			} else {
-				archerService.destroyBase(archer, loc.getBlockX());
+				archerService.destroyBase(archer, loc.getBlockX(), loc.getBlockZ());
 			}
 
 		}

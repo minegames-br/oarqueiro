@@ -20,7 +20,6 @@ import com.thecraftcloud.minigame.TheCraftCloudMiniGameAbstract;
 import com.thecraftcloud.minigame.domain.GamePlayer;
 import com.thecraftcloud.minigame.domain.MyCloudCraftGame;
 import com.thecraftcloud.minigame.service.ConfigService;
-import com.thecraftcloud.minigame.task.LevelUpTask;
 
 import br.com.minegames.arqueiro.domain.Archer;
 import br.com.minegames.arqueiro.domain.ArcherBow;
@@ -123,7 +122,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		for (GamePlayer gp : livePlayers) {
 			Archer archer = (Archer) gp;
 			Player player = archer.getPlayer();
-			// this.world = player.getWorld();
 			Local spawnPoint = (Local) configService.getGameArenaConfig("arqueiro.player" + loc + ".spawn");
 			archer.setSpawnPoint(spawnPoint);
 			Location l = locationUtil.toLocation(this.configService.getWorld(), spawnPoint);
@@ -165,11 +163,11 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		BukkitScheduler scheduler = getServer().getScheduler();
 
 		// Iniciar threads do jogo
-		this.placeTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeTargetTask, 0L, 50L);
+		this.placeTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeTargetTask, 0L, 80L);
 		this.placeMovingTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.placeMovingTargetTask, 200L,
 				15L);
 		this.destroyTargetThreadID = scheduler.scheduleSyncRepeatingTask(this, this.destroyTargetTask, 0L, 20L);
-		this.spawnZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 0L, 80L);
+		this.spawnZombieThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnZombieTask, 100L, 100L);
 		this.spawnSkeletonThreadID = scheduler.scheduleSyncRepeatingTask(this, this.spawnSkeletonTask, 0L, 50L);
 	}
 
@@ -221,14 +219,14 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 			archer.regainHealthToPlayer(archer);
 		}
 
+		// clear Entity list
+		this.getLivingEntities().clear();
+
 		// destroyTargets()
 		targetService.destroyTargets();
 
-		// restaurar parede preta
-		// createBlackWall();
-
 		// manda os jogadores para o podium
-		playerService.teleportPlayersToPodium();
+		// playerService.teleportPlayersToPodium();
 
 	}
 

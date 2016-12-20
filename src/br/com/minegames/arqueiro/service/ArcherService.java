@@ -24,6 +24,7 @@ import org.bukkit.util.Vector;
 import com.thecraftcloud.core.domain.FacingDirection;
 import com.thecraftcloud.core.logging.MGLogger;
 import com.thecraftcloud.core.util.Utils;
+import com.thecraftcloud.core.util.title.TitleUtil;
 import com.thecraftcloud.minigame.domain.GamePlayer;
 import com.thecraftcloud.minigame.service.PlayerService;
 
@@ -96,17 +97,17 @@ public class ArcherService extends PlayerService {
 		return true;
 	}
 
-	public void destroyBase(Archer archer, int local) {
+	public void destroyBase(Archer archer, int localX, int localZ) {
 
 		if (this.configService.getArena().getFacing() == FacingDirection.EAST
 				|| this.configService.getArena().getFacing() == FacingDirection.WEST) {
 			Location l = new Location(configService.getWorld(), archer.getArea().getPointA().getX(),
-					archer.getArea().getPointA().getY(), local);
+					archer.getArea().getPointA().getY(), localZ);
 			configService.getWorld().getBlockAt(l).setType(Material.AIR);
 
 		} else if (this.configService.getArena().getFacing() == FacingDirection.NORTH
 				|| this.configService.getArena().getFacing() == FacingDirection.SOUTH) {
-			Location l = new Location(configService.getWorld(), local, archer.getArea().getPointA().getY(),
+			Location l = new Location(configService.getWorld(), localX, archer.getArea().getPointA().getY(),
 					archer.getArea().getPointA().getZ());
 			configService.getWorld().getBlockAt(l).setType(Material.AIR);
 		}
@@ -141,12 +142,10 @@ public class ArcherService extends PlayerService {
 		Integer bonus = null;
 		int points = 30;
 
-		if (this.configService.getArena().getFacing() == FacingDirection.NORTH) {
-			int xP = Math.abs(player.getLocation().getBlockX() - location.getBlockX());
-			int yP = Math.abs(player.getLocation().getBlockY() - location.getBlockY());
-			int zP = Math.abs(player.getLocation().getBlockZ() - location.getBlockZ());
-			bonus = xP + yP + zP;
-		}
+		int xP = Math.abs(player.getLocation().getBlockX() - location.getBlockX());
+		int yP = Math.abs(player.getLocation().getBlockY() - location.getBlockY());
+		int zP = Math.abs(player.getLocation().getBlockZ() - location.getBlockZ());
+		bonus = xP + yP + zP;
 
 		int totalPoints = (int) (points + bonus * 1.5);
 		archer.addPoints(totalPoints);
@@ -163,7 +162,8 @@ public class ArcherService extends PlayerService {
 	public void teleportPlayersToPodium() {
 		Object aList[] = this.controller.getLivePlayers().toArray();
 		Arrays.sort(aList);
-		MGLogger.trace("teleport players to podium - aList.lengh: " + aList.length + "");
+		// MGLogger.trace("teleport players to podium - aList.lengh: " +
+		// aList.length + "");
 	}
 
 	/*
@@ -212,4 +212,19 @@ public class ArcherService extends PlayerService {
 		return bar;
 	}
 
+	public Archer findArcherByPlayer(Player player) {
+
+		if (player != null) {
+			for (GamePlayer gp : controller.getLivePlayers()) {
+				if (gp.getPlayer().equals(player)) {
+					Archer archer = (Archer) gp;
+					return archer;
+				}
+
+			}
+		}
+
+		return null;
+
+	}
 }

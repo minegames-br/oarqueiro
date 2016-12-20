@@ -30,6 +30,7 @@ public class Archer extends GamePlayer {
 	public void regainHealthToPlayer(Archer archer) {
         Player player = archer.getPlayer();
         player.setHealth(player.getMaxHealth());
+    	player.setFoodLevel(20);
     }
 	
 	public void setBow(ArcherBow d) {
