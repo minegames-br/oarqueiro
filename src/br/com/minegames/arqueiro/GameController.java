@@ -54,8 +54,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	private int spawnZombieThreadID;
 	private SpawnSkeletonTask spawnSkeletonTask;
 	private int spawnSkeletonThreadID;
-	private LevelUpTask levelUpTask;
-	private int levelUpTaskID;
 
 	private CopyOnWriteArraySet<Target> targets = new CopyOnWriteArraySet<Target>();
 	private CopyOnWriteArraySet<MovingTarget> movingTargets = new CopyOnWriteArraySet<MovingTarget>();
@@ -182,13 +180,12 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 			Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - No more players"));
 			return true;
 		}
-		
+
 		// Terminar o jogo caso o tempo acabe
 		if (this.getGameDuration() > this.getConfigService().getGameDurationInSeconds()) {
 			Bukkit.getConsoleSender().sendMessage(Utils.color("&6EndGameTask - Time is Over"));
 			return true;
 		}
-		
 
 		return false;
 	}
@@ -241,12 +238,6 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 	@Override
 	public void levelUp() {
 
-		// limpar targets e moving targets
-		// destroyTargets();
-
-		// matar os mobs
-		// killEntityTargets();
-
 		if (this.configService.getMyCloudCraftGame().getLevel().getLevel() >= 1) {
 			for (GamePlayer gp : this.livePlayers) {
 				Archer archer = (Archer) gp;
@@ -254,12 +245,8 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 						"Nível " + this.configService.getMyCloudCraftGame().getLevel().getLevel(), "");
 			}
 
-			// liberar o jogo novamente após 5 segundos
-			Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
-				public void run() {
-					configService.getMyCloudCraftGame().levelUp();
-				}
-			}, 100L);
+			configService.getMyCloudCraftGame().levelUp();
+
 		} else {
 			this.configService.getMyCloudCraftGame().levelUp();
 		}

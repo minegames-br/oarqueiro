@@ -30,12 +30,6 @@ public class ExplodeListener implements Listener {
 	@EventHandler
 	public void onInteract(EntityInteractEvent event) {
 
-		/*
-		 * if (!configService.getMyCloudCraftGame().isStarted()) {
-		 * Bukkit.getConsoleSender().sendMessage(Utils.
-		 * color("&6[O JOGO NÃO COMEÇOU] ")); return; }
-		 */
-
 		Entity entity = event.getEntity();
 
 		for (GamePlayer gp : controller.getLivePlayers()) {

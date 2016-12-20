@@ -94,8 +94,6 @@ public class EntityService {
 				et.kill(player);
 				this.playerService.givePoints(player, et.getKillPoints());
 				controller.getLivingEntities().remove(et);
-				Bukkit.getConsoleSender()
-						.sendMessage(Utils.color("&4[KILL ENTITY] " + controller.getLivingEntities().size()));
 			}
 		}
 	}
