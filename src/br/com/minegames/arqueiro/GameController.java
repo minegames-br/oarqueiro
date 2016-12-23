@@ -122,15 +122,13 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 		for (GamePlayer gp : livePlayers) {
 			Archer archer = (Archer) gp;
 			Player player = archer.getPlayer();
-			Local spawnPoint = (Local) configService.getGameArenaConfig("arqueiro.player" + loc + ".spawn");
+			String configName = "arqueiro.player" + loc + ".spawn";
+			Local spawnPoint = (Local) configService.getGameArenaConfig(configName);
 			archer.setSpawnPoint(spawnPoint);
+			
+			Bukkit.getConsoleSender().sendMessage(Utils.color("&6" + configName + " " + spawnPoint.toString() ));
+			
 			Location l = locationUtil.toLocation(this.configService.getWorld(), spawnPoint);
-			Bukkit.getConsoleSender().sendMessage("PLAYER: " + player.getName() + " SPAWN POINT: ");
-			Bukkit.getConsoleSender().sendMessage("x: " + l.getX());
-			Bukkit.getConsoleSender().sendMessage("y: " + l.getY());
-			Bukkit.getConsoleSender().sendMessage("Z: " + l.getZ());
-			Bukkit.getConsoleSender().sendMessage("yaw: " + l.getYaw());
-			Bukkit.getConsoleSender().sendMessage("pitch " + l.getPitch());
 
 			if (!(this.configService.getArena().getFacing() == null)) {
 				if (this.configService.getArena().getFacing() == FacingDirection.EAST) {
@@ -139,7 +137,8 @@ public class GameController extends TheCraftCloudMiniGameAbstract {
 					l.setYaw(180);
 				}
 			}
-			Bukkit.getConsoleSender().sendMessage("player world: " + player.getWorld().getName());
+			Bukkit.getConsoleSender().sendMessage(Utils.color("&6" + "player world: " + player.getWorld().getName()));
+			Bukkit.getConsoleSender().sendMessage(Utils.color("&6" + "player arena: " + this.configService.getWorld().getName() ));
 
 			Area3D area = (Area3D) configService.getGameArenaConfig("arqueiro.player" + loc + ".area");
 			archer.setArea(area);
